@@ -1,0 +1,73 @@
+CREATE TABLE Product 
+( 
+ ID VARCHAR(n) PRIMARY KEY,  
+ name VARCHAR(n),  
+ cost_price VARCHAR(n),  
+ sale_price VARCHAR(n),  
+ bar_code VARCHAR(n) NOT NULL,  
+ low_stock_threshold INT,  
+ idimage INT,  
+ idCategory INT,  
+ quantity INT,  
+ iduser INT,  
+ CHECK (quantity >= 0),
+ UNIQUE (bar_code)
+); 
+
+CREATE TABLE Category 
+( 
+ ID INT PRIMARY KEY AUTO_INCREMENT,  
+ name VARCHAR(n),  
+ decription VARCHAR(n),  
+); 
+
+CREATE TABLE image 
+( 
+ ID INT PRIMARY KEY AUTO_INCREMENT,  
+ url VARCHAR(n),  
+ description VARCHAR(n),  
+); 
+
+CREATE TABLE variation_product 
+( 
+ ID INT PRIMARY KEY AUTO_INCREMENT,  
+ idProduct INT,  
+ quantity INT,  
+ CHECK (quantity >= undefined),
+ UNIQUE (ID)
+); 
+
+CREATE TABLE variation_attributes 
+( 
+ ID INT PRIMARY KEY AUTO_INCREMENT,  
+ idvariation_product INT,  
+ attributes_type VARCHAR(n),  
+ attributes_value VARCHAR(n),  
+); 
+
+CREATE TABLE user 
+( 
+ ID VARCHAR(n) PRIMARY KEY,  
+ name VARCHAR(n),  
+ lastname VARCHAR(n),  
+ email INT,  
+ document_type VARCHAR(n),  
+ document_number VARCHAR(n),  
+ idaddress INT,  
+); 
+
+CREATE TABLE address 
+( 
+ ID INT PRIMARY KEY AUTO_INCREMENT,  
+ zip_code VARCHAR(n),  
+ address VARCHAR(n),  
+ state VARCHAR(n),  
+ city VARCHAR(n),  
+); 
+
+ALTER TABLE Product ADD FOREIGN KEY(idimage) REFERENCES image (idimage)
+ALTER TABLE Product ADD FOREIGN KEY(idCategory) REFERENCES Category (idCategory)
+ALTER TABLE Product ADD FOREIGN KEY(iduser) REFERENCES user (iduser)
+ALTER TABLE variation_product ADD FOREIGN KEY(idProduct) REFERENCES Product (idProduct)
+ALTER TABLE variation_attributes ADD FOREIGN KEY(idvariation_product) REFERENCES variation_product (idvariation_product)
+ALTER TABLE user ADD FOREIGN KEY(idaddress) REFERENCES address (idaddress)
