@@ -1,0 +1,52 @@
+version: '3.1'
+
+networks:
+  invetory-management-api:
+    driver: 
+      bridge
+    ipam:
+      config:
+        - subnet: 172.168.0.0/16
+          gateway: 172.168.0.1
+
+services:
+  db:
+    container_name: inventory-management-db
+    image: postgres:15.3
+    restart: always
+    ports:
+      - 5433:5432
+    volumes:
+      - ./volumes/postgres-data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=toor
+      - POSTGRES_DB=inventory_management
+    networks:
+      - invetory-management-api
+   
+  migrate:
+    container_name: inventory-management-migrate
+    image: migrate/migrate:v4.16.2
+    profiles:
+      - "tools"
+    volumes:
+      - ./pkg/sql/migrations:/migrations
+    entrypoint: [
+      "/migrate",
+      "-path",
+      "/migrations",
+      "-database",
+      "postgresql://postgres:toor@db:5432/inventory_management?sslmode=disable",
+    ]
+    command: ["up"]
+    depends_on:
+      - db
+    networks:
+      - invetory-management-api
+    restart: on-failure
+    
+
+   
+volumes:
+  postgres-data:
