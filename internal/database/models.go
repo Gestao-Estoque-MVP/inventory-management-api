@@ -9,20 +9,24 @@ import (
 )
 
 type Address struct {
-	ID      int32
-	ZipCode string
-	Address string
-	Street  string
-	State   string
-	City    string
+	ID         int32
+	UserID     sql.NullInt32
+	Address    sql.NullString
+	Number     sql.NullString
+	Street     sql.NullString
+	City       sql.NullString
+	State      sql.NullString
+	PostalCode sql.NullString
+	Country    sql.NullString
 }
 
 type User struct {
-	ID             string
+	ID             int32
 	Name           string
 	Lastname       string
-	Email          int32
+	Email          string
+	Phone          string
 	DocumentType   string
 	DocumentNumber string
-	AddressID      sql.NullInt32
+	Password       string
 }

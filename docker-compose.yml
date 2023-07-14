@@ -15,9 +15,9 @@ services:
     image: postgres:15.3
     restart: always
     ports:
-      - 5434:5432
+      - 5433:5432
     volumes:
-      - ./volumes/postgres-data:/var/lib/postgresql/data
+      - postgres-data:/var/lib/postgresql/data
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=toor
@@ -25,7 +25,7 @@ services:
     networks:
       - invetory-management-api
 
-"postgresql://postgres:toor@172.168.0.2:5432/inventory_management?sslmode=disable"
+
    
 volumes:
   postgres-data:

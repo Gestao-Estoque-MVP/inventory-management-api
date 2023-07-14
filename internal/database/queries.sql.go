@@ -10,76 +10,130 @@ import (
 	"database/sql"
 )
 
-const createAddress = `-- name: CreateAddress :exec
-INSERT INTO address (id, street, city, state, zip_code) 
-    VALUES ($1, $2, $3, $4, $5) RETURNING id, zip_code, address, street, state, city
+const createAddress = `-- name: CreateAddress :one
+INSERT INTO address (user_id, address, number, street, city, state, postal_code, country) 
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id, user_id, address, number, street, city, state, postal_code, country
 `
 
 type CreateAddressParams struct {
-	ID      int32
-	Street  string
-	City    string
-	State   string
-	ZipCode string
+	UserID     sql.NullInt32
+	Address    sql.NullString
+	Number     sql.NullString
+	Street     sql.NullString
+	City       sql.NullString
+	State      sql.NullString
+	PostalCode sql.NullString
+	Country    sql.NullString
 }
 
-func (q *Queries) CreateAddress(ctx context.Context, arg CreateAddressParams) error {
-	_, err := q.db.ExecContext(ctx, createAddress,
-		arg.ID,
+func (q *Queries) CreateAddress(ctx context.Context, arg CreateAddressParams) (Address, error) {
+	row := q.db.QueryRowContext(ctx, createAddress,
+		arg.UserID,
+		arg.Address,
+		arg.Number,
 		arg.Street,
 		arg.City,
 		arg.State,
-		arg.ZipCode,
+		arg.PostalCode,
+		arg.Country,
 	)
-	return err
+	var i Address
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.Address,
+		&i.Number,
+		&i.Street,
+		&i.City,
+		&i.State,
+		&i.PostalCode,
+		&i.Country,
+	)
+	return i, err
 }
 
-const createUser = `-- name: CreateUser :exec
-INSERT INTO users (name, lastname, email, document_type, document_number, address_id ) 
-    VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, name, lastname, email, document_type, document_number, address_id
+const createUser = `-- name: CreateUser :one
+INSERT INTO users (name, lastname, email, phone, document_type, document_number, password ) 
+    VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id, name, lastname, email, phone, document_type, document_number, password
 `
 
 type CreateUserParams struct {
 	Name           string
 	Lastname       string
-	Email          int32
+	Email          string
+	Phone          string
 	DocumentType   string
 	DocumentNumber string
-	AddressID      sql.NullInt32
+	Password       string
 }
 
-func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) error {
-	_, err := q.db.ExecContext(ctx, createUser,
+func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
+	row := q.db.QueryRowContext(ctx, createUser,
 		arg.Name,
 		arg.Lastname,
 		arg.Email,
+		arg.Phone,
 		arg.DocumentType,
 		arg.DocumentNumber,
-		arg.AddressID,
+		arg.Password,
 	)
-	return err
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Lastname,
+		&i.Email,
+		&i.Phone,
+		&i.DocumentType,
+		&i.DocumentNumber,
+		&i.Password,
+	)
+	return i, err
 }
 
-const deleteAddress = `-- name: DeleteAddress :exec
-DELETE FROM address WHERE id = $1 RETURNING id, zip_code, address, street, state, city
+const deleteAddress = `-- name: DeleteAddress :one
+DELETE FROM address WHERE id = $1 RETURNING id, user_id, address, number, street, city, state, postal_code, country
 `
 
-func (q *Queries) DeleteAddress(ctx context.Context, id int32) error {
-	_, err := q.db.ExecContext(ctx, deleteAddress, id)
-	return err
+func (q *Queries) DeleteAddress(ctx context.Context, id int32) (Address, error) {
+	row := q.db.QueryRowContext(ctx, deleteAddress, id)
+	var i Address
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.Address,
+		&i.Number,
+		&i.Street,
+		&i.City,
+		&i.State,
+		&i.PostalCode,
+		&i.Country,
+	)
+	return i, err
 }
 
-const deleteUser = `-- name: DeleteUser :exec
-DELETE FROM users WHERE id = $1 RETURNING id, name, lastname, email, document_type, document_number, address_id
+const deleteUser = `-- name: DeleteUser :one
+DELETE FROM users WHERE id = $1 RETURNING id, name, lastname, email, phone, document_type, document_number, password
 `
 
-func (q *Queries) DeleteUser(ctx context.Context, id string) error {
-	_, err := q.db.ExecContext(ctx, deleteUser, id)
-	return err
+func (q *Queries) DeleteUser(ctx context.Context, id int32) (User, error) {
+	row := q.db.QueryRowContext(ctx, deleteUser, id)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Lastname,
+		&i.Email,
+		&i.Phone,
+		&i.DocumentType,
+		&i.DocumentNumber,
+		&i.Password,
+	)
+	return i, err
 }
 
 const getAddress = `-- name: GetAddress :one
-SELECT id, zip_code, address, street, state, city FROM address WHERE id = $1
+SELECT id, user_id, address, number, street, city, state, postal_code, country FROM address WHERE id = $1
 `
 
 func (q *Queries) GetAddress(ctx context.Context, id int32) (Address, error) {
@@ -87,20 +141,23 @@ func (q *Queries) GetAddress(ctx context.Context, id int32) (Address, error) {
 	var i Address
 	err := row.Scan(
 		&i.ID,
-		&i.ZipCode,
+		&i.UserID,
 		&i.Address,
+		&i.Number,
 		&i.Street,
-		&i.State,
 		&i.City,
+		&i.State,
+		&i.PostalCode,
+		&i.Country,
 	)
 	return i, err
 }
 
 const getUser = `-- name: GetUser :one
-SELECT id, name, lastname, email, document_type, document_number, address_id FROM users WHERE id = $1
+SELECT id, name, lastname, email, phone, document_type, document_number, password FROM users WHERE id = $1
 `
 
-func (q *Queries) GetUser(ctx context.Context, id string) (User, error) {
+func (q *Queries) GetUser(ctx context.Context, id int32) (User, error) {
 	row := q.db.QueryRowContext(ctx, getUser, id)
 	var i User
 	err := row.Scan(
@@ -108,15 +165,16 @@ func (q *Queries) GetUser(ctx context.Context, id string) (User, error) {
 		&i.Name,
 		&i.Lastname,
 		&i.Email,
+		&i.Phone,
 		&i.DocumentType,
 		&i.DocumentNumber,
-		&i.AddressID,
+		&i.Password,
 	)
 	return i, err
 }
 
 const listAddresses = `-- name: ListAddresses :many
-SELECT id, zip_code, address, street, state, city FROM address
+SELECT id, user_id, address, number, street, city, state, postal_code, country FROM address
 `
 
 func (q *Queries) ListAddresses(ctx context.Context) ([]Address, error) {
@@ -130,11 +188,14 @@ func (q *Queries) ListAddresses(ctx context.Context) ([]Address, error) {
 		var i Address
 		if err := rows.Scan(
 			&i.ID,
-			&i.ZipCode,
+			&i.UserID,
 			&i.Address,
+			&i.Number,
 			&i.Street,
-			&i.State,
 			&i.City,
+			&i.State,
+			&i.PostalCode,
+			&i.Country,
 		); err != nil {
 			return nil, err
 		}
@@ -150,7 +211,7 @@ func (q *Queries) ListAddresses(ctx context.Context) ([]Address, error) {
 }
 
 const listUsers = `-- name: ListUsers :many
-SELECT id, name, lastname, email, document_type, document_number, address_id FROM users
+SELECT id, name, lastname, email, phone, document_type, document_number, password FROM users
 `
 
 func (q *Queries) ListUsers(ctx context.Context) ([]User, error) {
@@ -167,9 +228,10 @@ func (q *Queries) ListUsers(ctx context.Context) ([]User, error) {
 			&i.Name,
 			&i.Lastname,
 			&i.Email,
+			&i.Phone,
 			&i.DocumentType,
 			&i.DocumentNumber,
-			&i.AddressID,
+			&i.Password,
 		); err != nil {
 			return nil, err
 		}

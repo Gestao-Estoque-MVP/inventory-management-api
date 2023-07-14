@@ -2,16 +2,45 @@
 
 package model
 
-type NewProduct struct {
-	Name        string  `json:"name"`
-	Price       float64 `json:"price"`
-	Description string  `json:"description"`
-	CategoryID  string  `json:"categoryId"`
+type Address struct {
+	ID      string `json:"id"`
+	Street  string `json:"street"`
+	Number  string `json:"number"`
+	City    string `json:"city"`
+	State   string `json:"state"`
+	Country string `json:"country"`
+	ZipCode string `json:"zipCode"`
+	UserID  int    `json:"userId"`
 }
 
-type Product struct {
-	ID          string  `json:"id"`
-	Name        string  `json:"name"`
-	Price       float64 `json:"price"`
-	Description string  `json:"description"`
+type NewAddress struct {
+	Street  string `json:"street"`
+	Number  string `json:"number"`
+	City    string `json:"city"`
+	State   string `json:"state"`
+	Country string `json:"country"`
+	ZipCode string `json:"zipCode"`
+	UserID  int    `json:"userId"`
+}
+
+type NewUser struct {
+	Name           string `json:"name"`
+	LastName       string `json:"lastName"`
+	Email          string `json:"email"`
+	Phone          string `json:"phone"`
+	Password       string `json:"password"`
+	DocumentType   string `json:"document_type"`
+	DocumentNumber string `json:"document_number"`
+}
+
+type User struct {
+	ID             string     `json:"id"`
+	Name           string     `json:"name"`
+	LastName       string     `json:"lastName"`
+	Email          string     `json:"email"`
+	Phone          string     `json:"phone"`
+	Password       string     `json:"password"`
+	DocumentType   string     `json:"document_type"`
+	DocumentNumber string     `json:"document_number"`
+	Addresses      []*Address `json:"addresses"`
 }

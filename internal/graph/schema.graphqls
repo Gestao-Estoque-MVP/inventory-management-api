@@ -11,41 +11,49 @@ type Address {
   state: String!
   country: String!
   zipCode: String!
+  userId: Int!
 }
 
 type User {
   id: ID!
   name: String!
-  lastname: String!
+  lastName: String!
   email: String!
-  documentType: String!
-  documentNumber: String!
-  addressId: Int!
+  phone: String!
   password: String!
-  
+  document_type: String!
+  document_number: String!
+  addresses: [Address!]!
 }
 
-
-type Product {
-  id: ID!
+input NewUser {
   name: String!
-  price: Float!
-  description: String!
+  lastName: String!
+  email: String!
+  phone: String!
+  password: String!
+  document_type: String!
+  document_number: String!
 }
 
-
-
-input NewProduct {
-  name: String!
-  price: Float!
-  description: String!
-  categoryId: String!
+input NewAddress {
+  street: String!
+  number: String!
+  city: String!
+  state: String!
+  country: String!
+  zipCode: String!
+  userId: Int!
 }
 
 type Mutation {
-  createProduct(input: NewProduct!): Product!
+  createUser(input: NewUser!): User!
+  createAddress(input: NewAddress!): Address!
 }
 
 type Query {
-  products: [Product!]!
+  user(id: ID!): User!
+  users: [User!]!
+  address(id: ID!): Address!
+  addresses: [Address!]!
 }
