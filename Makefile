@@ -6,13 +6,13 @@ DOCKER_COMPOSE_FILE ?= docker-compose.yml
 #========================#
 
 migrate-up:
-	docker compose -f docker-compose.yml --profile tools run --rm migrate up
+ 	migrate -path pkg/sql/migrations -database "postgresql://postgres:toor@172.168.0.2:5432/inventory_management?sslmode=disable"  -verbose up
 
 migrate-down:
-	docker compose -f docker-compose.yml --profile tools run --rm migrate down -all
+	migrate -path pkg/sql/migrations -database "postgresql://postgres:toor@localhost:5432/inventory_management?sslmode=disable"  -verbose down
 
 migrate-force:
-	docker compose -f docker-compose.yml --profile tools run --rm migrate force $(version)
+	migrate -path pkg/sql/migrations -database "postgresql://postgres:toor@localhost:5432/inventory_management?sslmode=disable"  -verbose force $(version)
 
 migrate-create:
-	docker compose -f docker-compose.yml --profile tools run --rm migrate create -ext sql -dir /migrations $(name)
+	migrate create -ext sql -dir pkg/sql/migrations -seq $(name)
