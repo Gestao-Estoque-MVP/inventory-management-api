@@ -4,10 +4,25 @@
 
 package database
 
-import ()
+import (
+	"database/sql"
+)
 
-type Category struct {
-	ID          int32
-	Name        string
-	Description string
+type Address struct {
+	ID      int32
+	ZipCode string
+	Address string
+	Street  string
+	State   string
+	City    string
+}
+
+type User struct {
+	ID             string
+	Name           string
+	Lastname       string
+	Email          int32
+	DocumentType   string
+	DocumentNumber string
+	AddressID      sql.NullInt32
 }

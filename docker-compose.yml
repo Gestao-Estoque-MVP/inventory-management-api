@@ -15,7 +15,7 @@ services:
     image: postgres:15.3
     restart: always
     ports:
-      - 5433:5432
+      - 5434:5432
     volumes:
       - ./volumes/postgres-data:/var/lib/postgresql/data
     environment:
@@ -24,29 +24,9 @@ services:
       - POSTGRES_DB=inventory_management
     networks:
       - invetory-management-api
-   
-  migrate:
-    container_name: inventory-management-migrate
-    image: migrate/migrate:v4.16.2
-    profiles:
-      - "tools"
-    volumes:
-      - ./pkg/sql/migrations:/migrations
-    entrypoint: [
-      "/migrate",
-      "-path",
-      "/migrations",
-      "-database",
-      "postgresql://postgres:toor@db:5432/inventory_management?sslmode=disable",
-    ]
-    command: ["up"]
-    depends_on:
-      - db
-    networks:
-      - invetory-management-api
-    restart: on-failure
-    
 
+"postgresql://postgres:toor@172.168.0.2:5432/inventory_management?sslmode=disable"
    
 volumes:
   postgres-data:
+

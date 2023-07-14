@@ -9,7 +9,7 @@ migrate-up:
 	docker compose -f docker-compose.yml --profile tools run --rm migrate up
 
 migrate-down:
-	docker compose -f docker-compose.yml --profile tools run --rm migrate down
+	docker compose -f docker-compose.yml --profile tools run --rm migrate down -all
 
 migrate-force:
 	docker compose -f docker-compose.yml --profile tools run --rm migrate force $(version)

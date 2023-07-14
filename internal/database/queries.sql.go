@@ -7,13 +7,179 @@ package database
 
 import (
 	"context"
+	"database/sql"
 )
 
-const createCategory = `-- name: CreateCategory :exec
-INSERT INTO category (name, description) VALUES ('?', '?')
+const createAddress = `-- name: CreateAddress :exec
+INSERT INTO address (id, street, city, state, zip_code) 
+    VALUES ($1, $2, $3, $4, $5) RETURNING id, zip_code, address, street, state, city
 `
 
-func (q *Queries) CreateCategory(ctx context.Context) error {
-	_, err := q.db.ExecContext(ctx, createCategory)
+type CreateAddressParams struct {
+	ID      int32
+	Street  string
+	City    string
+	State   string
+	ZipCode string
+}
+
+func (q *Queries) CreateAddress(ctx context.Context, arg CreateAddressParams) error {
+	_, err := q.db.ExecContext(ctx, createAddress,
+		arg.ID,
+		arg.Street,
+		arg.City,
+		arg.State,
+		arg.ZipCode,
+	)
 	return err
+}
+
+const createUser = `-- name: CreateUser :exec
+INSERT INTO users (name, lastname, email, document_type, document_number, address_id ) 
+    VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, name, lastname, email, document_type, document_number, address_id
+`
+
+type CreateUserParams struct {
+	Name           string
+	Lastname       string
+	Email          int32
+	DocumentType   string
+	DocumentNumber string
+	AddressID      sql.NullInt32
+}
+
+func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) error {
+	_, err := q.db.ExecContext(ctx, createUser,
+		arg.Name,
+		arg.Lastname,
+		arg.Email,
+		arg.DocumentType,
+		arg.DocumentNumber,
+		arg.AddressID,
+	)
+	return err
+}
+
+const deleteAddress = `-- name: DeleteAddress :exec
+DELETE FROM address WHERE id = $1 RETURNING id, zip_code, address, street, state, city
+`
+
+func (q *Queries) DeleteAddress(ctx context.Context, id int32) error {
+	_, err := q.db.ExecContext(ctx, deleteAddress, id)
+	return err
+}
+
+const deleteUser = `-- name: DeleteUser :exec
+DELETE FROM users WHERE id = $1 RETURNING id, name, lastname, email, document_type, document_number, address_id
+`
+
+func (q *Queries) DeleteUser(ctx context.Context, id string) error {
+	_, err := q.db.ExecContext(ctx, deleteUser, id)
+	return err
+}
+
+const getAddress = `-- name: GetAddress :one
+SELECT id, zip_code, address, street, state, city FROM address WHERE id = $1
+`
+
+func (q *Queries) GetAddress(ctx context.Context, id int32) (Address, error) {
+	row := q.db.QueryRowContext(ctx, getAddress, id)
+	var i Address
+	err := row.Scan(
+		&i.ID,
+		&i.ZipCode,
+		&i.Address,
+		&i.Street,
+		&i.State,
+		&i.City,
+	)
+	return i, err
+}
+
+const getUser = `-- name: GetUser :one
+SELECT id, name, lastname, email, document_type, document_number, address_id FROM users WHERE id = $1
+`
+
+func (q *Queries) GetUser(ctx context.Context, id string) (User, error) {
+	row := q.db.QueryRowContext(ctx, getUser, id)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Lastname,
+		&i.Email,
+		&i.DocumentType,
+		&i.DocumentNumber,
+		&i.AddressID,
+	)
+	return i, err
+}
+
+const listAddresses = `-- name: ListAddresses :many
+SELECT id, zip_code, address, street, state, city FROM address
+`
+
+func (q *Queries) ListAddresses(ctx context.Context) ([]Address, error) {
+	rows, err := q.db.QueryContext(ctx, listAddresses)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Address
+	for rows.Next() {
+		var i Address
+		if err := rows.Scan(
+			&i.ID,
+			&i.ZipCode,
+			&i.Address,
+			&i.Street,
+			&i.State,
+			&i.City,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listUsers = `-- name: ListUsers :many
+SELECT id, name, lastname, email, document_type, document_number, address_id FROM users
+`
+
+func (q *Queries) ListUsers(ctx context.Context) ([]User, error) {
+	rows, err := q.db.QueryContext(ctx, listUsers)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []User
+	for rows.Next() {
+		var i User
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Lastname,
+			&i.Email,
+			&i.DocumentType,
+			&i.DocumentNumber,
+			&i.AddressID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }

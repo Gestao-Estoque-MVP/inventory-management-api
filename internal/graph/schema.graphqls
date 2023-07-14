@@ -2,12 +2,38 @@
 #
 # https://gqlgen.com/getting-started/
 
+
+type Address {
+  id: ID!
+  street: String!
+  number: String!
+  city: String!
+  state: String!
+  country: String!
+  zipCode: String!
+}
+
+type User {
+  id: ID!
+  name: String!
+  lastname: String!
+  email: String!
+  documentType: String!
+  documentNumber: String!
+  addressId: Int!
+  password: String!
+  
+}
+
+
 type Product {
   id: ID!
   name: String!
   price: Float!
   description: String!
 }
+
+
 
 input NewProduct {
   name: String!
