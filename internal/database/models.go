@@ -6,11 +6,12 @@ package database
 
 import (
 	"database/sql"
+	"time"
 )
 
 type Address struct {
 	ID         int32
-	UserID     sql.NullInt32
+	UserID     string
 	Address    sql.NullString
 	Number     sql.NullString
 	Street     sql.NullString
@@ -18,15 +19,27 @@ type Address struct {
 	State      sql.NullString
 	PostalCode sql.NullString
 	Country    sql.NullString
+	CreatedAt  time.Time
+}
+
+type ContactInfo struct {
+	ID        string
+	Name      string
+	Email     string
+	Phone     sql.NullString
+	CreatedAt time.Time
 }
 
 type User struct {
-	ID             int32
+	ID             string
 	Name           string
-	Lastname       string
 	Email          string
-	Phone          string
-	DocumentType   string
-	DocumentNumber string
-	Password       string
+	Phone          sql.NullString
+	DocumentType   sql.NullString
+	DocumentNumber sql.NullString
+	Password       sql.NullString
+	Status         string
+	RegisterToken  sql.NullString
+	TokenExpiresAt sql.NullTime
+	CreatedAt      time.Time
 }

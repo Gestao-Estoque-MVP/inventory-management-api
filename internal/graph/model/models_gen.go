@@ -13,6 +13,12 @@ type Address struct {
 	UserID  int    `json:"userId"`
 }
 
+type ContactInfo struct {
+	ID    string `json:"id"`
+	Email string `json:"email"`
+	Phone string `json:"phone"`
+}
+
 type NewAddress struct {
 	Street  string `json:"street"`
 	Number  string `json:"number"`
@@ -23,9 +29,18 @@ type NewAddress struct {
 	UserID  int    `json:"userId"`
 }
 
+type NewContactInfo struct {
+	Email string `json:"email"`
+	Phone string `json:"phone"`
+}
+
+type NewPreUser struct {
+	Name  string `json:"name"`
+	Email string `json:"email"`
+}
+
 type NewUser struct {
 	Name           string `json:"name"`
-	LastName       string `json:"lastName"`
 	Email          string `json:"email"`
 	Phone          string `json:"phone"`
 	Password       string `json:"password"`
@@ -33,10 +48,15 @@ type NewUser struct {
 	DocumentNumber string `json:"document_number"`
 }
 
+type PreUser struct {
+	ID    string `json:"id"`
+	Name  string `json:"name"`
+	Email string `json:"email"`
+}
+
 type User struct {
 	ID             string     `json:"id"`
 	Name           string     `json:"name"`
-	LastName       string     `json:"lastName"`
 	Email          string     `json:"email"`
 	Phone          string     `json:"phone"`
 	Password       string     `json:"password"`

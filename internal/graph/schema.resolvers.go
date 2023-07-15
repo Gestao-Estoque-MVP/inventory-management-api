@@ -7,41 +7,40 @@ package graph
 import (
 	"context"
 	"fmt"
-	"log"
 
 	"github.com/diogoX451/inventory-management-api/internal/database"
 	"github.com/diogoX451/inventory-management-api/internal/graph/model"
 )
 
-// CreateUser is the resolver for the createUser field.
-func (r *mutationResolver) CreateUser(ctx context.Context, input model.NewUser) (*model.User, error) {
-	user := &database.User{
-		Name:           input.Name,
-		Lastname:       input.LastName,
-		Email:          input.Email,
-		Phone:          input.Phone,
-		DocumentType:   input.DocumentType,
-		DocumentNumber: input.DocumentNumber,
-		Password:       input.Password,
+// CreateContactInfo is the resolver for the createContactInfo field.
+func (r *mutationResolver) CreateContactInfo(ctx context.Context, input model.NewContactInfo) (*model.ContactInfo, error) {
+	panic(fmt.Errorf("not implemented: CreateContactInfo - createContactInfo"))
+}
+
+// CreatePreUser is the resolver for the createPreUser field.
+func (r *mutationResolver) CreatePreUser(ctx context.Context, input model.NewPreUser) (*model.PreUser, error) {
+	user := database.User{
+		Name:  input.Name,
+		Email: input.Email,
 	}
 
-	created, err := r.Resolver.UserService.CreateUser(user)
+	created, err := r.Resolver.UserService.CreatePreUser(&user)
 
 	if err != nil {
-		log.Printf("TESTE")
 		return nil, err
 	}
 
-	response := &model.User{
-		Name:           created.Name,
-		LastName:       created.Lastname,
-		Email:          created.Email,
-		Phone:          created.Phone,
-		DocumentType:   created.DocumentType,
-		DocumentNumber: created.DocumentNumber,
+	response := &model.PreUser{
+		ID:    created.ID,
+		Email: created.Email,
 	}
 
 	return response, nil
+}
+
+// CreateCompleteUser is the resolver for the createCompleteUser field.
+func (r *mutationResolver) CreateCompleteUser(ctx context.Context, input model.NewUser) (*model.User, error) {
+	panic(fmt.Errorf("not implemented: CreateCompleteUser - createCompleteUser"))
 }
 
 // CreateAddress is the resolver for the createAddress field.
@@ -56,7 +55,26 @@ func (r *queryResolver) User(ctx context.Context, id string) (*model.User, error
 
 // Users is the resolver for the users field.
 func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
-	panic(fmt.Errorf("not implemented: Users - users"))
+	getUser, err := r.Resolver.UserService.GetUsers()
+
+	if err != nil {
+		return nil, err
+	}
+
+	var users []*model.User
+	for _, user := range getUser {
+		listUser := &model.User{
+			ID:             user.ID,
+			Name:           user.Name,
+			Email:          user.Email,
+			Phone:          user.Phone.String,
+			DocumentNumber: user.DocumentNumber.String,
+		}
+
+		users = append(users, listUser)
+	}
+
+	return users, nil
 }
 
 // Address is the resolver for the address field.

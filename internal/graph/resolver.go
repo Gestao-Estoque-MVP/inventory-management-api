@@ -2,6 +2,8 @@ package graph
 
 import (
 	"context"
+	"database/sql"
+	"time"
 
 	"github.com/diogoX451/inventory-management-api/internal/database"
 	"github.com/diogoX451/inventory-management-api/internal/repositories"
@@ -13,27 +15,26 @@ type Resolver struct {
 	UserRepository repositories.IUserRepository
 }
 
-func (r *Resolver) CreateUser(ctx context.Context, args struct {
+func (r *Resolver) CreatePreUser(ctx context.Context, args struct {
 	ID             string
 	Name           string
-	Lastname       string
 	Email          string
-	Phone          string
-	DocumentType   string
-	DocumentNumber string
-	Password       string
+	Status         string
+	RegisterToken  string
+	TokenExpiresAt time.Time
+	CreatedAt      time.Time
 }) (*database.User, error) {
 	user := &database.User{
+		ID:             args.ID,
 		Name:           args.Name,
-		Lastname:       args.Lastname,
 		Email:          args.Email,
-		Phone:          args.Phone,
-		DocumentType:   args.DocumentType,
-		DocumentNumber: args.DocumentNumber,
-		Password:       args.Password,
+		Status:         args.Status,
+		RegisterToken:  sql.NullString{String: args.RegisterToken, Valid: true},
+		TokenExpiresAt: sql.NullTime{Time: args.TokenExpiresAt, Valid: true},
+		CreatedAt:      args.CreatedAt,
 	}
 
-	createUser, err := r.UserService.CreateUser(user)
+	createUser, err := r.UserService.CreatePreUser(user)
 
 	if err != nil {
 		return nil, err

@@ -6,13 +6,13 @@ export $(shell sed 's/=.*//' .env)
 #========================#
 
 migrate-up:
-	migrate -path pkg/sql/migrations -database $$DB_URL  -verbose up
+	migrate -path pkg/sql/migrations -database $$DB_URL_MIGRATE  -verbose up
 
 migrate-down:
-	migrate -path pkg/sql/migrations -database $$DB_URL  -verbose down
+	migrate -path pkg/sql/migrations -database $$DB_URL_MIGRATE  -verbose down
 
 migrate-force:
-	migrate -path pkg/sql/migrations -database $$DB_URL  -verbose force $(version)
+	migrate -path pkg/sql/migrations -database $$DB_URL_MIGRATE  -verbose force $(version)
 
 migrate-create:
 	migrate create -ext sql -dir pkg/sql/migrations -seq $(name)

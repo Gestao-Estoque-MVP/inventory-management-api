@@ -3,6 +3,12 @@
 # https://gqlgen.com/getting-started/
 
 
+type ContactInfo {
+  id: ID!
+  email: String!
+  phone: String!
+}
+
 type Address {
   id: ID!
   street: String!
@@ -17,7 +23,6 @@ type Address {
 type User {
   id: ID!
   name: String!
-  lastName: String!
   email: String!
   phone: String!
   password: String!
@@ -26,9 +31,24 @@ type User {
   addresses: [Address!]!
 }
 
+type PreUser {
+  id: ID!
+  name: String!
+  email: String!
+}
+
+input NewContactInfo {
+  email: String!
+  phone: String!
+}
+
+input NewPreUser {
+  name: String!
+  email: String!
+}
+
 input NewUser {
   name: String!
-  lastName: String!
   email: String!
   phone: String!
   password: String!
@@ -46,8 +66,11 @@ input NewAddress {
   userId: Int!
 }
 
+
 type Mutation {
-  createUser(input: NewUser!): User!
+  createContactInfo(input: NewContactInfo!): ContactInfo!
+  createPreUser(input: NewPreUser!): PreUser!
+  createCompleteUser(input: NewUser!): User!
   createAddress(input: NewAddress!): Address!
 }
 
