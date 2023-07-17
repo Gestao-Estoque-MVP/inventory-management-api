@@ -1,6 +1,6 @@
 CREATE TABLE address (
   id SERIAL PRIMARY KEY,
-  user_id VARCHAR(255) NOT NULL,
+  user_id VARCHAR(255) UNIQUE NOT NULL,
   address VARCHAR(255),
   number VARCHAR(255),
   street VARCHAR(255),

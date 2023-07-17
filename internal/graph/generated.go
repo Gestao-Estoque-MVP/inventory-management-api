@@ -59,6 +59,7 @@ type ComplexityRoot struct {
 	ContactInfo struct {
 		Email func(childComplexity int) int
 		ID    func(childComplexity int) int
+		Name  func(childComplexity int) int
 		Phone func(childComplexity int) int
 	}
 
@@ -191,6 +192,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.ContactInfo.ID(childComplexity), true
+
+	case "ContactInfo.Name":
+		if e.complexity.ContactInfo.Name == nil {
+			break
+		}
+
+		return e.complexity.ContactInfo.Name(childComplexity), true
 
 	case "ContactInfo.phone":
 		if e.complexity.ContactInfo.Phone == nil {
@@ -1029,6 +1037,50 @@ func (ec *executionContext) fieldContext_ContactInfo_id(ctx context.Context, fie
 	return fc, nil
 }
 
+func (ec *executionContext) _ContactInfo_Name(ctx context.Context, field graphql.CollectedField, obj *model.ContactInfo) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ContactInfo_Name(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Name, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ContactInfo_Name(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ContactInfo",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _ContactInfo_email(ctx context.Context, field graphql.CollectedField, obj *model.ContactInfo) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_ContactInfo_email(ctx, field)
 	if err != nil {
@@ -1158,6 +1210,8 @@ func (ec *executionContext) fieldContext_Mutation_createContactInfo(ctx context.
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_ContactInfo_id(ctx, field)
+			case "Name":
+				return ec.fieldContext_ContactInfo_Name(ctx, field)
 			case "email":
 				return ec.fieldContext_ContactInfo_email(ctx, field)
 			case "phone":
@@ -4153,13 +4207,22 @@ func (ec *executionContext) unmarshalInputNewContactInfo(ctx context.Context, ob
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"email", "phone"}
+	fieldsInOrder := [...]string{"Name", "email", "phone"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
+		case "Name":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("Name"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Name = data
 		case "email":
 			var err error
 
@@ -4391,6 +4454,11 @@ func (ec *executionContext) _ContactInfo(ctx context.Context, sel ast.SelectionS
 			out.Values[i] = graphql.MarshalString("ContactInfo")
 		case "id":
 			out.Values[i] = ec._ContactInfo_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "Name":
+			out.Values[i] = ec._ContactInfo_Name(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}

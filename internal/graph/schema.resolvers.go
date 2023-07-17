@@ -6,6 +6,7 @@ package graph
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 
 	"github.com/diogoX451/inventory-management-api/internal/database"
@@ -14,7 +15,26 @@ import (
 
 // CreateContactInfo is the resolver for the createContactInfo field.
 func (r *mutationResolver) CreateContactInfo(ctx context.Context, input model.NewContactInfo) (*model.ContactInfo, error) {
-	panic(fmt.Errorf("not implemented: CreateContactInfo - createContactInfo"))
+	contact_info := database.ContactInfo{
+		Name:  input.Name,
+		Email: input.Email,
+		Phone: sql.NullString{String: input.Phone, Valid: true},
+	}
+
+	create, err := r.Resolver.ContactInfoService.CreateContactInfo(&contact_info)
+
+	if err != nil {
+		return nil, err
+	}
+
+	response := &model.ContactInfo{
+		ID:    create.ID,
+		Name:  create.Name,
+		Email: create.Email,
+		Phone: create.Phone.String,
+	}
+
+	return response, nil
 }
 
 // CreatePreUser is the resolver for the createPreUser field.

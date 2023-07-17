@@ -11,8 +11,34 @@ import (
 )
 
 type Resolver struct {
-	UserService    *service.UserService
-	UserRepository repositories.IUserRepository
+	UserService           *service.UserService
+	UserRepository        repositories.IUserRepository
+	ContactInfoRepository repositories.IContactInfoRepository
+	ContactInfoService    *service.ContactInfoService
+}
+
+func (r *Resolver) CreateContactInfo(ctx context.Context, args struct {
+	ID        string
+	Name      string
+	Email     string
+	Phone     string
+	CreatedAt time.Time
+}) (*database.ContactInfo, error) {
+	contact_info := &database.ContactInfo{
+		ID:        args.ID,
+		Name:      args.Name,
+		Email:     args.Email,
+		Phone:     sql.NullString{String: args.Phone, Valid: true},
+		CreatedAt: args.CreatedAt,
+	}
+
+	create, err := r.ContactInfoService.CreateContactInfo(contact_info)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return create, nil
 }
 
 func (r *Resolver) CreatePreUser(ctx context.Context, args struct {

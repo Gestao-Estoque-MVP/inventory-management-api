@@ -5,6 +5,7 @@
 
 type ContactInfo {
   id: ID!
+  Name: String!
   email: String!
   phone: String!
 }
@@ -38,6 +39,7 @@ type PreUser {
 }
 
 input NewContactInfo {
+  Name: String!
   email: String!
   phone: String!
 }

@@ -33,11 +33,8 @@ func main() {
 	if err != nil {
 		log.Fatalf("Erro ao abrir a conexão com o banco de dados: %v\n", err)
 	}
-	// Define a duração máxima que uma conexão pode ser reutilizada.
 	db.SetConnMaxLifetime(time.Minute * 3)
-	// Define um número máximo de conexões simultâneas.
 	db.SetMaxOpenConns(10)
-	// Define um número máximo de conexões inativas.
 	db.SetMaxIdleConns(10)
 
 	defer func() {
@@ -60,10 +57,14 @@ func main() {
 
 	userRepository := repositories.NewRepositoryUser(queries)
 	userService := service.NewServiceUser(userRepository)
+	contactRepository := repositories.NewRepositoryContactInfo(queries)
+	contactService := service.NewContactInfoService(contactRepository)
 
 	srv := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{
-		UserRepository: userRepository,
-		UserService:    userService,
+		UserRepository:        userRepository,
+		UserService:           userService,
+		ContactInfoRepository: contactRepository,
+		ContactInfoService:    contactService,
 	}}))
 
 	http.Handle("/", playground.Handler("GraphQL playground", "/graphql"))

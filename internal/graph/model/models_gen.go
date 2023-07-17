@@ -15,6 +15,7 @@ type Address struct {
 
 type ContactInfo struct {
 	ID    string `json:"id"`
+	Name  string `json:"Name"`
 	Email string `json:"email"`
 	Phone string `json:"phone"`
 }
@@ -30,6 +31,7 @@ type NewAddress struct {
 }
 
 type NewContactInfo struct {
+	Name  string `json:"Name"`
 	Email string `json:"email"`
 	Phone string `json:"phone"`
 }
