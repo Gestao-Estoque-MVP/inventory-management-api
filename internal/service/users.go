@@ -2,6 +2,7 @@ package service
 
 import (
 	"database/sql"
+	"errors"
 	"log"
 	"time"
 
@@ -45,6 +46,17 @@ func (us *UserService) CreatePreUser(user *database.User) (*database.User, error
 }
 
 func (us *UserService) CompleteRegisterUser(id string, user *database.User) (*database.User, error) {
+
+	verifyUser, err := us.userRepo.GetUser(id)
+
+	if err != nil {
+		log.Printf("Erro ao buscar usuário: %v\n", err)
+	}
+
+	if verifyUser.TokenExpiresAt.Time != time.Now().Add(1*time.Hour) {
+		log.Printf("Sem permissão de criar usuário")
+		return nil, errors.New("Sem permissão de criar usuário")
+	}
 
 	updateUser, err := us.userRepo.CreateCompleteUser(id, user)
 
