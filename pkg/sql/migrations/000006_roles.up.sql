@@ -1,0 +1,7 @@
+CREATE TABLE roles (
+    id VARCHAR(255) PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    description VARCHAR(255) NOT NULL
+);
+
+ALTER TABLE users ADD COLUMN role_id VARCHAR(255) REFERENCES roles(id);

@@ -1,10 +1,9 @@
 -- name: CreatePreRegisterUser :one
-INSERT INTO users (id, name, email, status, register_token, token_expires_at, created_at) 
-    VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING id, name, email;
+INSERT INTO users (id, name, email, status, role_id, register_token, token_expires_at, created_at) 
+    VALUES($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id, name, email;
 
 -- name: CompleteRegisterUser :one
-
-UPDATE users SET phone = $1, document_type = $2, document_number = $3, password = $4 WHERE id = $5 RETURNING id;
+UPDATE users SET phone = $1, document_type = $2, document_number = $3, password = $4, avatar = $5 WHERE id = $6 RETURNING id;
 
 -- name: DeleteUser :execresult
 DELETE FROM users WHERE id = $1 RETURNING id, name, email;
@@ -37,7 +36,20 @@ SELECT * FROM address WHERE id = $1;
 SELECT * FROM address;
 
 
-
 -- name: CreateContactInfo :one
 INSERT INTO contact_info (id, name, email, phone, created_at) 
     VALUES ($1, $2, $3, $4, $5) RETURNING *;
+
+
+--name: CreatePermissions :one 
+INSERT INTO permissions (id, name, description) 
+    VALUES ($1, $2, $3) RETURNING *;
+
+--name: CreateRole :one
+INSERT INTO roles (id, name, description) 
+    VALUES ($1, $2, $3) RETURNING *;
+
+--name: CreateRolePermissions :one
+INSERT INTO role_permissions (role_id, permission_id) 
+    VALUES ($1, $2) RETURNING *;
+
