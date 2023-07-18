@@ -14,6 +14,7 @@ import (
 
 type UserService struct {
 	userRepo repositories.IUserRepository
+	role     repositories.IRBCA
 }
 
 func NewServiceUser(userRepo repositories.IUserRepository) *UserService {

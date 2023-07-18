@@ -41,15 +41,26 @@ INSERT INTO contact_info (id, name, email, phone, created_at)
     VALUES ($1, $2, $3, $4, $5) RETURNING *;
 
 
---name: CreatePermissions :one 
+-- name: CreatePermissions :one 
 INSERT INTO permissions (id, name, description) 
     VALUES ($1, $2, $3) RETURNING *;
 
---name: CreateRole :one
+-- name: CreateRole :one
 INSERT INTO roles (id, name, description) 
     VALUES ($1, $2, $3) RETURNING *;
 
---name: CreateRolePermissions :one
-INSERT INTO role_permissions (role_id, permission_id) 
+-- name: CreateRolePermissions :one
+INSERT INTO roles_permissions (role_id, permission_id) 
     VALUES ($1, $2) RETURNING *;
+
+-- name: GetRole :one
+SELECT 
+    u.id AS user_id,
+    r.name 
+FROM 
+    users AS u
+INNER JOIN 
+    roles AS r ON u.role_id = r.id
+WHERE 
+    u.id = $1;
 

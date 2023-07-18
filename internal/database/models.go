@@ -30,6 +30,23 @@ type ContactInfo struct {
 	CreatedAt time.Time
 }
 
+type Permission struct {
+	ID          string
+	Name        string
+	Description string
+}
+
+type Role struct {
+	ID          string
+	Name        string
+	Description string
+}
+
+type RolesPermission struct {
+	RoleID       string
+	PermissionID string
+}
+
 type User struct {
 	ID             string
 	Name           string
@@ -38,8 +55,10 @@ type User struct {
 	DocumentType   sql.NullString
 	DocumentNumber sql.NullString
 	Password       sql.NullString
+	Avatar         sql.NullString
 	Status         string
 	RegisterToken  sql.NullString
 	TokenExpiresAt sql.NullTime
 	CreatedAt      time.Time
+	RoleID         sql.NullString
 }

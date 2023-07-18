@@ -12,8 +12,7 @@ import (
 )
 
 const completeRegisterUser = `-- name: CompleteRegisterUser :one
-
-UPDATE users SET phone = $1, document_type = $2, document_number = $3, password = $4 WHERE id = $5 RETURNING id
+UPDATE users SET phone = $1, document_type = $2, document_number = $3, password = $4, avatar = $5 WHERE id = $6 RETURNING id
 `
 
 type CompleteRegisterUserParams struct {
@@ -21,6 +20,7 @@ type CompleteRegisterUserParams struct {
 	DocumentType   sql.NullString
 	DocumentNumber sql.NullString
 	Password       sql.NullString
+	Avatar         sql.NullString
 	ID             string
 }
 
@@ -30,6 +30,7 @@ func (q *Queries) CompleteRegisterUser(ctx context.Context, arg CompleteRegister
 		arg.DocumentType,
 		arg.DocumentNumber,
 		arg.Password,
+		arg.Avatar,
 		arg.ID,
 	)
 	var id string
@@ -112,9 +113,27 @@ func (q *Queries) CreateContactInfo(ctx context.Context, arg CreateContactInfoPa
 	return i, err
 }
 
+const createPermissions = `-- name: CreatePermissions :one
+INSERT INTO permissions (id, name, description) 
+    VALUES ($1, $2, $3) RETURNING id, name, description
+`
+
+type CreatePermissionsParams struct {
+	ID          string
+	Name        string
+	Description string
+}
+
+func (q *Queries) CreatePermissions(ctx context.Context, arg CreatePermissionsParams) (Permission, error) {
+	row := q.db.QueryRowContext(ctx, createPermissions, arg.ID, arg.Name, arg.Description)
+	var i Permission
+	err := row.Scan(&i.ID, &i.Name, &i.Description)
+	return i, err
+}
+
 const createPreRegisterUser = `-- name: CreatePreRegisterUser :one
-INSERT INTO users (id, name, email, status, register_token, token_expires_at, created_at) 
-    VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING id, name, email
+INSERT INTO users (id, name, email, status, role_id, register_token, token_expires_at, created_at) 
+    VALUES($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id, name, email
 `
 
 type CreatePreRegisterUserParams struct {
@@ -122,6 +141,7 @@ type CreatePreRegisterUserParams struct {
 	Name           string
 	Email          string
 	Status         string
+	RoleID         sql.NullString
 	RegisterToken  sql.NullString
 	TokenExpiresAt sql.NullTime
 	CreatedAt      time.Time
@@ -139,12 +159,48 @@ func (q *Queries) CreatePreRegisterUser(ctx context.Context, arg CreatePreRegist
 		arg.Name,
 		arg.Email,
 		arg.Status,
+		arg.RoleID,
 		arg.RegisterToken,
 		arg.TokenExpiresAt,
 		arg.CreatedAt,
 	)
 	var i CreatePreRegisterUserRow
 	err := row.Scan(&i.ID, &i.Name, &i.Email)
+	return i, err
+}
+
+const createRole = `-- name: CreateRole :one
+INSERT INTO roles (id, name, description) 
+    VALUES ($1, $2, $3) RETURNING id, name, description
+`
+
+type CreateRoleParams struct {
+	ID          string
+	Name        string
+	Description string
+}
+
+func (q *Queries) CreateRole(ctx context.Context, arg CreateRoleParams) (Role, error) {
+	row := q.db.QueryRowContext(ctx, createRole, arg.ID, arg.Name, arg.Description)
+	var i Role
+	err := row.Scan(&i.ID, &i.Name, &i.Description)
+	return i, err
+}
+
+const createRolePermissions = `-- name: CreateRolePermissions :one
+INSERT INTO roles_permissions (role_id, permission_id) 
+    VALUES ($1, $2) RETURNING role_id, permission_id
+`
+
+type CreateRolePermissionsParams struct {
+	RoleID       string
+	PermissionID string
+}
+
+func (q *Queries) CreateRolePermissions(ctx context.Context, arg CreateRolePermissionsParams) (RolesPermission, error) {
+	row := q.db.QueryRowContext(ctx, createRolePermissions, arg.RoleID, arg.PermissionID)
+	var i RolesPermission
+	err := row.Scan(&i.RoleID, &i.PermissionID)
 	return i, err
 }
 
@@ -192,8 +248,32 @@ func (q *Queries) GetAddress(ctx context.Context, id int32) (Address, error) {
 	return i, err
 }
 
+const getRole = `-- name: GetRole :one
+SELECT 
+    u.id AS user_id,
+    r.name 
+FROM 
+    users AS u
+INNER JOIN 
+    roles AS r ON u.role_id = r.id
+WHERE 
+    u.id = $1
+`
+
+type GetRoleRow struct {
+	UserID string
+	Name   string
+}
+
+func (q *Queries) GetRole(ctx context.Context, id string) (GetRoleRow, error) {
+	row := q.db.QueryRowContext(ctx, getRole, id)
+	var i GetRoleRow
+	err := row.Scan(&i.UserID, &i.Name)
+	return i, err
+}
+
 const getUser = `-- name: GetUser :one
-SELECT id, name, email, phone, document_type, document_number, password, status, register_token, token_expires_at, created_at FROM users WHERE id = $1
+SELECT id, name, email, phone, document_type, document_number, password, avatar, status, register_token, token_expires_at, created_at, role_id FROM users WHERE id = $1
 `
 
 func (q *Queries) GetUser(ctx context.Context, id string) (User, error) {
@@ -207,10 +287,12 @@ func (q *Queries) GetUser(ctx context.Context, id string) (User, error) {
 		&i.DocumentType,
 		&i.DocumentNumber,
 		&i.Password,
+		&i.Avatar,
 		&i.Status,
 		&i.RegisterToken,
 		&i.TokenExpiresAt,
 		&i.CreatedAt,
+		&i.RoleID,
 	)
 	return i, err
 }
@@ -254,7 +336,7 @@ func (q *Queries) ListAddresses(ctx context.Context) ([]Address, error) {
 }
 
 const listUsers = `-- name: ListUsers :many
-SELECT id, name, email, phone, document_type, document_number, password, status, register_token, token_expires_at, created_at FROM users
+SELECT id, name, email, phone, document_type, document_number, password, avatar, status, register_token, token_expires_at, created_at, role_id FROM users
 `
 
 func (q *Queries) ListUsers(ctx context.Context) ([]User, error) {
@@ -274,10 +356,12 @@ func (q *Queries) ListUsers(ctx context.Context) ([]User, error) {
 			&i.DocumentType,
 			&i.DocumentNumber,
 			&i.Password,
+			&i.Avatar,
 			&i.Status,
 			&i.RegisterToken,
 			&i.TokenExpiresAt,
 			&i.CreatedAt,
+			&i.RoleID,
 		); err != nil {
 			return nil, err
 		}
