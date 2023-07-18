@@ -5,15 +5,15 @@ import (
 	"time"
 
 	"github.com/diogoX451/inventory-management-api/internal/database"
-	"github.com/diogoX451/inventory-management-api/internal/repositories"
+	"github.com/diogoX451/inventory-management-api/internal/repository"
 	"nullprogram.com/x/uuid"
 )
 
 type ContactInfoService struct {
-	contactInfoRepository *repositories.ContactInfoRepository
+	contactInfoRepository *repository.ContactInfoRepository
 }
 
-func NewContactInfoService(contactInfoRepository *repositories.ContactInfoRepository) *ContactInfoService {
+func NewContactInfoService(contactInfoRepository *repository.ContactInfoRepository) *ContactInfoService {
 	return &ContactInfoService{contactInfoRepository: contactInfoRepository}
 }
 

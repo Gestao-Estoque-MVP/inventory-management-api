@@ -11,7 +11,7 @@ import (
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/diogoX451/inventory-management-api/internal/database"
 	"github.com/diogoX451/inventory-management-api/internal/graph"
-	"github.com/diogoX451/inventory-management-api/internal/repositories"
+	"github.com/diogoX451/inventory-management-api/internal/repository"
 	"github.com/diogoX451/inventory-management-api/internal/service"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
@@ -55,9 +55,9 @@ func main() {
 
 	queries := database.New(db)
 
-	userRepository := repositories.NewRepositoryUser(queries)
+	userRepository := repository.NewRepositoryUser(queries)
 	userService := service.NewServiceUser(userRepository)
-	contactRepository := repositories.NewRepositoryContactInfo(queries)
+	contactRepository := repository.NewRepositoryContactInfo(queries)
 	contactService := service.NewContactInfoService(contactRepository)
 
 	srv := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{

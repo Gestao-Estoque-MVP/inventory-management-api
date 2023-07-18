@@ -6,14 +6,14 @@ import (
 	"time"
 
 	"github.com/diogoX451/inventory-management-api/internal/database"
-	"github.com/diogoX451/inventory-management-api/internal/repositories"
+	"github.com/diogoX451/inventory-management-api/internal/repository"
 	"github.com/diogoX451/inventory-management-api/internal/service"
 )
 
 type Resolver struct {
 	UserService           *service.UserService
-	UserRepository        repositories.IUserRepository
-	ContactInfoRepository repositories.IContactInfoRepository
+	UserRepository        repository.IUserRepository
+	ContactInfoRepository repository.IContactInfoRepository
 	ContactInfoService    *service.ContactInfoService
 }
 

@@ -1,4 +1,4 @@
-package repositories
+package repository
 
 import "github.com/diogoX451/inventory-management-api/internal/database"
 

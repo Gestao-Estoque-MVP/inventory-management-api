@@ -7,17 +7,17 @@ import (
 	"time"
 
 	"github.com/diogoX451/inventory-management-api/internal/database"
-	"github.com/diogoX451/inventory-management-api/internal/repositories"
+	"github.com/diogoX451/inventory-management-api/internal/repository"
 	token "github.com/diogoX451/inventory-management-api/pkg/Token"
 	"nullprogram.com/x/uuid"
 )
 
 type UserService struct {
-	userRepo repositories.IUserRepository
-	role     repositories.IRBCA
+	userRepo repository.IUserRepository
+	role     repository.IRBCA
 }
 
-func NewServiceUser(userRepo repositories.IUserRepository) *UserService {
+func NewServiceUser(userRepo repository.IUserRepository) *UserService {
 	return &UserService{userRepo: userRepo}
 }
 
