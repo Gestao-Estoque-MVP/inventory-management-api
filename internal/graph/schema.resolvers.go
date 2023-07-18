@@ -68,6 +68,68 @@ func (r *mutationResolver) CreateAddress(ctx context.Context, input model.NewAdd
 	panic(fmt.Errorf("not implemented: CreateAddress - createAddress"))
 }
 
+// CreateRole is the resolver for the createRole field.
+func (r *mutationResolver) CreateRole(ctx context.Context, input model.NewRole) (*model.Roles, error) {
+	role := database.Role{
+		Name:        input.Name,
+		Description: input.Description,
+	}
+
+	created, err := r.Resolver.RBCAService.CreateRoles(&role)
+
+	if err != nil {
+		return nil, err
+	}
+
+	response := &model.Roles{
+		ID:          created.ID,
+		Name:        created.Name,
+		Description: created.Description,
+	}
+
+	return response, nil
+}
+
+// CreatePermission is the resolver for the createPermission field.
+func (r *mutationResolver) CreatePermission(ctx context.Context, input model.NewPermission) (*model.Permissions, error) {
+	permission := database.Permission{
+		Name:        input.Name,
+		Description: input.Description,
+	}
+
+	created, err := r.Resolver.RBCAService.CreatePermissions(&permission)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &model.Permissions{
+		ID:          created.ID,
+		Name:        created.Name,
+		Description: created.Description,
+	}, nil
+
+}
+
+// CreateRolePermission is the resolver for the createRolePermission field.
+func (r *mutationResolver) CreateRolePermission(ctx context.Context, input model.NewRolePermission) (*model.RolePermissions, error) {
+	assign := database.RolesPermission{
+		RoleID:       input.RoleID,
+		PermissionID: input.PermissionID,
+	}
+
+	created, err := r.Resolver.RBCAService.CreateRolesPermissions(&assign)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &model.RolePermissions{
+		RoleID:       created.RoleID,
+		PermissionID: created.PermissionID,
+	}, nil
+}
+
 // User is the resolver for the user field.
 func (r *queryResolver) User(ctx context.Context, id string) (*model.User, error) {
 	panic(fmt.Errorf("not implemented: User - user"))

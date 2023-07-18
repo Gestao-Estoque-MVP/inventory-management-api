@@ -17,20 +17,22 @@ type UserService struct {
 	role     repository.IRBCA
 }
 
-func NewServiceUser(userRepo repository.IUserRepository) *UserService {
-	return &UserService{userRepo: userRepo}
+func NewServiceUser(userRepo repository.IUserRepository, role repository.IRBCA) *UserService {
+	return &UserService{userRepo: userRepo, role: role}
 }
 
 func (us *UserService) CreatePreUser(user *database.User) (*database.User, error) {
 
 	token, _ := token.GeneratedToken()
 	user.Status = "pre-user"
+	assign, _ := us.role.GetRole("users")
 
 	params := &database.User{
 		ID:             uuid.NewGen().NewV4().String(),
 		Name:           user.Name,
 		Email:          user.Email,
 		Status:         user.Status,
+		RoleID:         sql.NullString{String: assign.ID, Valid: true},
 		RegisterToken:  sql.NullString{String: token, Valid: true},
 		TokenExpiresAt: sql.NullTime{Time: time.Now().Add(1 * time.Hour), Valid: true},
 		CreatedAt:      time.Now().Local(),

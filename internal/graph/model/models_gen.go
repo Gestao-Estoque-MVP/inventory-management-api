@@ -36,9 +36,24 @@ type NewContactInfo struct {
 	Phone string `json:"phone"`
 }
 
+type NewPermission struct {
+	Name        string `json:"name"`
+	Description string `json:"description"`
+}
+
 type NewPreUser struct {
 	Name  string `json:"name"`
 	Email string `json:"email"`
+}
+
+type NewRole struct {
+	Name        string `json:"name"`
+	Description string `json:"description"`
+}
+
+type NewRolePermission struct {
+	RoleID       string `json:"roleId"`
+	PermissionID string `json:"permissionId"`
 }
 
 type NewUser struct {
@@ -50,10 +65,28 @@ type NewUser struct {
 	DocumentNumber string `json:"document_number"`
 }
 
+type Permissions struct {
+	ID          string `json:"id"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
+}
+
 type PreUser struct {
 	ID    string `json:"id"`
 	Name  string `json:"name"`
 	Email string `json:"email"`
+}
+
+type RolePermissions struct {
+	ID           string `json:"id"`
+	RoleID       string `json:"roleId"`
+	PermissionID string `json:"permissionId"`
+}
+
+type Roles struct {
+	ID          string `json:"id"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
 }
 
 type User struct {

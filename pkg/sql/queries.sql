@@ -35,6 +35,9 @@ SELECT * FROM address WHERE id = $1;
 -- name: ListAddresses :many
 SELECT * FROM address;
 
+-- name: GetRole :one
+SELECT * FROM roles WHERE name = $1;
+
 
 -- name: CreateContactInfo :one
 INSERT INTO contact_info (id, name, email, phone, created_at) 
@@ -53,14 +56,19 @@ INSERT INTO roles (id, name, description)
 INSERT INTO roles_permissions (role_id, permission_id) 
     VALUES ($1, $2) RETURNING *;
 
--- name: GetRole :one
-SELECT 
+-- name: GetRolesPermissions :many
+SELECT
     u.id AS user_id,
-    r.name 
+    r.name AS role_name,
+    p.name AS permission_name
 FROM 
     users AS u
 INNER JOIN 
     roles AS r ON u.role_id = r.id
+INNER JOIN 
+    roles_permissions AS rp ON r.id = rp.role_id
+INNER JOIN
+    permissions AS p ON rp.permission_id = p.id
 WHERE 
     u.id = $1;
 

@@ -8,9 +8,10 @@ import (
 
 type IRBCA interface {
 	CreateRoles(*database.Role) (*database.Role, error)
+	GetRole(name string) (*database.Role, error)
 	CreatePermissions(*database.Permission) (*database.Permission, error)
 	CreateRolesPermissions(*database.RolesPermission) (*database.RolesPermission, error)
-	GetRole(*database.GetRoleRow) (*database.GetRoleRow, error)
+	GetRolesPermissions(role string) ([]*database.GetRolesPermissionsRow, error)
 }
 
 type RBCARepository struct {
@@ -23,7 +24,7 @@ func NewRBCARepository(DB *database.Queries) *RBCARepository {
 	}
 }
 
-func (r *RBCARepository) CreateRole(role *database.Role) (*database.Role, error) {
+func (r *RBCARepository) CreateRoles(role *database.Role) (*database.Role, error) {
 	createRole, err := r.DB.CreateRole(context.Background(), database.CreateRoleParams{
 		ID:          role.ID,
 		Name:        role.Name,
@@ -35,6 +36,16 @@ func (r *RBCARepository) CreateRole(role *database.Role) (*database.Role, error)
 	}
 
 	return &createRole, nil
+}
+
+func (r *RBCARepository) GetRole(name string) (*database.Role, error) {
+	get, err := r.DB.GetRole(context.Background(), name)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &get, nil
 }
 
 func (r *RBCARepository) CreatePermissions(permissions *database.Permission) (*database.Permission, error) {
@@ -54,7 +65,7 @@ func (r *RBCARepository) CreatePermissions(permissions *database.Permission) (*d
 func (r *RBCARepository) CreateRolesPermissions(rolesPermissions *database.RolesPermission) (*database.RolesPermission, error) {
 	create, err := r.DB.CreateRolePermissions(context.Background(), database.CreateRolePermissionsParams{
 		RoleID:       rolesPermissions.RoleID,
-		PermissionID: rolesPermissions.RoleID,
+		PermissionID: rolesPermissions.PermissionID,
 	})
 
 	if err != nil {
@@ -64,12 +75,17 @@ func (r *RBCARepository) CreateRolesPermissions(rolesPermissions *database.Roles
 	return &create, nil
 }
 
-func (r *RBCARepository) GetRole(role string) (*database.GetRoleRow, error) {
-	getRole, err := r.DB.GetRole(context.Background(), role)
+func (r *RBCARepository) GetRolesPermissions(role string) ([]*database.GetRolesPermissionsRow, error) {
+	getRole, err := r.DB.GetRolesPermissions(context.Background(), role)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return &getRole, nil
+	pointers := make([]*database.GetRolesPermissionsRow, len(getRole))
+	for i := range getRole {
+		pointers[i] = &getRole[i]
+	}
+
+	return pointers, nil
 }

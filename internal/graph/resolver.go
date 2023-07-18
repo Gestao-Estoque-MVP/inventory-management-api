@@ -15,6 +15,67 @@ type Resolver struct {
 	UserRepository        repository.IUserRepository
 	ContactInfoRepository repository.IContactInfoRepository
 	ContactInfoService    *service.ContactInfoService
+	RBCARepository        repository.IRBCA
+	RBCAService           *service.RCBAService
+}
+
+func (r *Resolver) CreateRoles(ctx context.Context, args struct {
+	ID          string
+	Name        string
+	Description string
+}) (*database.Role, error) {
+	role := &database.Role{
+		ID:          args.ID,
+		Name:        args.Name,
+		Description: args.Name,
+	}
+
+	create, err := r.RBCAService.CreateRoles(role)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return create, err
+}
+
+func (r *Resolver) CreatePermissions(ctx context.Context, args struct {
+	ID          string
+	Name        string
+	Description string
+}) (*database.Permission, error) {
+	permission := &database.Permission{
+		ID:          args.ID,
+		Name:        args.Name,
+		Description: args.Description,
+	}
+
+	create, err := r.RBCAService.CreatePermissions(permission)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return create, nil
+}
+
+func (r *Resolver) CreateRolesPermissions(ctx context.Context, args struct {
+	RoleID       string
+	PermissionID string
+}) (*database.RolesPermission, error) {
+	assign := &database.RolesPermission{
+		RoleID:       args.RoleID,
+		PermissionID: args.PermissionID,
+	}
+
+	create, err := r.RBCAService.CreateRolesPermissions(assign)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return create, nil
+
 }
 
 func (r *Resolver) CreateContactInfo(ctx context.Context, args struct {

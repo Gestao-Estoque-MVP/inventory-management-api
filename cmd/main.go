@@ -55,8 +55,10 @@ func main() {
 
 	queries := database.New(db)
 
+	rcba := repository.NewRBCARepository(queries)
+	rcbaService := service.NewRCBAService(rcba)
 	userRepository := repository.NewRepositoryUser(queries)
-	userService := service.NewServiceUser(userRepository)
+	userService := service.NewServiceUser(userRepository, rcba)
 	contactRepository := repository.NewRepositoryContactInfo(queries)
 	contactService := service.NewContactInfoService(contactRepository)
 
@@ -65,6 +67,8 @@ func main() {
 		UserService:           userService,
 		ContactInfoRepository: contactRepository,
 		ContactInfoService:    contactService,
+		RBCARepository:        rcba,
+		RBCAService:           rcbaService,
 	}}))
 
 	http.Handle("/", playground.Handler("GraphQL playground", "/graphql"))

@@ -2,6 +2,23 @@
 #
 # https://gqlgen.com/getting-started/
 
+type Roles {
+  id: ID!
+  name: String!
+  description: String!
+}
+
+type Permissions {
+  id: ID!
+  name: String!
+  description: String!
+}
+
+type RolePermissions {
+  id: ID!
+  roleId: String!
+  permissionId: String!
+}
 
 type ContactInfo {
   id: ID!
@@ -36,6 +53,21 @@ type PreUser {
   id: ID!
   name: String!
   email: String!
+}
+
+input NewRole {
+  name: String!
+  description: String!
+}
+
+input NewPermission {
+  name: String!
+  description: String!
+}
+
+input NewRolePermission {
+  roleId: String!
+  permissionId: String!
 }
 
 input NewContactInfo {
@@ -74,6 +106,9 @@ type Mutation {
   createPreUser(input: NewPreUser!): PreUser!
   createCompleteUser(input: NewUser!): User!
   createAddress(input: NewAddress!): Address!
+  createRole(input: NewRole!): Roles!
+  createPermission(input: NewPermission!): Permissions!
+  createRolePermission(input: NewRolePermission!): RolePermissions!
 }
 
 type Query {
