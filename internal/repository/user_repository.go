@@ -15,6 +15,8 @@ type IUserRepository interface {
 	DeleteUser(id string) (*sql.Result, error)
 	GetUser(id string) (*database.User, error)
 	GetUsers() ([]*database.User, error)
+	GetUserByEmail(email string) (*database.User, error)
+	GetUserRegisterToken(token string) (*database.User, error)
 }
 
 type UserRepository struct {
@@ -127,4 +129,24 @@ func (i *UserRepository) GetUsers() ([]*database.User, error) {
 	}
 
 	return ptrList, nil
+}
+
+func (i *UserRepository) GetUserByEmail(email string) (*database.User, error) {
+	get, err := i.DB.GetUserByEmail(context.Background(), email)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &get, nil
+}
+
+func (i *UserRepository) GetUserRegisterToken(token string) (*database.User, error) {
+	get, err := i.DB.GetUserRegisterToken(context.Background(), sql.NullString{String: token})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &get, nil
 }

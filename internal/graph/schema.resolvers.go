@@ -13,6 +13,21 @@ import (
 	"github.com/diogoX451/inventory-management-api/internal/graph/model"
 )
 
+// Login is the resolver for the login field.
+func (r *mutationResolver) Login(ctx context.Context, input model.NewLogin) (*model.Login, error) {
+	access, err := r.Resolver.AuthUserService.UserLogin(ctx, input.Email, input.Password)
+
+	if err != nil {
+		return nil, err
+	}
+
+	response := &model.Login{
+		Token: access.(string),
+	}
+
+	return response, nil
+}
+
 // CreateContactInfo is the resolver for the createContactInfo field.
 func (r *mutationResolver) CreateContactInfo(ctx context.Context, input model.NewContactInfo) (*model.ContactInfo, error) {
 	contact_info := database.ContactInfo{
@@ -61,7 +76,22 @@ func (r *mutationResolver) CreatePreUser(ctx context.Context, input model.NewPre
 
 // CreateCompleteUser is the resolver for the createCompleteUser field.
 func (r *mutationResolver) CreateCompleteUser(ctx context.Context, input model.NewUser) (*model.User, error) {
-	panic(fmt.Errorf("not implemented: CreateCompleteUser - createCompleteUser"))
+	user := database.User{
+		Phone:          sql.NullString{String: input.Phone},
+		Password:       sql.NullString{String: input.Password},
+		DocumentType:   sql.NullString{String: input.DocumentType},
+		DocumentNumber: sql.NullString{String: input.DocumentNumber},
+	}
+
+	create, err := r.Resolver.UserService.CompleteRegisterUser(input.RegisterToken, &user)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &model.User{
+		Name: create.Name,
+	}, err
 }
 
 // CreateAddress is the resolver for the createAddress field.

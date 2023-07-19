@@ -63,6 +63,7 @@ func main() {
 	userService := service.NewServiceUser(userRepository, rcba)
 	contactRepository := repository.NewRepositoryContactInfo(queries)
 	contactService := service.NewContactInfoService(contactRepository)
+	loginService := service.NewAuthUser(*userRepository)
 
 	// router.Use(middleware.AuthMiddleware(*userRepository))
 
@@ -73,6 +74,7 @@ func main() {
 		ContactInfoService:    contactService,
 		RBCARepository:        rcba,
 		RBCAService:           rcbaService,
+		AuthUserService:       loginService,
 	}}))
 
 	http.Handle("/", playground.Handler("GraphQL playground", "/graphql"))

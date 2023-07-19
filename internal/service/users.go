@@ -2,7 +2,6 @@ package service
 
 import (
 	"database/sql"
-	"errors"
 	"log"
 	"time"
 
@@ -50,20 +49,15 @@ func (us *UserService) CreatePreUser(user *database.User) (*database.User, error
 	return createUser, nil
 }
 
-func (us *UserService) CompleteRegisterUser(id string, user *database.User) (*database.User, error) {
+func (us *UserService) CompleteRegisterUser(token string, user *database.User) (*database.User, error) {
 
-	verifyUser, err := us.userRepo.GetUser(id)
+	verifyUser, err := us.userRepo.GetUserRegisterToken(token)
 
 	if err != nil {
 		log.Printf("Erro ao buscar usuário: %v\n", err)
 	}
 
-	if verifyUser.TokenExpiresAt.Time != time.Now().Add(1*time.Hour) {
-		log.Printf("Sem permissão de criar usuário")
-		return nil, errors.New("Sem permissão de criar usuário")
-	}
-
-	updateUser, err := us.userRepo.CreateCompleteUser(id, user)
+	updateUser, err := us.userRepo.CreateCompleteUser(verifyUser.ID, user)
 
 	if err != nil {
 		log.Printf("Erro ao criar usuário completo %v\n", err)
@@ -100,6 +94,17 @@ func (us *UserService) GetUser(id string) (*database.User, error) {
 
 	if err != nil {
 		log.Printf("Erro ao trazer usuário  %v\n", err)
+		return nil, err
+	}
+
+	return get, nil
+}
+
+func (us *UserService) GetUserByEmail(email string) (*database.User, error) {
+	get, err := us.userRepo.GetUserByEmail(email)
+
+	if err != nil {
+		log.Printf("Erro ao trazer usuário %v\n", err)
 		return nil, err
 	}
 

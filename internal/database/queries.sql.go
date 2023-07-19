@@ -367,6 +367,58 @@ func (q *Queries) GetUser(ctx context.Context, id string) (User, error) {
 	return i, err
 }
 
+const getUserByEmail = `-- name: GetUserByEmail :one
+SELECT id, name, email, phone, document_type, document_number, password, avatar, status, register_token, token_expires_at, created_at, role_id, tenant_id FROM users WHERE email = $1
+`
+
+func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error) {
+	row := q.db.QueryRowContext(ctx, getUserByEmail, email)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Email,
+		&i.Phone,
+		&i.DocumentType,
+		&i.DocumentNumber,
+		&i.Password,
+		&i.Avatar,
+		&i.Status,
+		&i.RegisterToken,
+		&i.TokenExpiresAt,
+		&i.CreatedAt,
+		&i.RoleID,
+		&i.TenantID,
+	)
+	return i, err
+}
+
+const getUserRegisterToken = `-- name: GetUserRegisterToken :one
+SELECT id, name, email, phone, document_type, document_number, password, avatar, status, register_token, token_expires_at, created_at, role_id, tenant_id FROM users WHERE register_token = $1
+`
+
+func (q *Queries) GetUserRegisterToken(ctx context.Context, registerToken sql.NullString) (User, error) {
+	row := q.db.QueryRowContext(ctx, getUserRegisterToken, registerToken)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Email,
+		&i.Phone,
+		&i.DocumentType,
+		&i.DocumentNumber,
+		&i.Password,
+		&i.Avatar,
+		&i.Status,
+		&i.RegisterToken,
+		&i.TokenExpiresAt,
+		&i.CreatedAt,
+		&i.RoleID,
+		&i.TenantID,
+	)
+	return i, err
+}
+
 const getUsersPermissions = `-- name: GetUsersPermissions :many
 SELECT
     u.id AS user_id,

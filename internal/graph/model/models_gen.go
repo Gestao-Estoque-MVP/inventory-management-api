@@ -20,6 +20,10 @@ type ContactInfo struct {
 	Phone string `json:"phone"`
 }
 
+type Login struct {
+	Token string `json:"token"`
+}
+
 type NewAddress struct {
 	Street  string `json:"street"`
 	Number  string `json:"number"`
@@ -34,6 +38,11 @@ type NewContactInfo struct {
 	Name  string `json:"Name"`
 	Email string `json:"email"`
 	Phone string `json:"phone"`
+}
+
+type NewLogin struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
 }
 
 type NewPermission struct {
@@ -58,12 +67,11 @@ type NewRolePermission struct {
 }
 
 type NewUser struct {
-	Name           string `json:"name"`
-	Email          string `json:"email"`
 	Phone          string `json:"phone"`
 	Password       string `json:"password"`
 	DocumentType   string `json:"document_type"`
 	DocumentNumber string `json:"document_number"`
+	RegisterToken  string `json:"RegisterToken"`
 }
 
 type Permissions struct {

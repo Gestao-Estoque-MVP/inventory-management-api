@@ -7,6 +7,10 @@ directive @goField(forceResolver: Boolean, name: String) on FIELD_DEFINITION | I
 # new directive
 directive @auth on FIELD_DEFINITION
 
+type Login {
+  token: String!
+}
+
 type Roles {
   id: ID!
   name: String!
@@ -60,6 +64,11 @@ type PreUser {
   email: String!
 }
 
+input NewLogin {
+  email: String!
+  password: String!
+}
+
 input NewRole {
   name: String!
   description: String!
@@ -88,12 +97,11 @@ input NewPreUser {
 }
 
 input NewUser {
-  name: String!
-  email: String!
   phone: String!
   password: String!
   document_type: String!
   document_number: String!
+  RegisterToken: String!
 }
 
 input NewAddress {
@@ -108,6 +116,7 @@ input NewAddress {
 
 
 type Mutation {
+  login(input: NewLogin!): Login!
   createContactInfo(input: NewContactInfo!): ContactInfo!
   createPreUser(input: NewPreUser!): PreUser!
   createCompleteUser(input: NewUser!): User!
