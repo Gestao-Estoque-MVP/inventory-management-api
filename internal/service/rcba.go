@@ -71,6 +71,16 @@ func (r *RCBAService) CreateRolesPermissions(assignment *database.RolesPermissio
 	return create, nil
 }
 
+func (r *RCBAService) GetUsersPermissions(user string) ([]*database.GetUsersPermissionsRow, error) {
+	permissions, err := r.rcba.GetUsersPermissions(user)
+
+	if err != nil {
+		log.Printf("Erro ao trazer as permissiões do user %v", err)
+	}
+
+	return permissions, err
+}
+
 func (r *RCBAService) GetRole(name string) (*database.Role, error) {
 	get, err := r.rcba.GetRole(name)
 

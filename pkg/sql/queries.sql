@@ -1,6 +1,6 @@
 -- name: CreatePreRegisterUser :one
-INSERT INTO users (id, name, email, status, role_id, register_token, token_expires_at, created_at) 
-    VALUES($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id, name, email;
+INSERT INTO users (id, name, email, status, role_id, tenant_id, register_token, token_expires_at, created_at) 
+    VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id, name, email;
 
 -- name: CompleteRegisterUser :one
 UPDATE users SET phone = $1, document_type = $2, document_number = $3, password = $4, avatar = $5 WHERE id = $6 RETURNING id;
@@ -72,3 +72,24 @@ INNER JOIN
 WHERE 
     u.id = $1;
 
+-- name: CreateTenant :one 
+INSERT INTO tenant (id, name) 
+    VALUES ($1, $2) RETURNING *;
+
+-- name: CreateUsersPermissions :one
+INSERT INTO users_permissions (user_id, permission_id) 
+    VALUES ($1, $2) RETURNING *;
+
+-- name: GetUsersPermissions :many
+SELECT
+    u.id AS user_id,
+    p.name AS permission_name
+FROM
+    users AS u
+INNER JOIN
+    users_permissions AS up ON u.id = up.user_id
+INNER JOIN
+    permissions AS p ON up.permission_id = p.id
+WHERE
+    u.id = $1;
+    

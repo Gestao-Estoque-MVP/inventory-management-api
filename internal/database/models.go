@@ -48,6 +48,11 @@ type RolesPermission struct {
 	PermissionID string
 }
 
+type Tenant struct {
+	ID   int32
+	Name sql.NullString
+}
+
 type User struct {
 	ID             string
 	Name           string
@@ -62,4 +67,11 @@ type User struct {
 	TokenExpiresAt sql.NullTime
 	CreatedAt      time.Time
 	RoleID         sql.NullString
+	TenantID       sql.NullInt32
+}
+
+type UsersPermission struct {
+	ID           int32
+	UserID       sql.NullString
+	PermissionID sql.NullString
 }

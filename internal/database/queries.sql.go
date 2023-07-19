@@ -132,8 +132,8 @@ func (q *Queries) CreatePermissions(ctx context.Context, arg CreatePermissionsPa
 }
 
 const createPreRegisterUser = `-- name: CreatePreRegisterUser :one
-INSERT INTO users (id, name, email, status, role_id, register_token, token_expires_at, created_at) 
-    VALUES($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id, name, email
+INSERT INTO users (id, name, email, status, role_id, tenant_id, register_token, token_expires_at, created_at) 
+    VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id, name, email
 `
 
 type CreatePreRegisterUserParams struct {
@@ -142,6 +142,7 @@ type CreatePreRegisterUserParams struct {
 	Email          string
 	Status         string
 	RoleID         sql.NullString
+	TenantID       sql.NullInt32
 	RegisterToken  sql.NullString
 	TokenExpiresAt sql.NullTime
 	CreatedAt      time.Time
@@ -160,6 +161,7 @@ func (q *Queries) CreatePreRegisterUser(ctx context.Context, arg CreatePreRegist
 		arg.Email,
 		arg.Status,
 		arg.RoleID,
+		arg.TenantID,
 		arg.RegisterToken,
 		arg.TokenExpiresAt,
 		arg.CreatedAt,
@@ -201,6 +203,40 @@ func (q *Queries) CreateRolePermissions(ctx context.Context, arg CreateRolePermi
 	row := q.db.QueryRowContext(ctx, createRolePermissions, arg.RoleID, arg.PermissionID)
 	var i RolesPermission
 	err := row.Scan(&i.ID, &i.RoleID, &i.PermissionID)
+	return i, err
+}
+
+const createTenant = `-- name: CreateTenant :one
+INSERT INTO tenant (id, name) 
+    VALUES ($1, $2) RETURNING id, name
+`
+
+type CreateTenantParams struct {
+	ID   int32
+	Name sql.NullString
+}
+
+func (q *Queries) CreateTenant(ctx context.Context, arg CreateTenantParams) (Tenant, error) {
+	row := q.db.QueryRowContext(ctx, createTenant, arg.ID, arg.Name)
+	var i Tenant
+	err := row.Scan(&i.ID, &i.Name)
+	return i, err
+}
+
+const createUsersPermissions = `-- name: CreateUsersPermissions :one
+INSERT INTO users_permissions (user_id, permission_id) 
+    VALUES ($1, $2) RETURNING id, user_id, permission_id
+`
+
+type CreateUsersPermissionsParams struct {
+	UserID       sql.NullString
+	PermissionID sql.NullString
+}
+
+func (q *Queries) CreateUsersPermissions(ctx context.Context, arg CreateUsersPermissionsParams) (UsersPermission, error) {
+	row := q.db.QueryRowContext(ctx, createUsersPermissions, arg.UserID, arg.PermissionID)
+	var i UsersPermission
+	err := row.Scan(&i.ID, &i.UserID, &i.PermissionID)
 	return i, err
 }
 
@@ -306,7 +342,7 @@ func (q *Queries) GetRolesPermissions(ctx context.Context, id string) ([]GetRole
 }
 
 const getUser = `-- name: GetUser :one
-SELECT id, name, email, phone, document_type, document_number, password, avatar, status, register_token, token_expires_at, created_at, role_id FROM users WHERE id = $1
+SELECT id, name, email, phone, document_type, document_number, password, avatar, status, register_token, token_expires_at, created_at, role_id, tenant_id FROM users WHERE id = $1
 `
 
 func (q *Queries) GetUser(ctx context.Context, id string) (User, error) {
@@ -326,8 +362,51 @@ func (q *Queries) GetUser(ctx context.Context, id string) (User, error) {
 		&i.TokenExpiresAt,
 		&i.CreatedAt,
 		&i.RoleID,
+		&i.TenantID,
 	)
 	return i, err
+}
+
+const getUsersPermissions = `-- name: GetUsersPermissions :many
+SELECT
+    u.id AS user_id,
+    p.name AS permission_name
+FROM
+    users AS u
+INNER JOIN
+    users_permissions AS up ON u.id = up.user_id
+INNER JOIN
+    permissions AS p ON up.permission_id = p.id
+WHERE
+    u.id = $1
+`
+
+type GetUsersPermissionsRow struct {
+	UserID         string
+	PermissionName string
+}
+
+func (q *Queries) GetUsersPermissions(ctx context.Context, id string) ([]GetUsersPermissionsRow, error) {
+	rows, err := q.db.QueryContext(ctx, getUsersPermissions, id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetUsersPermissionsRow
+	for rows.Next() {
+		var i GetUsersPermissionsRow
+		if err := rows.Scan(&i.UserID, &i.PermissionName); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const listAddresses = `-- name: ListAddresses :many
@@ -369,7 +448,7 @@ func (q *Queries) ListAddresses(ctx context.Context) ([]Address, error) {
 }
 
 const listUsers = `-- name: ListUsers :many
-SELECT id, name, email, phone, document_type, document_number, password, avatar, status, register_token, token_expires_at, created_at, role_id FROM users
+SELECT id, name, email, phone, document_type, document_number, password, avatar, status, register_token, token_expires_at, created_at, role_id, tenant_id FROM users
 `
 
 func (q *Queries) ListUsers(ctx context.Context) ([]User, error) {
@@ -395,6 +474,7 @@ func (q *Queries) ListUsers(ctx context.Context) ([]User, error) {
 			&i.TokenExpiresAt,
 			&i.CreatedAt,
 			&i.RoleID,
+			&i.TenantID,
 		); err != nil {
 			return nil, err
 		}

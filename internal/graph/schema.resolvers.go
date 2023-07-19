@@ -40,8 +40,9 @@ func (r *mutationResolver) CreateContactInfo(ctx context.Context, input model.Ne
 // CreatePreUser is the resolver for the createPreUser field.
 func (r *mutationResolver) CreatePreUser(ctx context.Context, input model.NewPreUser) (*model.PreUser, error) {
 	user := database.User{
-		Name:  input.Name,
-		Email: input.Email,
+		Name:   input.Name,
+		Email:  input.Email,
+		Status: input.Status,
 	}
 
 	created, err := r.Resolver.UserService.CreatePreUser(&user)
@@ -108,7 +109,6 @@ func (r *mutationResolver) CreatePermission(ctx context.Context, input model.New
 		Name:        created.Name,
 		Description: created.Description,
 	}, nil
-
 }
 
 // CreateRolePermission is the resolver for the createRolePermission field.

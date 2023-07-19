@@ -2,6 +2,11 @@
 #
 # https://gqlgen.com/getting-started/
 
+directive @goField(forceResolver: Boolean, name: String) on FIELD_DEFINITION | INPUT_FIELD_DEFINITION
+
+# new directive
+directive @auth on FIELD_DEFINITION
+
 type Roles {
   id: ID!
   name: String!
@@ -79,6 +84,7 @@ input NewContactInfo {
 input NewPreUser {
   name: String!
   email: String!
+  status: String!
 }
 
 input NewUser {
@@ -112,7 +118,7 @@ type Mutation {
 }
 
 type Query {
-  user(id: ID!): User!
+  user(id: ID!): User! 
   users: [User!]!
   address(id: ID!): Address!
   addresses: [Address!]!

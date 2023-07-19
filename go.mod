@@ -6,11 +6,12 @@ require (
 	github.com/99designs/gqlgen v0.17.34
 	github.com/lib/pq v1.1.1
 	github.com/vektah/gqlparser/v2 v2.5.4
-	golang.org/x/crypto v0.8.0
+	golang.org/x/crypto v0.9.0
 )
 
 require (
 	github.com/kr/pretty v0.3.0 // indirect
+	github.com/stretchr/testify v1.8.3 // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 	nullprogram.com/x/isaac64 v1.0.0 // indirect
 
@@ -19,10 +20,13 @@ require (
 require (
 	github.com/agnivade/levenshtein v1.1.1 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible
+	github.com/go-chi/chi v1.5.4
 	github.com/gorilla/websocket v1.5.0 // indirect
 	github.com/hashicorp/golang-lru/v2 v2.0.3 // indirect
 	github.com/joho/godotenv v1.5.1
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
+	github.com/pkg/errors v0.9.1
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/urfave/cli/v2 v2.25.5 // indirect
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect

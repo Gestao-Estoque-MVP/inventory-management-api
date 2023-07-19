@@ -51,6 +51,8 @@ func main() {
 	defer logFile.Close()
 	log.SetOutput(logFile)
 
+	// router := chi.NewRouter()
+
 	port := os.Getenv("PORT")
 
 	queries := database.New(db)
@@ -61,6 +63,8 @@ func main() {
 	userService := service.NewServiceUser(userRepository, rcba)
 	contactRepository := repository.NewRepositoryContactInfo(queries)
 	contactService := service.NewContactInfoService(contactRepository)
+
+	// router.Use(middleware.AuthMiddleware(*userRepository))
 
 	srv := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{
 		UserRepository:        userRepository,

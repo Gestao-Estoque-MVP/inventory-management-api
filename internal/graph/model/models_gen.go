@@ -42,8 +42,9 @@ type NewPermission struct {
 }
 
 type NewPreUser struct {
-	Name  string `json:"name"`
-	Email string `json:"email"`
+	Name   string `json:"name"`
+	Email  string `json:"email"`
+	Status string `json:"status"`
 }
 
 type NewRole struct {

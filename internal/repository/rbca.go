@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"database/sql"
 
 	"github.com/diogoX451/inventory-management-api/internal/database"
 )
@@ -11,7 +12,10 @@ type IRBCA interface {
 	GetRole(name string) (*database.Role, error)
 	CreatePermissions(*database.Permission) (*database.Permission, error)
 	CreateRolesPermissions(*database.RolesPermission) (*database.RolesPermission, error)
+	CreateUsersPermissions(*database.UsersPermission) (*database.UsersPermission, error)
+	CreateTenant(name string) (*database.Tenant, error)
 	GetRolesPermissions(role string) ([]*database.GetRolesPermissionsRow, error)
+	GetUsersPermissions(user string) ([]*database.GetUsersPermissionsRow, error)
 }
 
 type RBCARepository struct {
@@ -75,6 +79,19 @@ func (r *RBCARepository) CreateRolesPermissions(rolesPermissions *database.Roles
 	return &create, nil
 }
 
+func (r *RBCARepository) CreateUsersPermissions(usersPermissions *database.UsersPermission) (*database.UsersPermission, error) {
+	create, err := r.DB.CreateUsersPermissions(context.Background(), database.CreateUsersPermissionsParams{
+		UserID:       usersPermissions.UserID,
+		PermissionID: usersPermissions.PermissionID,
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &create, nil
+}
+
 func (r *RBCARepository) GetRolesPermissions(role string) ([]*database.GetRolesPermissionsRow, error) {
 	getRole, err := r.DB.GetRolesPermissions(context.Background(), role)
 
@@ -88,4 +105,31 @@ func (r *RBCARepository) GetRolesPermissions(role string) ([]*database.GetRolesP
 	}
 
 	return pointers, nil
+}
+
+func (r *RBCARepository) GetUsersPermissions(user string) ([]*database.GetUsersPermissionsRow, error) {
+	getUser, err := r.DB.GetUsersPermissions(context.Background(), user)
+
+	if err != nil {
+		return nil, err
+	}
+
+	pointer := make([]*database.GetUsersPermissionsRow, len(getUser))
+	for i := range getUser {
+		pointer[i] = &getUser[i]
+	}
+
+	return pointer, nil
+}
+
+func (r *RBCARepository) CreateTenant(tenant string) (*database.Tenant, error) {
+	create, err := r.DB.CreateTenant(context.Background(), database.CreateTenantParams{
+		Name: sql.NullString{String: tenant, Valid: true},
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &create, nil
 }
