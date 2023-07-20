@@ -2,10 +2,9 @@ package middleware
 
 import (
 	"context"
-	"log"
 	"net/http"
 
-	"github.com/diogoX451/inventory-management-api/pkg/jwt"
+	"github.com/diogoX451/inventory-management-api/internal/service"
 )
 
 type authString string
@@ -13,8 +12,6 @@ type authString string
 func AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		auth := r.Header.Get("Authorization")
-
-		log.Printf("Validade auth", auth)
 
 		if auth == "" {
 			next.ServeHTTP(w, r)
@@ -24,16 +21,13 @@ func AuthMiddleware(next http.Handler) http.Handler {
 		bearer := "Bearer "
 		auth = auth[len(bearer):]
 
-		validate, err := jwt.JwtValidate(context.Background(), auth)
-
-		log.Printf("Validade auth", validate)
-
+		validate, err := service.JwtValidate(context.Background(), auth)
 		if err != nil || !validate.Valid {
 			http.Error(w, "Invalid token", http.StatusForbidden)
 			return
 		}
 
-		customClaim, _ := validate.Claims.(*jwt.JwtCustomClaim)
+		customClaim, _ := validate.Claims.(*service.JwtCustomClaim)
 
 		ctx := context.WithValue(r.Context(), authString("auth"), customClaim)
 
@@ -42,7 +36,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-func CtxValue(ctx context.Context) *jwt.JwtCustomClaim {
-	raw, _ := ctx.Value(authString("auth")).(*jwt.JwtCustomClaim)
+func CtxValue(ctx context.Context) *service.JwtCustomClaim {
+	raw, _ := ctx.Value(authString("auth")).(*service.JwtCustomClaim)
 	return raw
 }
