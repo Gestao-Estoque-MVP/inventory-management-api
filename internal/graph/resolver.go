@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"time"
 
+	_ "github.com/99designs/gqlgen/plugin"
 	"github.com/diogoX451/inventory-management-api/internal/database"
 	"github.com/diogoX451/inventory-management-api/internal/repository"
 	"github.com/diogoX451/inventory-management-api/internal/service"
@@ -149,7 +150,7 @@ func (r *Resolver) CreateCompleteUser(ctx context.Context, id string, args struc
 	Password       string
 	DocumentType   string
 	DocumentNumber string
-}) (*database.User, error) {
+}) (*database.CompleteRegisterUserRow, error) {
 	user := &database.User{
 		Phone:          sql.NullString{String: args.Phone},
 		Password:       sql.NullString{String: args.Password},

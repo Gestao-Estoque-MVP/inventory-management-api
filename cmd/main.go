@@ -11,14 +11,14 @@ import (
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/diogoX451/inventory-management-api/internal/database"
 	"github.com/diogoX451/inventory-management-api/internal/graph"
+	"github.com/diogoX451/inventory-management-api/internal/graph/directives"
+	"github.com/diogoX451/inventory-management-api/internal/graph/middleware"
 	"github.com/diogoX451/inventory-management-api/internal/repository"
 	"github.com/diogoX451/inventory-management-api/internal/service"
+	"github.com/go-chi/chi"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 )
-
-var db *sql.DB
-var err error
 
 func init() {
 
@@ -51,12 +51,11 @@ func main() {
 	defer logFile.Close()
 	log.SetOutput(logFile)
 
-	// router := chi.NewRouter()
-
+	router := chi.NewRouter()
+	router.Use(middleware.AuthMiddleware)
 	port := os.Getenv("PORT")
 
 	queries := database.New(db)
-
 	rcba := repository.NewRBCARepository(queries)
 	rcbaService := service.NewRCBAService(rcba)
 	userRepository := repository.NewRepositoryUser(queries)
@@ -65,9 +64,7 @@ func main() {
 	contactService := service.NewContactInfoService(contactRepository)
 	loginService := service.NewAuthUser(*userRepository)
 
-	// router.Use(middleware.AuthMiddleware(*userRepository))
-
-	srv := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{
+	resolvers := &graph.Resolver{
 		UserRepository:        userRepository,
 		UserService:           userService,
 		ContactInfoRepository: contactRepository,
@@ -75,7 +72,15 @@ func main() {
 		RBCARepository:        rcba,
 		RBCAService:           rcbaService,
 		AuthUserService:       loginService,
-	}}))
+	}
+
+	c := graph.Config{
+		Resolvers: resolvers,
+	}
+
+	c.Directives.Auth = directives.Auth
+
+	srv := handler.NewDefaultServer(graph.NewExecutableSchema(c))
 
 	http.Handle("/", playground.Handler("GraphQL playground", "/graphql"))
 	http.Handle("/graphql", srv)

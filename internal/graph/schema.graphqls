@@ -7,6 +7,8 @@ directive @goField(forceResolver: Boolean, name: String) on FIELD_DEFINITION | I
 # new directive
 directive @auth on FIELD_DEFINITION
 
+scalar Any
+
 type Login {
   token: String!
 }
@@ -116,7 +118,7 @@ input NewAddress {
 
 
 type Mutation {
-  login(input: NewLogin!): Login!
+  login(input: NewLogin!): Login! @goField(forceResolver: true)
   createContactInfo(input: NewContactInfo!): ContactInfo!
   createPreUser(input: NewPreUser!): PreUser!
   createCompleteUser(input: NewUser!): User!
@@ -127,8 +129,9 @@ type Mutation {
 }
 
 type Query {
-  user(id: ID!): User! 
-  users: [User!]!
+  user(id: ID!): User! @goField(forceResolver: true)
+  users: [User!]! @goField(forceResolver: true) @auth
   address(id: ID!): Address!
   addresses: [Address!]!
+  protected: String! @goField(forceResolver: true) @auth
 }

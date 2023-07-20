@@ -2,6 +2,7 @@ package service
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 	"time"
 
@@ -49,15 +50,16 @@ func (us *UserService) CreatePreUser(user *database.User) (*database.User, error
 	return createUser, nil
 }
 
-func (us *UserService) CompleteRegisterUser(token string, user *database.User) (*database.User, error) {
+func (us *UserService) CompleteRegisterUser(RegisterToken string, user *database.User) (*database.CompleteRegisterUserRow, error) {
 
-	verifyUser, err := us.userRepo.GetUserRegisterToken(token)
+	verifyUser, err := us.userRepo.GetUserRegisterToken(RegisterToken)
 
-	if err != nil {
-		log.Printf("Erro ao buscar usuário: %v\n", err)
+	if err != nil || verifyUser == nil {
+		log.Printf("Erro ao buscar usuário: %v\n", err, RegisterToken)
+		return nil, fmt.Errorf("no user found with register token %s", RegisterToken)
 	}
 
-	updateUser, err := us.userRepo.CreateCompleteUser(verifyUser.ID, user)
+	updateUser, err := us.userRepo.CreateCompleteUser(verifyUser.RegisterToken.String, user)
 
 	if err != nil {
 		log.Printf("Erro ao criar usuário completo %v\n", err)
@@ -67,15 +69,15 @@ func (us *UserService) CompleteRegisterUser(token string, user *database.User) (
 	return updateUser, nil
 }
 
-func (us *UserService) UpdateUser(id string, user *database.User) error {
-	update := us.userRepo.UpdateUser(id, user)
+func (us *UserService) UpdateUser(id string, user *database.User) (*database.User, error) {
+	update, err := us.userRepo.UpdateUser(id, user)
 
 	if update != nil {
 		log.Printf("Erro ao atualizar usuário completo %v\n", update)
-		return nil
+		return nil, err
 	}
 
-	return update
+	return update, err
 }
 
 func (us *UserService) GetUsers() ([]*database.User, error) {

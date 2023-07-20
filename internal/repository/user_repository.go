@@ -10,8 +10,8 @@ import (
 
 type IUserRepository interface {
 	CreatePreUser(*database.User) (*database.User, error)
-	CreateCompleteUser(id string, user *database.User) (*database.User, error)
-	UpdateUser(id string, user *database.User) error
+	CreateCompleteUser(token string, user *database.User) (*database.CompleteRegisterUserRow, error)
+	UpdateUser(id string, user *database.User) (*database.User, error)
 	DeleteUser(id string) (*sql.Result, error)
 	GetUser(id string) (*database.User, error)
 	GetUsers() ([]*database.User, error)
@@ -54,32 +54,32 @@ func (i *UserRepository) CreatePreUser(user *database.User) (*database.User, err
 	return user, nil
 }
 
-func (i *UserRepository) CreateCompleteUser(id string, user *database.User) (*database.User, error) {
+func (i *UserRepository) CreateCompleteUser(token string, user *database.User) (*database.CompleteRegisterUserRow, error) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(user.Password.String), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, err
 	}
 
-	_, err = i.DB.CompleteRegisterUser(context.Background(), database.CompleteRegisterUserParams{
+	updateUser, err := i.DB.CompleteRegisterUser(context.Background(), database.CompleteRegisterUserParams{
 		Phone:          user.Phone,
 		DocumentType:   user.DocumentType,
 		DocumentNumber: user.DocumentNumber,
 		Password:       sql.NullString{String: string(bytes), Valid: true},
-		ID:             id,
+		RegisterToken:  sql.NullString{String: token, Valid: true},
 	})
 
 	if err != nil {
 		return nil, err
 	}
 
-	returnUser, _ := i.DB.GetUser(context.Background(), id)
-
-	return &returnUser, nil
+	return &database.CompleteRegisterUserRow{
+		Name: updateUser.Name,
+	}, nil
 }
 
-func (i *UserRepository) UpdateUser(id string, user *database.User) error {
+func (i *UserRepository) UpdateUser(id string, user *database.User) (*database.User, error) {
 
-	err := i.DB.UpdateUser(context.Background(), database.UpdateUserParams{
+	update, err := i.DB.UpdateUser(context.Background(), database.UpdateUserParams{
 		ID:             id,
 		Name:           user.Name,
 		Email:          user.Email,
@@ -89,10 +89,12 @@ func (i *UserRepository) UpdateUser(id string, user *database.User) error {
 	})
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return err
+	return &database.User{
+		ID: update.ID,
+	}, nil
 }
 
 func (i *UserRepository) DeleteUser(id string) (*sql.Result, error) {
@@ -142,7 +144,7 @@ func (i *UserRepository) GetUserByEmail(email string) (*database.User, error) {
 }
 
 func (i *UserRepository) GetUserRegisterToken(token string) (*database.User, error) {
-	get, err := i.DB.GetUserRegisterToken(context.Background(), sql.NullString{String: token})
+	get, err := i.DB.GetUserRegisterToken(context.Background(), sql.NullString{String: token, Valid: true})
 
 	if err != nil {
 		return nil, err

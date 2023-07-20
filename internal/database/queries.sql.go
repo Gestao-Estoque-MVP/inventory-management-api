@@ -12,7 +12,7 @@ import (
 )
 
 const completeRegisterUser = `-- name: CompleteRegisterUser :one
-UPDATE users SET phone = $1, document_type = $2, document_number = $3, password = $4, avatar = $5 WHERE id = $6 RETURNING id
+UPDATE users SET phone = $1, document_type = $2, document_number = $3, password = $4, avatar = $5 WHERE register_token = $6 RETURNING id, name, email
 `
 
 type CompleteRegisterUserParams struct {
@@ -21,21 +21,27 @@ type CompleteRegisterUserParams struct {
 	DocumentNumber sql.NullString
 	Password       sql.NullString
 	Avatar         sql.NullString
-	ID             string
+	RegisterToken  sql.NullString
 }
 
-func (q *Queries) CompleteRegisterUser(ctx context.Context, arg CompleteRegisterUserParams) (string, error) {
+type CompleteRegisterUserRow struct {
+	ID    string
+	Name  string
+	Email string
+}
+
+func (q *Queries) CompleteRegisterUser(ctx context.Context, arg CompleteRegisterUserParams) (CompleteRegisterUserRow, error) {
 	row := q.db.QueryRowContext(ctx, completeRegisterUser,
 		arg.Phone,
 		arg.DocumentType,
 		arg.DocumentNumber,
 		arg.Password,
 		arg.Avatar,
-		arg.ID,
+		arg.RegisterToken,
 	)
-	var id string
-	err := row.Scan(&id)
-	return id, err
+	var i CompleteRegisterUserRow
+	err := row.Scan(&i.ID, &i.Name, &i.Email)
+	return i, err
 }
 
 const createAddress = `-- name: CreateAddress :one
@@ -585,7 +591,7 @@ func (q *Queries) UpdateAddress(ctx context.Context, arg UpdateAddressParams) (A
 	return i, err
 }
 
-const updateUser = `-- name: UpdateUser :exec
+const updateUser = `-- name: UpdateUser :one
 UPDATE users SET name = $1, email = $2, phone = $3, document_type = $4, document_number = $5, password = $6, status = $7 WHERE id = $8 RETURNING id, name, email
 `
 
@@ -606,8 +612,8 @@ type UpdateUserRow struct {
 	Email string
 }
 
-func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) error {
-	_, err := q.db.ExecContext(ctx, updateUser,
+func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (UpdateUserRow, error) {
+	row := q.db.QueryRowContext(ctx, updateUser,
 		arg.Name,
 		arg.Email,
 		arg.Phone,
@@ -617,5 +623,7 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) error {
 		arg.Status,
 		arg.ID,
 	)
-	return err
+	var i UpdateUserRow
+	err := row.Scan(&i.ID, &i.Name, &i.Email)
+	return i, err
 }

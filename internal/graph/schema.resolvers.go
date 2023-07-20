@@ -21,8 +21,18 @@ func (r *mutationResolver) Login(ctx context.Context, input model.NewLogin) (*mo
 		return nil, err
 	}
 
+	accessMap, ok := access.(map[string]interface{})
+	if !ok {
+		return nil, fmt.Errorf("access is not a map[string]interface{}: %v", access)
+	}
+
+	token, ok := accessMap["token"].(string)
+	if !ok {
+		return nil, fmt.Errorf("token is not a string: %v", accessMap["token"])
+	}
+
 	response := &model.Login{
-		Token: access.(string),
+		Token: token,
 	}
 
 	return response, nil
@@ -77,10 +87,10 @@ func (r *mutationResolver) CreatePreUser(ctx context.Context, input model.NewPre
 // CreateCompleteUser is the resolver for the createCompleteUser field.
 func (r *mutationResolver) CreateCompleteUser(ctx context.Context, input model.NewUser) (*model.User, error) {
 	user := database.User{
-		Phone:          sql.NullString{String: input.Phone},
-		Password:       sql.NullString{String: input.Password},
-		DocumentType:   sql.NullString{String: input.DocumentType},
-		DocumentNumber: sql.NullString{String: input.DocumentNumber},
+		Phone:          sql.NullString{String: input.Phone, Valid: true},
+		Password:       sql.NullString{String: input.Password, Valid: true},
+		DocumentType:   sql.NullString{String: input.DocumentType, Valid: true},
+		DocumentNumber: sql.NullString{String: input.DocumentNumber, Valid: true},
 	}
 
 	create, err := r.Resolver.UserService.CompleteRegisterUser(input.RegisterToken, &user)
@@ -89,9 +99,11 @@ func (r *mutationResolver) CreateCompleteUser(ctx context.Context, input model.N
 		return nil, err
 	}
 
-	return &model.User{
-		Name: create.Name,
-	}, err
+	response := &model.User{
+		Email: create.Email,
+	}
+
+	return response, err
 }
 
 // CreateAddress is the resolver for the createAddress field.
@@ -197,6 +209,11 @@ func (r *queryResolver) Address(ctx context.Context, id string) (*model.Address,
 // Addresses is the resolver for the addresses field.
 func (r *queryResolver) Addresses(ctx context.Context) ([]*model.Address, error) {
 	panic(fmt.Errorf("not implemented: Addresses - addresses"))
+}
+
+// Protected is the resolver for the protected field.
+func (r *queryResolver) Protected(ctx context.Context) (string, error) {
+	return "Success", nil
 }
 
 // Mutation returns MutationResolver implementation.

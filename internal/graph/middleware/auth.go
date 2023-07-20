@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"context"
+	"log"
 	"net/http"
 
 	"github.com/diogoX451/inventory-management-api/pkg/jwt"
@@ -13,6 +14,8 @@ func AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		auth := r.Header.Get("Authorization")
 
+		log.Printf("Validade auth", auth)
+
 		if auth == "" {
 			next.ServeHTTP(w, r)
 			return
@@ -22,6 +25,9 @@ func AuthMiddleware(next http.Handler) http.Handler {
 		auth = auth[len(bearer):]
 
 		validate, err := jwt.JwtValidate(context.Background(), auth)
+
+		log.Printf("Validade auth", validate)
+
 		if err != nil || !validate.Valid {
 			http.Error(w, "Invalid token", http.StatusForbidden)
 			return

@@ -33,7 +33,7 @@ func JwtGenerate(ctx context.Context, userID string) (string, error) {
 		},
 	})
 
-	token, err := t.SignedString(jwtSecret)
+	token, err := t.SignedString([]byte(jwtSecret))
 	if err != nil {
 		return "", err
 	}
