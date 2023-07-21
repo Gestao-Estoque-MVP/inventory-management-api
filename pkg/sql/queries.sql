@@ -14,7 +14,7 @@ SELECT * FROM users WHERE id = $1;
 -- name: GetUserByEmail :one
 SELECT * FROM users WHERE email = $1;
 
--- name: GetUserRegisterToken :many
+-- name: GetUserRegisterToken :one
 SELECT * FROM users WHERE register_token = $1;
 
 -- name: ListUsers :many

@@ -15,7 +15,7 @@ import (
 	"github.com/diogoX451/inventory-management-api/internal/graph/middleware"
 	"github.com/diogoX451/inventory-management-api/internal/repository"
 	"github.com/diogoX451/inventory-management-api/internal/service"
-	"github.com/go-chi/chi"
+	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 )
@@ -51,7 +51,7 @@ func main() {
 	defer logFile.Close()
 	log.SetOutput(logFile)
 
-	router := chi.NewRouter()
+	router := mux.NewRouter()
 	router.Use(middleware.AuthMiddleware)
 	port := os.Getenv("PORT")
 
@@ -82,9 +82,9 @@ func main() {
 
 	srv := handler.NewDefaultServer(graph.NewExecutableSchema(c))
 
-	http.Handle("/", playground.Handler("GraphQL playground", "/graphql"))
-	http.Handle("/graphql", srv)
+	router.Handle("/", playground.Handler("GraphQL playground", "/graphql"))
+	router.Handle("/graphql", srv)
 
 	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
-	log.Fatal(http.ListenAndServe(":"+port, nil))
+	log.Fatal(http.ListenAndServe(":"+port, router))
 }
