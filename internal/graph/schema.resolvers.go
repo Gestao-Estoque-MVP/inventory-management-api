@@ -11,6 +11,7 @@ import (
 
 	"github.com/diogoX451/inventory-management-api/internal/database"
 	"github.com/diogoX451/inventory-management-api/internal/graph/model"
+	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
 // Login is the resolver for the login field.
@@ -64,16 +65,27 @@ func (r *mutationResolver) CreateContactInfo(ctx context.Context, input model.Ne
 
 // CreatePreUser is the resolver for the createPreUser field.
 func (r *mutationResolver) CreatePreUser(ctx context.Context, input model.NewPreUser) (*model.PreUser, error) {
+	tenant, err := r.Resolver.RBCAService.CreateTenant(input.Name)
+
+	if err != nil {
+		return nil, &gqlerror.Error{
+			Message: "Erro em Criar o vinculo do Usario",
+		}
+	}
+
 	user := database.User{
-		Name:   input.Name,
-		Email:  input.Email,
-		Status: input.Status,
+		Name:     input.Name,
+		Email:    input.Email,
+		Status:   input.Status,
+		TenantID: sql.NullString{String: tenant.ID, Valid: true},
 	}
 
 	created, err := r.Resolver.UserService.CreatePreUser(&user)
 
 	if err != nil {
-		return nil, err
+		return nil, &gqlerror.Error{
+			Message: "Erro em criar o usuario",
+		}
 	}
 
 	response := &model.PreUser{
@@ -100,6 +112,7 @@ func (r *mutationResolver) CreateCompleteUser(ctx context.Context, input model.N
 	}
 
 	response := &model.User{
+		ID:    create.ID,
 		Email: create.Email,
 	}
 

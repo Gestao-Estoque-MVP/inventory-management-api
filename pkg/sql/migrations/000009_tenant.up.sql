@@ -1,8 +1,8 @@
 CREATE TABLE tenant (
-  id INT PRIMARY KEY,
+  id VARCHAR(255) PRIMARY KEY,
   name VARCHAR(255)
 );
 
 ALTER TABLE users 
-    ADD COLUMN tenant_id INT REFERENCES tenant(id);
+    ADD COLUMN tenant_id VARCHAR NOT NULL REFERENCES tenant(id);
 

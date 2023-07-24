@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"database/sql"
 
 	"github.com/diogoX451/inventory-management-api/internal/database"
 )
@@ -13,7 +12,7 @@ type IRBCA interface {
 	CreatePermissions(*database.Permission) (*database.Permission, error)
 	CreateRolesPermissions(*database.RolesPermission) (*database.RolesPermission, error)
 	CreateUsersPermissions(*database.UsersPermission) (*database.UsersPermission, error)
-	CreateTenant(name string) (*database.Tenant, error)
+	CreateTenant(*database.Tenant) (*database.Tenant, error)
 	GetRolesPermissions(role string) ([]*database.GetRolesPermissionsRow, error)
 	GetUsersPermissions(user string) ([]*database.GetUsersPermissionsRow, error)
 }
@@ -122,9 +121,10 @@ func (r *RBCARepository) GetUsersPermissions(user string) ([]*database.GetUsersP
 	return pointer, nil
 }
 
-func (r *RBCARepository) CreateTenant(tenant string) (*database.Tenant, error) {
+func (r *RBCARepository) CreateTenant(tenant *database.Tenant) (*database.Tenant, error) {
 	create, err := r.DB.CreateTenant(context.Background(), database.CreateTenantParams{
-		Name: sql.NullString{String: tenant, Valid: true},
+		ID:   tenant.ID,
+		Name: tenant.Name,
 	})
 
 	if err != nil {

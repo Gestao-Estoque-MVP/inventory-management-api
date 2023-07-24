@@ -22,11 +22,8 @@ func NewServiceUser(userRepo repository.IUserRepository, role repository.IRBCA) 
 }
 
 func (us *UserService) CreatePreUser(user *database.User) (*database.User, error) {
-
 	token, _ := token.GeneratedToken()
 	assign, _ := us.role.GetRole("users")
-
-	tenant, _ := us.role.CreateTenant(user.Name)
 
 	params := &database.User{
 		ID:             uuid.NewGen().NewV4().String(),
@@ -34,7 +31,7 @@ func (us *UserService) CreatePreUser(user *database.User) (*database.User, error
 		Email:          user.Email,
 		Status:         user.Status,
 		RoleID:         sql.NullString{String: assign.ID, Valid: true},
-		TenantID:       sql.NullInt32{Int32: tenant.ID, Valid: true},
+		TenantID:       user.TenantID,
 		RegisterToken:  sql.NullString{String: token, Valid: true},
 		TokenExpiresAt: sql.NullTime{Time: time.Now().Add(1 * time.Hour), Valid: true},
 		CreatedAt:      time.Now().Local(),

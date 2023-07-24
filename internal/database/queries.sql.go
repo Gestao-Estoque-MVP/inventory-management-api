@@ -148,7 +148,7 @@ type CreatePreRegisterUserParams struct {
 	Email          string
 	Status         string
 	RoleID         sql.NullString
-	TenantID       sql.NullInt32
+	TenantID       sql.NullString
 	RegisterToken  sql.NullString
 	TokenExpiresAt sql.NullTime
 	CreatedAt      time.Time
@@ -218,7 +218,7 @@ INSERT INTO tenant (id, name)
 `
 
 type CreateTenantParams struct {
-	ID   int32
+	ID   string
 	Name sql.NullString
 }
 

@@ -34,6 +34,7 @@ func (i *UserRepository) CreatePreUser(user *database.User) (*database.User, err
 		ID:             user.ID,
 		Name:           user.Name,
 		Email:          user.Email,
+		TenantID:       user.TenantID,
 		RegisterToken:  user.RegisterToken,
 		TokenExpiresAt: user.TokenExpiresAt,
 		Status:         user.Status,

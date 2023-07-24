@@ -1,6 +1,7 @@
 package service
 
 import (
+	"database/sql"
 	"log"
 
 	"github.com/diogoX451/inventory-management-api/internal/database"
@@ -90,4 +91,17 @@ func (r *RCBAService) GetRole(name string) (*database.Role, error) {
 	}
 
 	return get, nil
+}
+
+func (r *RCBAService) CreateTenant(tenant string) (*database.Tenant, error) {
+	create, err := r.rcba.CreateTenant(&database.Tenant{
+		ID:   uuid.NewGen().NewV4().String(),
+		Name: sql.NullString{String: tenant, Valid: true},
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return create, nil
 }
