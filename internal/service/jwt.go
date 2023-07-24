@@ -6,12 +6,12 @@ import (
 	"os"
 	"time"
 
-	"github.com/dgrijalva/jwt-go"
+	"github.com/golang-jwt/jwt/v5"
 )
 
 type JwtCustomClaim struct {
 	ID string `json:"id"`
-	jwt.StandardClaims
+	jwt.RegisteredClaims
 }
 
 var jwtSecret = []byte(getJwtSecret())
@@ -24,12 +24,15 @@ func getJwtSecret() string {
 	return secret
 }
 
+// ExpiresAt: time.Now().Add(time.Hour * 72).Unix(),
+// 			IssuedAt:  time.Now().Unix(),
+
 func JwtGenerate(ctx context.Context, userID string) (string, error) {
 	t := jwt.NewWithClaims(jwt.SigningMethodHS256, &JwtCustomClaim{
 		ID: userID,
-		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: time.Now().Add(time.Hour * 72).Unix(),
-			IssuedAt:  time.Now().Unix(),
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: &jwt.NumericDate{Time: time.Now().Add(time.Hour * 24)},
+			IssuedAt:  &jwt.NumericDate{Time: time.Now()},
 		},
 	})
 
