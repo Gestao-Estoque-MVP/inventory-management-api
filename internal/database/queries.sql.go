@@ -599,8 +599,8 @@ func (q *Queries) UpdateAddress(ctx context.Context, arg UpdateAddressParams) (A
 	return i, err
 }
 
-const updateUser = `-- name: UpdateUser :one
-UPDATE users SET name = $1, email = $2, phone = $3, document_type = $4, document_number = $5 WHERE id = $6 RETURNING id, name, email
+const updateUser = `-- name: UpdateUser :exec
+UPDATE users SET name = $1, email = $2, phone = $3, document_type = $4, document_number = $5 WHERE id = $6
 `
 
 type UpdateUserParams struct {
@@ -612,14 +612,8 @@ type UpdateUserParams struct {
 	ID             string
 }
 
-type UpdateUserRow struct {
-	ID    string
-	Name  string
-	Email string
-}
-
-func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (UpdateUserRow, error) {
-	row := q.db.QueryRowContext(ctx, updateUser,
+func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) error {
+	_, err := q.db.ExecContext(ctx, updateUser,
 		arg.Name,
 		arg.Email,
 		arg.Phone,
@@ -627,7 +621,5 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (UpdateU
 		arg.DocumentNumber,
 		arg.ID,
 	)
-	var i UpdateUserRow
-	err := row.Scan(&i.ID, &i.Name, &i.Email)
-	return i, err
+	return err
 }

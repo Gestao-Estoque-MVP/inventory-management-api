@@ -65,6 +65,10 @@ type PreUser {
   email: String!
 }
 
+type Message {
+  message: String!
+}
+
 input NewLogin {
   email: String!
   password: String!
@@ -129,7 +133,7 @@ type Mutation {
   createContactInfo(input: NewContactInfo!): ContactInfo!
   createPreUser(input: NewPreUser!): PreUser!
   createCompleteUser(input: NewUserComplete!): User!
-  updateUser(id: ID!, input: NewUser!): User! @auth
+  updateUser(id: ID!, input: NewUser!): Message! @auth
   createAddress(input: NewAddress!): Address!
   createRole(input: NewRole!): Roles!
   createPermission(input: NewPermission!): Permissions!

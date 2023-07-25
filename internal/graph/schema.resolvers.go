@@ -120,7 +120,7 @@ func (r *mutationResolver) CreateCompleteUser(ctx context.Context, input model.N
 }
 
 // UpdateUser is the resolver for the updateUser field.
-func (r *mutationResolver) UpdateUser(ctx context.Context, id string, input model.NewUser) (*model.User, error) {
+func (r *mutationResolver) UpdateUser(ctx context.Context, id string, input model.NewUser) (*model.Message, error) {
 	user := database.UpdateUserParams{
 		ID:             id,
 		Name:           input.Name,
@@ -130,7 +130,7 @@ func (r *mutationResolver) UpdateUser(ctx context.Context, id string, input mode
 		DocumentType:   sql.NullString{String: input.DocumentType, Valid: true},
 	}
 
-	update, err := r.Resolver.UserService.UpdateUser(id, &user)
+	err := r.Resolver.UserService.UpdateUser(id, &user)
 
 	if err != nil {
 		return nil, &gqlerror.Error{
@@ -138,13 +138,9 @@ func (r *mutationResolver) UpdateUser(ctx context.Context, id string, input mode
 		}
 	}
 
-	response := &model.User{
-		ID:    update.ID,
-		Name:  update.Email,
-		Phone: update.Phone.String,
-	}
-
-	return response, nil
+	return &model.Message{
+		Message: "Atualizado com sucesso",
+	}, nil
 }
 
 // CreateAddress is the resolver for the createAddress field.

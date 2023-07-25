@@ -24,6 +24,10 @@ type Login struct {
 	Token string `json:"token"`
 }
 
+type Message struct {
+	Message string `json:"message"`
+}
+
 type NewAddress struct {
 	Street  string `json:"street"`
 	Number  string `json:"number"`

@@ -141,12 +141,11 @@ func (mr *MockIUserRepositoryMockRecorder) GetUsers() *gomock.Call {
 }
 
 // UpdateUser mocks base method.
-func (m *MockIUserRepository) UpdateUser(id string, user *database.UpdateUserParams) (*database.UpdateUserParams, error) {
+func (m *MockIUserRepository) UpdateUser(id string, user *database.UpdateUserParams) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateUser", id, user)
-	ret0, _ := ret[0].(*database.UpdateUserParams)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // UpdateUser indicates an expected call of UpdateUser.

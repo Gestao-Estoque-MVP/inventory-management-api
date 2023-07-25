@@ -68,6 +68,10 @@ type ComplexityRoot struct {
 		Token func(childComplexity int) int
 	}
 
+	Message struct {
+		Message func(childComplexity int) int
+	}
+
 	Mutation struct {
 		CreateAddress        func(childComplexity int, input model.NewAddress) int
 		CreateCompleteUser   func(childComplexity int, input model.NewUserComplete) int
@@ -128,7 +132,7 @@ type MutationResolver interface {
 	CreateContactInfo(ctx context.Context, input model.NewContactInfo) (*model.ContactInfo, error)
 	CreatePreUser(ctx context.Context, input model.NewPreUser) (*model.PreUser, error)
 	CreateCompleteUser(ctx context.Context, input model.NewUserComplete) (*model.User, error)
-	UpdateUser(ctx context.Context, id string, input model.NewUser) (*model.User, error)
+	UpdateUser(ctx context.Context, id string, input model.NewUser) (*model.Message, error)
 	CreateAddress(ctx context.Context, input model.NewAddress) (*model.Address, error)
 	CreateRole(ctx context.Context, input model.NewRole) (*model.Roles, error)
 	CreatePermission(ctx context.Context, input model.NewPermission) (*model.Permissions, error)
@@ -247,6 +251,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Login.Token(childComplexity), true
+
+	case "Message.message":
+		if e.complexity.Message.Message == nil {
+			break
+		}
+
+		return e.complexity.Message.Message(childComplexity), true
 
 	case "Mutation.createAddress":
 		if e.complexity.Mutation.CreateAddress == nil {
@@ -1466,6 +1477,50 @@ func (ec *executionContext) fieldContext_Login_token(ctx context.Context, field 
 	return fc, nil
 }
 
+func (ec *executionContext) _Message_message(ctx context.Context, field graphql.CollectedField, obj *model.Message) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Message_message(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Message, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Message_message(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Message",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Mutation_login(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Mutation_login(ctx, field)
 	if err != nil {
@@ -1755,10 +1810,10 @@ func (ec *executionContext) _Mutation_updateUser(ctx context.Context, field grap
 		if tmp == nil {
 			return nil, nil
 		}
-		if data, ok := tmp.(*model.User); ok {
+		if data, ok := tmp.(*model.Message); ok {
 			return data, nil
 		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/diogoX451/inventory-management-api/internal/graph/model.User`, tmp)
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/diogoX451/inventory-management-api/internal/graph/model.Message`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1770,9 +1825,9 @@ func (ec *executionContext) _Mutation_updateUser(ctx context.Context, field grap
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*model.User)
+	res := resTmp.(*model.Message)
 	fc.Result = res
-	return ec.marshalNUser2ᚖgithubᚗcomᚋdiogoX451ᚋinventoryᚑmanagementᚑapiᚋinternalᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
+	return ec.marshalNMessage2ᚖgithubᚗcomᚋdiogoX451ᚋinventoryᚑmanagementᚑapiᚋinternalᚋgraphᚋmodelᚐMessage(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_updateUser(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1783,22 +1838,10 @@ func (ec *executionContext) fieldContext_Mutation_updateUser(ctx context.Context
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "id":
-				return ec.fieldContext_User_id(ctx, field)
-			case "name":
-				return ec.fieldContext_User_name(ctx, field)
-			case "email":
-				return ec.fieldContext_User_email(ctx, field)
-			case "phone":
-				return ec.fieldContext_User_phone(ctx, field)
-			case "document_type":
-				return ec.fieldContext_User_document_type(ctx, field)
-			case "document_number":
-				return ec.fieldContext_User_document_number(ctx, field)
-			case "addresses":
-				return ec.fieldContext_User_addresses(ctx, field)
+			case "message":
+				return ec.fieldContext_Message_message(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type Message", field.Name)
 		},
 	}
 	defer func() {
@@ -5817,6 +5860,45 @@ func (ec *executionContext) _Login(ctx context.Context, sel ast.SelectionSet, ob
 	return out
 }
 
+var messageImplementors = []string{"Message"}
+
+func (ec *executionContext) _Message(ctx context.Context, sel ast.SelectionSet, obj *model.Message) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, messageImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Message")
+		case "message":
+			out.Values[i] = ec._Message_message(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var mutationImplementors = []string{"Mutation"}
 
 func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet) graphql.Marshaler {
@@ -6802,6 +6884,20 @@ func (ec *executionContext) marshalNLogin2ᚖgithubᚗcomᚋdiogoX451ᚋinventor
 		return graphql.Null
 	}
 	return ec._Login(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNMessage2githubᚗcomᚋdiogoX451ᚋinventoryᚑmanagementᚑapiᚋinternalᚋgraphᚋmodelᚐMessage(ctx context.Context, sel ast.SelectionSet, v model.Message) graphql.Marshaler {
+	return ec._Message(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNMessage2ᚖgithubᚗcomᚋdiogoX451ᚋinventoryᚑmanagementᚑapiᚋinternalᚋgraphᚋmodelᚐMessage(ctx context.Context, sel ast.SelectionSet, v *model.Message) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._Message(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNNewAddress2githubᚗcomᚋdiogoX451ᚋinventoryᚑmanagementᚑapiᚋinternalᚋgraphᚋmodelᚐNewAddress(ctx context.Context, v interface{}) (model.NewAddress, error) {

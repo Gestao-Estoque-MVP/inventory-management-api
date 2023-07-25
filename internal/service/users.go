@@ -66,15 +66,15 @@ func (us *UserService) CompleteRegisterUser(RegisterToken string, user *database
 	return updateUser, nil
 }
 
-func (us *UserService) UpdateUser(id string, user *database.UpdateUserParams) (*database.UpdateUserParams, error) {
-	update, err := us.userRepo.UpdateUser(id, user)
+func (us *UserService) UpdateUser(id string, user *database.UpdateUserParams) error {
+	err := us.userRepo.UpdateUser(id, user)
 
-	if update != nil {
-		log.Printf("Erro ao atualizar usuário completo %v\n", update)
-		return nil, err
+	if err != nil {
+		log.Printf("Erro ao atualizar usuário completo %v\n", err)
+		return err
 	}
 
-	return update, nil
+	return err
 }
 
 func (us *UserService) GetUsers() ([]*database.User, error) {

@@ -2,6 +2,7 @@ package service_test
 
 import (
 	"database/sql"
+	"errors"
 	"testing"
 
 	"github.com/diogoX451/inventory-management-api/internal/database"
@@ -164,4 +165,40 @@ func TestGetUserByEmail(t *testing.T) {
 	result, err := us.GetUserByEmail("test@email.com")
 	assert.Nil(t, err)
 	assert.Equal(t, user, result)
+}
+
+func TestUpdateUser(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockUserRepo := mock.NewMockIUserRepository(ctrl)
+	mockRoleRepo := mock.NewMockIRBCA(ctrl)
+
+	user := &database.UpdateUserParams{
+		Name:           "Test User",
+		Email:          "test@example.com",
+		DocumentType:   sql.NullString{String: "doctype", Valid: true},
+		DocumentNumber: sql.NullString{String: "docnumber", Valid: true},
+		Phone:          sql.NullString{String: "phone", Valid: true},
+	}
+
+	t.Run("should update user successfully", func(t *testing.T) {
+		mockUserRepo.EXPECT().UpdateUser(user.ID, user).Return(nil)
+
+		us := service.NewServiceUser(mockUserRepo, mockRoleRepo)
+
+		err := us.UpdateUser(user.ID, user)
+
+		assert.NoError(t, err)
+	})
+
+	t.Run("should return error if update fails", func(t *testing.T) {
+		mockUserRepo.EXPECT().UpdateUser(user.ID, user).Return(errors.New("update error"))
+
+		us := service.NewServiceUser(mockUserRepo, mockRoleRepo)
+
+		err := us.UpdateUser(user.ID, user)
+
+		assert.Error(t, err)
+	})
 }

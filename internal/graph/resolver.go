@@ -173,7 +173,7 @@ func (r *Resolver) UpdateUser(id string, args struct {
 	DocumentNumber string
 	DocumentType   string
 	Phone          string
-}) (*database.UpdateUserParams, error) {
+}) error {
 	updates := &database.UpdateUserParams{
 		Name:           args.Name,
 		Email:          args.Email,
@@ -182,12 +182,12 @@ func (r *Resolver) UpdateUser(id string, args struct {
 		Phone:          sql.NullString{String: args.Phone, Valid: true},
 	}
 
-	update, err := r.UserService.UpdateUser(id, updates)
+	err := r.UserService.UpdateUser(id, updates)
 
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	return update, nil
+	return err
 
 }

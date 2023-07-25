@@ -20,8 +20,8 @@ SELECT * FROM users WHERE register_token = $1;
 -- name: ListUsers :many
 SELECT * FROM users;
 
--- name: UpdateUser :one
-UPDATE users SET name = $1, email = $2, phone = $3, document_type = $4, document_number = $5 WHERE id = $6 RETURNING id, name, email;
+-- name: UpdateUser :exec
+UPDATE users SET name = $1, email = $2, phone = $3, document_type = $4, document_number = $5 WHERE id = $6;
 
 
  
