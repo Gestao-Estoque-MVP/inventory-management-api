@@ -67,6 +67,14 @@ type NewRolePermission struct {
 }
 
 type NewUser struct {
+	Name           string `json:"name"`
+	Email          string `json:"email"`
+	Phone          string `json:"phone"`
+	DocumentType   string `json:"document_type"`
+	DocumentNumber string `json:"document_number"`
+}
+
+type NewUserComplete struct {
 	Phone          string `json:"phone"`
 	Password       string `json:"password"`
 	DocumentType   string `json:"document_type"`
@@ -103,7 +111,6 @@ type User struct {
 	Name           string     `json:"name"`
 	Email          string     `json:"email"`
 	Phone          string     `json:"phone"`
-	Password       string     `json:"password"`
 	DocumentType   string     `json:"document_type"`
 	DocumentNumber string     `json:"document_number"`
 	Addresses      []*Address `json:"addresses"`

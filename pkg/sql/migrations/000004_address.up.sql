@@ -7,6 +7,7 @@ CREATE TABLE address (
   state VARCHAR(100),
   postal_code VARCHAR(20),
   country VARCHAR(100),
+  number VARCHAR(20),
   FOREIGN KEY (user_id) REFERENCES users(id),
   created_at TIMESTAMP NOT NULL,
   updated_at TIMESTAMP

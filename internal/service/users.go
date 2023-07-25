@@ -52,7 +52,7 @@ func (us *UserService) CompleteRegisterUser(RegisterToken string, user *database
 	verifyUser, err := us.userRepo.GetUserRegisterToken(RegisterToken)
 
 	if err != nil || verifyUser == nil {
-		log.Printf("Erro ao buscar usuário: %v\n", err, RegisterToken)
+		log.Printf("Erro ao buscar usuário: %v\n", err)
 		return nil, fmt.Errorf("no user found with register token %s", RegisterToken)
 	}
 
@@ -66,7 +66,7 @@ func (us *UserService) CompleteRegisterUser(RegisterToken string, user *database
 	return updateUser, nil
 }
 
-func (us *UserService) UpdateUser(id string, user *database.User) (*database.User, error) {
+func (us *UserService) UpdateUser(id string, user *database.UpdateUserParams) (*database.UpdateUserParams, error) {
 	update, err := us.userRepo.UpdateUser(id, user)
 
 	if update != nil {
@@ -74,7 +74,7 @@ func (us *UserService) UpdateUser(id string, user *database.User) (*database.Use
 		return nil, err
 	}
 
-	return update, err
+	return update, nil
 }
 
 func (us *UserService) GetUsers() ([]*database.User, error) {

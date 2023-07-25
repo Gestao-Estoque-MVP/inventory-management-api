@@ -11,7 +11,7 @@ import (
 type IUserRepository interface {
 	CreatePreUser(*database.User) (*database.User, error)
 	CreateCompleteUser(token string, user *database.User) (*database.CompleteRegisterUserRow, error)
-	UpdateUser(id string, user *database.User) (*database.User, error)
+	UpdateUser(id string, user *database.UpdateUserParams) (*database.UpdateUserParams, error)
 	DeleteUser(id string) (*sql.Result, error)
 	GetUser(id string) (*database.User, error)
 	GetUsers() ([]*database.User, error)
@@ -78,7 +78,7 @@ func (i *UserRepository) CreateCompleteUser(token string, user *database.User) (
 	}, nil
 }
 
-func (i *UserRepository) UpdateUser(id string, user *database.User) (*database.User, error) {
+func (i *UserRepository) UpdateUser(id string, user *database.UpdateUserParams) (*database.UpdateUserParams, error) {
 
 	update, err := i.DB.UpdateUser(context.Background(), database.UpdateUserParams{
 		ID:             id,
@@ -93,8 +93,10 @@ func (i *UserRepository) UpdateUser(id string, user *database.User) (*database.U
 		return nil, err
 	}
 
-	return &database.User{
-		ID: update.ID,
+	return &database.UpdateUserParams{
+		ID:    update.ID,
+		Name:  update.Name,
+		Email: update.Email,
 	}, nil
 }
 

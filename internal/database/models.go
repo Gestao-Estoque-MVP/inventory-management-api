@@ -6,20 +6,66 @@ package database
 
 import (
 	"database/sql"
+	"database/sql/driver"
+	"fmt"
 	"time"
 )
+
+type UserStatus string
+
+const (
+	UserStatusPreUsers UserStatus = "pre-users"
+	UserStatusActive   UserStatus = "active"
+	UserStatusInative  UserStatus = "inative"
+)
+
+func (e *UserStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = UserStatus(s)
+	case string:
+		*e = UserStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for UserStatus: %T", src)
+	}
+	return nil
+}
+
+type NullUserStatus struct {
+	UserStatus UserStatus
+	Valid      bool // Valid is true if UserStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullUserStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.UserStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.UserStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullUserStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.UserStatus), nil
+}
 
 type Address struct {
 	ID         int32
 	UserID     string
 	Address    sql.NullString
-	Number     sql.NullString
 	Street     sql.NullString
 	City       sql.NullString
 	State      sql.NullString
 	PostalCode sql.NullString
 	Country    sql.NullString
+	Number     sql.NullString
 	CreatedAt  time.Time
+	UpdatedAt  sql.NullTime
 }
 
 type ContactInfo struct {
@@ -62,12 +108,13 @@ type User struct {
 	DocumentNumber sql.NullString
 	Password       sql.NullString
 	Avatar         sql.NullString
-	Status         string
+	Status         UserStatus
 	RegisterToken  sql.NullString
 	TokenExpiresAt sql.NullTime
 	CreatedAt      time.Time
+	UpdatedAt      sql.NullTime
 	RoleID         sql.NullString
-	TenantID       sql.NullString
+	TenantID       string
 }
 
 type UsersPermission struct {

@@ -130,7 +130,7 @@ func (r *Resolver) CreatePreUser(ctx context.Context, args struct {
 		ID:             args.ID,
 		Name:           args.Name,
 		Email:          args.Email,
-		Status:         args.Status,
+		Status:         database.UserStatus(args.Status),
 		RegisterToken:  sql.NullString{String: args.RegisterToken, Valid: true},
 		TokenExpiresAt: sql.NullTime{Time: args.TokenExpiresAt, Valid: true},
 		CreatedAt:      args.CreatedAt,
@@ -165,4 +165,29 @@ func (r *Resolver) CreateCompleteUser(ctx context.Context, id string, args struc
 	}
 
 	return create, err
+}
+
+func (r *Resolver) UpdateUser(id string, args struct {
+	Name           string
+	Email          string
+	DocumentNumber string
+	DocumentType   string
+	Phone          string
+}) (*database.UpdateUserParams, error) {
+	updates := &database.UpdateUserParams{
+		Name:           args.Name,
+		Email:          args.Email,
+		DocumentType:   sql.NullString{String: args.DocumentType, Valid: true},
+		DocumentNumber: sql.NullString{String: args.DocumentNumber, Valid: true},
+		Phone:          sql.NullString{String: args.Phone, Valid: true},
+	}
+
+	update, err := r.UserService.UpdateUser(id, updates)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return update, nil
+
 }

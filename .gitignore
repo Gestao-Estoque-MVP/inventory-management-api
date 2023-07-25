@@ -1,3 +1,4 @@
 .env
 ./volumes/*
 error.log
+.env.production

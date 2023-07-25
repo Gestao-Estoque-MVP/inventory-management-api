@@ -76,8 +76,8 @@ func (r *mutationResolver) CreatePreUser(ctx context.Context, input model.NewPre
 	user := database.User{
 		Name:     input.Name,
 		Email:    input.Email,
-		Status:   input.Status,
-		TenantID: sql.NullString{String: tenant.ID, Valid: true},
+		Status:   database.UserStatus(input.Status),
+		TenantID: tenant.ID,
 	}
 
 	created, err := r.Resolver.UserService.CreatePreUser(&user)
@@ -97,7 +97,7 @@ func (r *mutationResolver) CreatePreUser(ctx context.Context, input model.NewPre
 }
 
 // CreateCompleteUser is the resolver for the createCompleteUser field.
-func (r *mutationResolver) CreateCompleteUser(ctx context.Context, input model.NewUser) (*model.User, error) {
+func (r *mutationResolver) CreateCompleteUser(ctx context.Context, input model.NewUserComplete) (*model.User, error) {
 	user := database.User{
 		Phone:          sql.NullString{String: input.Phone, Valid: true},
 		Password:       sql.NullString{String: input.Password, Valid: true},
@@ -117,6 +117,34 @@ func (r *mutationResolver) CreateCompleteUser(ctx context.Context, input model.N
 	}
 
 	return response, err
+}
+
+// UpdateUser is the resolver for the updateUser field.
+func (r *mutationResolver) UpdateUser(ctx context.Context, id string, input model.NewUser) (*model.User, error) {
+	user := database.UpdateUserParams{
+		ID:             id,
+		Name:           input.Name,
+		Email:          input.Email,
+		Phone:          sql.NullString{String: input.Phone, Valid: true},
+		DocumentNumber: sql.NullString{String: input.DocumentNumber, Valid: true},
+		DocumentType:   sql.NullString{String: input.DocumentType, Valid: true},
+	}
+
+	update, err := r.Resolver.UserService.UpdateUser(id, &user)
+
+	if err != nil {
+		return nil, &gqlerror.Error{
+			Message: "Error updating user",
+		}
+	}
+
+	response := &model.User{
+		ID:    update.ID,
+		Name:  update.Email,
+		Phone: update.Phone.String,
+	}
+
+	return response, nil
 }
 
 // CreateAddress is the resolver for the createAddress field.

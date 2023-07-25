@@ -54,7 +54,6 @@ type User {
   name: String!
   email: String!
   phone: String!
-  password: String!
   document_type: String!
   document_number: String!
   addresses: [Address!]!
@@ -98,12 +97,20 @@ input NewPreUser {
   status: String!
 }
 
-input NewUser {
+input NewUserComplete {
   phone: String!
   password: String!
   document_type: String!
   document_number: String!
   RegisterToken: String!
+}
+
+input NewUser {
+  name: String!
+  email: String!
+  phone: String!
+  document_type: String!
+  document_number: String!
 }
 
 input NewAddress {
@@ -121,7 +128,8 @@ type Mutation {
   login(input: NewLogin!): Login! @goField(forceResolver: true)
   createContactInfo(input: NewContactInfo!): ContactInfo!
   createPreUser(input: NewPreUser!): PreUser!
-  createCompleteUser(input: NewUser!): User!
+  createCompleteUser(input: NewUserComplete!): User!
+  updateUser(id: ID!, input: NewUser!): User! @auth
   createAddress(input: NewAddress!): Address!
   createRole(input: NewRole!): Roles!
   createPermission(input: NewPermission!): Permissions!

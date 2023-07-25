@@ -46,7 +46,7 @@ func (q *Queries) CompleteRegisterUser(ctx context.Context, arg CompleteRegister
 
 const createAddress = `-- name: CreateAddress :one
 INSERT INTO address (user_id, address, number, street, city, state, postal_code, country) 
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id, user_id, address, number, street, city, state, postal_code, country, created_at
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id, user_id, address, street, city, state, postal_code, country, number, created_at, updated_at
 `
 
 type CreateAddressParams struct {
@@ -76,13 +76,14 @@ func (q *Queries) CreateAddress(ctx context.Context, arg CreateAddressParams) (A
 		&i.ID,
 		&i.UserID,
 		&i.Address,
-		&i.Number,
 		&i.Street,
 		&i.City,
 		&i.State,
 		&i.PostalCode,
 		&i.Country,
+		&i.Number,
 		&i.CreatedAt,
+		&i.UpdatedAt,
 	)
 	return i, err
 }
@@ -146,9 +147,9 @@ type CreatePreRegisterUserParams struct {
 	ID             string
 	Name           string
 	Email          string
-	Status         string
+	Status         UserStatus
 	RoleID         sql.NullString
-	TenantID       sql.NullString
+	TenantID       string
 	RegisterToken  sql.NullString
 	TokenExpiresAt sql.NullTime
 	CreatedAt      time.Time
@@ -247,7 +248,7 @@ func (q *Queries) CreateUsersPermissions(ctx context.Context, arg CreateUsersPer
 }
 
 const deleteAddress = `-- name: DeleteAddress :execresult
-DELETE FROM address WHERE id = $1 RETURNING id, user_id, address, number, street, city, state, postal_code, country, created_at
+DELETE FROM address WHERE id = $1 RETURNING id, user_id, address, street, city, state, postal_code, country, number, created_at, updated_at
 `
 
 func (q *Queries) DeleteAddress(ctx context.Context, id int32) (sql.Result, error) {
@@ -269,7 +270,7 @@ func (q *Queries) DeleteUser(ctx context.Context, id string) (sql.Result, error)
 }
 
 const getAddress = `-- name: GetAddress :one
-SELECT id, user_id, address, number, street, city, state, postal_code, country, created_at FROM address WHERE id = $1
+SELECT id, user_id, address, street, city, state, postal_code, country, number, created_at, updated_at FROM address WHERE id = $1
 `
 
 func (q *Queries) GetAddress(ctx context.Context, id int32) (Address, error) {
@@ -279,13 +280,14 @@ func (q *Queries) GetAddress(ctx context.Context, id int32) (Address, error) {
 		&i.ID,
 		&i.UserID,
 		&i.Address,
-		&i.Number,
 		&i.Street,
 		&i.City,
 		&i.State,
 		&i.PostalCode,
 		&i.Country,
+		&i.Number,
 		&i.CreatedAt,
+		&i.UpdatedAt,
 	)
 	return i, err
 }
@@ -348,7 +350,7 @@ func (q *Queries) GetRolesPermissions(ctx context.Context, id string) ([]GetRole
 }
 
 const getUser = `-- name: GetUser :one
-SELECT id, name, email, phone, document_type, document_number, password, avatar, status, register_token, token_expires_at, created_at, role_id, tenant_id FROM users WHERE id = $1
+SELECT id, name, email, phone, document_type, document_number, password, avatar, status, register_token, token_expires_at, created_at, updated_at, role_id, tenant_id FROM users WHERE id = $1
 `
 
 func (q *Queries) GetUser(ctx context.Context, id string) (User, error) {
@@ -367,6 +369,7 @@ func (q *Queries) GetUser(ctx context.Context, id string) (User, error) {
 		&i.RegisterToken,
 		&i.TokenExpiresAt,
 		&i.CreatedAt,
+		&i.UpdatedAt,
 		&i.RoleID,
 		&i.TenantID,
 	)
@@ -374,7 +377,7 @@ func (q *Queries) GetUser(ctx context.Context, id string) (User, error) {
 }
 
 const getUserByEmail = `-- name: GetUserByEmail :one
-SELECT id, name, email, phone, document_type, document_number, password, avatar, status, register_token, token_expires_at, created_at, role_id, tenant_id FROM users WHERE email = $1
+SELECT id, name, email, phone, document_type, document_number, password, avatar, status, register_token, token_expires_at, created_at, updated_at, role_id, tenant_id FROM users WHERE email = $1
 `
 
 func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error) {
@@ -393,6 +396,7 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 		&i.RegisterToken,
 		&i.TokenExpiresAt,
 		&i.CreatedAt,
+		&i.UpdatedAt,
 		&i.RoleID,
 		&i.TenantID,
 	)
@@ -400,7 +404,7 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 }
 
 const getUserRegisterToken = `-- name: GetUserRegisterToken :one
-SELECT id, name, email, phone, document_type, document_number, password, avatar, status, register_token, token_expires_at, created_at, role_id, tenant_id FROM users WHERE register_token = $1
+SELECT id, name, email, phone, document_type, document_number, password, avatar, status, register_token, token_expires_at, created_at, updated_at, role_id, tenant_id FROM users WHERE register_token = $1
 `
 
 func (q *Queries) GetUserRegisterToken(ctx context.Context, registerToken sql.NullString) (User, error) {
@@ -419,6 +423,7 @@ func (q *Queries) GetUserRegisterToken(ctx context.Context, registerToken sql.Nu
 		&i.RegisterToken,
 		&i.TokenExpiresAt,
 		&i.CreatedAt,
+		&i.UpdatedAt,
 		&i.RoleID,
 		&i.TenantID,
 	)
@@ -468,7 +473,7 @@ func (q *Queries) GetUsersPermissions(ctx context.Context, id string) ([]GetUser
 }
 
 const listAddresses = `-- name: ListAddresses :many
-SELECT id, user_id, address, number, street, city, state, postal_code, country, created_at FROM address
+SELECT id, user_id, address, street, city, state, postal_code, country, number, created_at, updated_at FROM address
 `
 
 func (q *Queries) ListAddresses(ctx context.Context) ([]Address, error) {
@@ -484,13 +489,14 @@ func (q *Queries) ListAddresses(ctx context.Context) ([]Address, error) {
 			&i.ID,
 			&i.UserID,
 			&i.Address,
-			&i.Number,
 			&i.Street,
 			&i.City,
 			&i.State,
 			&i.PostalCode,
 			&i.Country,
+			&i.Number,
 			&i.CreatedAt,
+			&i.UpdatedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -506,7 +512,7 @@ func (q *Queries) ListAddresses(ctx context.Context) ([]Address, error) {
 }
 
 const listUsers = `-- name: ListUsers :many
-SELECT id, name, email, phone, document_type, document_number, password, avatar, status, register_token, token_expires_at, created_at, role_id, tenant_id FROM users
+SELECT id, name, email, phone, document_type, document_number, password, avatar, status, register_token, token_expires_at, created_at, updated_at, role_id, tenant_id FROM users
 `
 
 func (q *Queries) ListUsers(ctx context.Context) ([]User, error) {
@@ -531,6 +537,7 @@ func (q *Queries) ListUsers(ctx context.Context) ([]User, error) {
 			&i.RegisterToken,
 			&i.TokenExpiresAt,
 			&i.CreatedAt,
+			&i.UpdatedAt,
 			&i.RoleID,
 			&i.TenantID,
 		); err != nil {
@@ -548,7 +555,7 @@ func (q *Queries) ListUsers(ctx context.Context) ([]User, error) {
 }
 
 const updateAddress = `-- name: UpdateAddress :one
-UPDATE address SET user_id = $1, address = $2, number = $3, street = $4, city = $5, state = $6, postal_code = $7, country = $8 WHERE id = $9 RETURNING id, user_id, address, number, street, city, state, postal_code, country, created_at
+UPDATE address SET user_id = $1, address = $2, number = $3, street = $4, city = $5, state = $6, postal_code = $7, country = $8 WHERE id = $9 RETURNING id, user_id, address, street, city, state, postal_code, country, number, created_at, updated_at
 `
 
 type UpdateAddressParams struct {
@@ -580,19 +587,20 @@ func (q *Queries) UpdateAddress(ctx context.Context, arg UpdateAddressParams) (A
 		&i.ID,
 		&i.UserID,
 		&i.Address,
-		&i.Number,
 		&i.Street,
 		&i.City,
 		&i.State,
 		&i.PostalCode,
 		&i.Country,
+		&i.Number,
 		&i.CreatedAt,
+		&i.UpdatedAt,
 	)
 	return i, err
 }
 
 const updateUser = `-- name: UpdateUser :one
-UPDATE users SET name = $1, email = $2, phone = $3, document_type = $4, document_number = $5, password = $6, status = $7 WHERE id = $8 RETURNING id, name, email
+UPDATE users SET name = $1, email = $2, phone = $3, document_type = $4, document_number = $5 WHERE id = $6 RETURNING id, name, email
 `
 
 type UpdateUserParams struct {
@@ -601,8 +609,6 @@ type UpdateUserParams struct {
 	Phone          sql.NullString
 	DocumentType   sql.NullString
 	DocumentNumber sql.NullString
-	Password       sql.NullString
-	Status         string
 	ID             string
 }
 
@@ -619,8 +625,6 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (UpdateU
 		arg.Phone,
 		arg.DocumentType,
 		arg.DocumentNumber,
-		arg.Password,
-		arg.Status,
 		arg.ID,
 	)
 	var i UpdateUserRow
