@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"time"
 
 	"github.com/diogoX451/inventory-management-api/internal/database"
 	"golang.org/x/crypto/bcrypt"
@@ -67,6 +68,7 @@ func (i *UserRepository) CreateCompleteUser(token string, user *database.User) (
 		DocumentNumber: user.DocumentNumber,
 		Password:       sql.NullString{String: string(bytes), Valid: true},
 		RegisterToken:  sql.NullString{String: token, Valid: true},
+		UpdatedAt:      sql.NullTime{Time: time.Now(), Valid: true},
 	})
 
 	if err != nil {

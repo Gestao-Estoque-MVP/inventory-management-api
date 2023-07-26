@@ -12,7 +12,7 @@ import (
 )
 
 const completeRegisterUser = `-- name: CompleteRegisterUser :one
-UPDATE users SET phone = $1, document_type = $2, document_number = $3, password = $4, avatar = $5 WHERE register_token = $6 RETURNING id, name, email
+UPDATE users SET phone = $1, document_type = $2, document_number = $3, password = $4, avatar = $5, updated_at = $6 WHERE register_token = $7 RETURNING id, name, email
 `
 
 type CompleteRegisterUserParams struct {
@@ -21,6 +21,7 @@ type CompleteRegisterUserParams struct {
 	DocumentNumber sql.NullString
 	Password       sql.NullString
 	Avatar         sql.NullString
+	UpdatedAt      sql.NullTime
 	RegisterToken  sql.NullString
 }
 
@@ -37,6 +38,7 @@ func (q *Queries) CompleteRegisterUser(ctx context.Context, arg CompleteRegister
 		arg.DocumentNumber,
 		arg.Password,
 		arg.Avatar,
+		arg.UpdatedAt,
 		arg.RegisterToken,
 	)
 	var i CompleteRegisterUserRow
@@ -248,11 +250,11 @@ func (q *Queries) CreateUsersPermissions(ctx context.Context, arg CreateUsersPer
 }
 
 const deleteAddress = `-- name: DeleteAddress :execresult
-DELETE FROM address WHERE id = $1 RETURNING id, user_id, address, street, city, state, postal_code, country, number, created_at, updated_at
+DELETE FROM address WHERE user_id = $1 RETURNING id, user_id, address, street, city, state, postal_code, country, number, created_at, updated_at
 `
 
-func (q *Queries) DeleteAddress(ctx context.Context, id int32) (sql.Result, error) {
-	return q.db.ExecContext(ctx, deleteAddress, id)
+func (q *Queries) DeleteAddress(ctx context.Context, userID string) (sql.Result, error) {
+	return q.db.ExecContext(ctx, deleteAddress, userID)
 }
 
 const deleteUser = `-- name: DeleteUser :execresult
@@ -269,12 +271,12 @@ func (q *Queries) DeleteUser(ctx context.Context, id string) (sql.Result, error)
 	return q.db.ExecContext(ctx, deleteUser, id)
 }
 
-const getAddress = `-- name: GetAddress :one
-SELECT id, user_id, address, street, city, state, postal_code, country, number, created_at, updated_at FROM address WHERE id = $1
+const getAddressByID = `-- name: GetAddressByID :one
+SELECT id, user_id, address, street, city, state, postal_code, country, number, created_at, updated_at FROM address WHERE user_id = $1
 `
 
-func (q *Queries) GetAddress(ctx context.Context, id int32) (Address, error) {
-	row := q.db.QueryRowContext(ctx, getAddress, id)
+func (q *Queries) GetAddressByID(ctx context.Context, userID string) (Address, error) {
+	row := q.db.QueryRowContext(ctx, getAddressByID, userID)
 	var i Address
 	err := row.Scan(
 		&i.ID,

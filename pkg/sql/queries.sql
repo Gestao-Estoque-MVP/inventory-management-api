@@ -3,7 +3,7 @@ INSERT INTO users (id, name, email, status, role_id, tenant_id, register_token, 
     VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id, name, email;
 
 -- name: CompleteRegisterUser :one
-UPDATE users SET phone = $1, document_type = $2, document_number = $3, password = $4, avatar = $5 WHERE register_token = $6 RETURNING id, name, email;
+UPDATE users SET phone = $1, document_type = $2, document_number = $3, password = $4, avatar = $5, updated_at = $6 WHERE register_token = $7 RETURNING id, name, email;
 
 -- name: DeleteUser :execresult
 DELETE FROM users WHERE id = $1 RETURNING id, name, email;
@@ -30,13 +30,13 @@ INSERT INTO address (user_id, address, number, street, city, state, postal_code,
     VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *;
 
 -- name: DeleteAddress :execresult
-DELETE FROM address WHERE id = $1 RETURNING *;
+DELETE FROM address WHERE user_id = $1 RETURNING *;
 
 -- name: UpdateAddress :one
 UPDATE address SET user_id = $1, address = $2, number = $3, street = $4, city = $5, state = $6, postal_code = $7, country = $8 WHERE id = $9 RETURNING *;
 
--- name: GetAddress :one
-SELECT * FROM address WHERE id = $1;
+-- name: GetAddressByID :one
+SELECT * FROM address WHERE user_id = $1;
 
 -- name: ListAddresses :many
 SELECT * FROM address;

@@ -76,9 +76,10 @@ func main() {
 
 	c := graph.Config{
 		Resolvers: resolvers,
+		Directives: graph.DirectiveRoot{
+			Auth: directives.Auth,
+		},
 	}
-
-	c.Directives.Auth = directives.Auth
 
 	srv := handler.NewDefaultServer(graph.NewExecutableSchema(c))
 

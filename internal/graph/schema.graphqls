@@ -56,7 +56,7 @@ type User {
   phone: String!
   document_type: String!
   document_number: String!
-  addresses: [Address!]!
+  addresses: Address!
 }
 
 type PreUser {
