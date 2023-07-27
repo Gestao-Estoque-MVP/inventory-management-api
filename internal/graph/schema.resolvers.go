@@ -231,7 +231,28 @@ func (r *mutationResolver) CreateRolePermission(ctx context.Context, input model
 
 // User is the resolver for the user field.
 func (r *queryResolver) User(ctx context.Context, id string) (*model.User, error) {
-	panic(fmt.Errorf("not implemented: User - user"))
+	find, err := r.Resolver.UserService.GetUser(id)
+
+	if err != nil {
+		return nil, err
+	}
+
+	consult, _ := r.Resolver.AddressService.GetAddressByID(find.ID)
+
+	response := &model.User{
+		ID:             find.ID,
+		Name:           find.Name,
+		Email:          find.Email,
+		Phone:          find.Phone.String,
+		DocumentNumber: find.DocumentNumber.String,
+		Address: &model.Address{
+			Address: consult.Address.String,
+			Street:  consult.Street.String,
+			Number:  consult.Number.String,
+		},
+	}
+
+	return response, nil
 }
 
 // Users is the resolver for the users field.
@@ -246,21 +267,21 @@ func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
 	for _, user := range getUser {
 		consult, err := r.Resolver.AddressService.GetAddressByID(user.ID)
 
-		address := &model.Address{
-			Address: consult.Address.String,
-			Street:  consult.Street.String,
-			Number:  consult.Number.String,
-		}
 		if err != nil {
 			return nil, err
 		}
+
 		listUser := &model.User{
 			ID:             user.ID,
 			Name:           user.Name,
 			Email:          user.Email,
 			Phone:          user.Phone.String,
 			DocumentNumber: user.DocumentNumber.String,
-			Address:        address,
+			Address: &model.Address{
+				Address: consult.Address.String,
+				Street:  consult.Street.String,
+				Number:  consult.Number.String,
+			},
 		}
 
 		users = append(users, listUser)

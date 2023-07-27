@@ -1,11 +1,26 @@
-package dataloade
+package storage
 
 import (
 	"context"
+	"database/sql"
 
 	"github.com/diogoX451/inventory-management-api/internal/service"
 	"github.com/graph-gophers/dataloader"
 )
+
+type contextKey string
+
+const (
+	loaders = contextKey("users-loaders")
+)
+
+type UserReader struct {
+	db *sql.DB
+}
+
+func (u *UserReader) GetUsers(ctx context.Context, keys dataloader.Keys) ([]*dataloader.Result, error) {
+	W
+}
 
 func UserBatchFn(userService *service.UserService) dataloader.BatchFunc {
 	return func(ctx context.Context, keys dataloader.Keys) []*dataloader.Result {
