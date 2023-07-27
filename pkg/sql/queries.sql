@@ -26,8 +26,8 @@ UPDATE users SET name = $1, email = $2, phone = $3, document_type = $4, document
 
  
 -- name: CreateAddress :one
-INSERT INTO address (user_id, address, number, street, city, state, postal_code, country) 
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *;
+INSERT INTO address (user_id, address, number, street, city, state, postal_code, country, created_at) 
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *;
 
 -- name: DeleteAddress :execresult
 DELETE FROM address WHERE user_id = $1 RETURNING *;

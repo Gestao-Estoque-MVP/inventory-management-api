@@ -11,7 +11,7 @@ type IAddressRepository interface {
 	CreateAddress(address *database.Address) (*database.Address, error)
 	UpdateAddress(*database.Address) (*database.Address, error)
 	DeleteAddress(userID string) (*sql.Result, error)
-	GetAddressByID(userID string) (database.Queries, error)
+	GetAddressByID(userID string) (*database.Address, error)
 	GetAddress() ([]*database.Address, error)
 }
 
@@ -35,6 +35,7 @@ func (a *IAddress) CreateAddress(address *database.Address) (*database.Address, 
 		State:      address.State,
 		PostalCode: address.PostalCode,
 		Country:    address.Country,
+		CreatedAt:  address.CreatedAt,
 	})
 
 	if err != nil {

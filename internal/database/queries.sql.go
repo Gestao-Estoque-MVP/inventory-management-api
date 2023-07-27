@@ -47,8 +47,8 @@ func (q *Queries) CompleteRegisterUser(ctx context.Context, arg CompleteRegister
 }
 
 const createAddress = `-- name: CreateAddress :one
-INSERT INTO address (user_id, address, number, street, city, state, postal_code, country) 
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id, user_id, address, street, city, state, postal_code, country, number, created_at, updated_at
+INSERT INTO address (user_id, address, number, street, city, state, postal_code, country, created_at) 
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id, user_id, address, street, city, state, postal_code, country, number, created_at, updated_at
 `
 
 type CreateAddressParams struct {
@@ -60,6 +60,7 @@ type CreateAddressParams struct {
 	State      sql.NullString
 	PostalCode sql.NullString
 	Country    sql.NullString
+	CreatedAt  time.Time
 }
 
 func (q *Queries) CreateAddress(ctx context.Context, arg CreateAddressParams) (Address, error) {
@@ -72,6 +73,7 @@ func (q *Queries) CreateAddress(ctx context.Context, arg CreateAddressParams) (A
 		arg.State,
 		arg.PostalCode,
 		arg.Country,
+		arg.CreatedAt,
 	)
 	var i Address
 	err := row.Scan(

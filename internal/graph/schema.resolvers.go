@@ -11,6 +11,7 @@ import (
 
 	"github.com/diogoX451/inventory-management-api/internal/database"
 	"github.com/diogoX451/inventory-management-api/internal/graph/model"
+	"github.com/diogoX451/inventory-management-api/pkg/convert"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
@@ -144,8 +145,27 @@ func (r *mutationResolver) UpdateUser(ctx context.Context, id string, input mode
 }
 
 // CreateAddress is the resolver for the createAddress field.
-func (r *mutationResolver) CreateAddress(ctx context.Context, input model.NewAddress) (*model.Address, error) {
-	panic(fmt.Errorf("not implemented: CreateAddress - createAddress"))
+func (r *mutationResolver) CreateAddress(ctx context.Context, input model.NewAddress) (*model.Message, error) {
+	address := database.Address{
+		UserID:     input.UserID,
+		Address:    sql.NullString{String: input.Address, Valid: true},
+		Street:     convert.ConvertString(input.Street),
+		City:       convert.ConvertString(&input.City),
+		State:      convert.ConvertString(&input.State),
+		PostalCode: convert.ConvertString(&input.State),
+		Country:    convert.ConvertString(&input.Country),
+		Number:     convert.ConvertString(input.Number),
+	}
+
+	_, err := r.Resolver.AddressService.CreateAddress(&address)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &model.Message{
+		Message: "Address created successfully",
+	}, nil
 }
 
 // CreateRole is the resolver for the createRole field.
@@ -224,12 +244,23 @@ func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
 
 	var users []*model.User
 	for _, user := range getUser {
+		consult, err := r.Resolver.AddressService.GetAddressByID(user.ID)
+
+		address := &model.Address{
+			Address: consult.Address.String,
+			Street:  consult.Street.String,
+			Number:  consult.Number.String,
+		}
+		if err != nil {
+			return nil, err
+		}
 		listUser := &model.User{
 			ID:             user.ID,
 			Name:           user.Name,
 			Email:          user.Email,
 			Phone:          user.Phone.String,
 			DocumentNumber: user.DocumentNumber.String,
+			Address:        address,
 		}
 
 		users = append(users, listUser)

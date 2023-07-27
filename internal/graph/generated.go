@@ -47,14 +47,15 @@ type DirectiveRoot struct {
 
 type ComplexityRoot struct {
 	Address struct {
-		City    func(childComplexity int) int
-		Country func(childComplexity int) int
-		ID      func(childComplexity int) int
-		Number  func(childComplexity int) int
-		State   func(childComplexity int) int
-		Street  func(childComplexity int) int
-		UserID  func(childComplexity int) int
-		ZipCode func(childComplexity int) int
+		Address    func(childComplexity int) int
+		City       func(childComplexity int) int
+		Country    func(childComplexity int) int
+		ID         func(childComplexity int) int
+		Number     func(childComplexity int) int
+		PostalCode func(childComplexity int) int
+		State      func(childComplexity int) int
+		Street     func(childComplexity int) int
+		UserID     func(childComplexity int) int
 	}
 
 	ContactInfo struct {
@@ -117,7 +118,7 @@ type ComplexityRoot struct {
 	}
 
 	User struct {
-		Addresses      func(childComplexity int) int
+		Address        func(childComplexity int) int
 		DocumentNumber func(childComplexity int) int
 		DocumentType   func(childComplexity int) int
 		Email          func(childComplexity int) int
@@ -133,7 +134,7 @@ type MutationResolver interface {
 	CreatePreUser(ctx context.Context, input model.NewPreUser) (*model.PreUser, error)
 	CreateCompleteUser(ctx context.Context, input model.NewUserComplete) (*model.User, error)
 	UpdateUser(ctx context.Context, id string, input model.NewUser) (*model.Message, error)
-	CreateAddress(ctx context.Context, input model.NewAddress) (*model.Address, error)
+	CreateAddress(ctx context.Context, input model.NewAddress) (*model.Message, error)
 	CreateRole(ctx context.Context, input model.NewRole) (*model.Roles, error)
 	CreatePermission(ctx context.Context, input model.NewPermission) (*model.Permissions, error)
 	CreateRolePermission(ctx context.Context, input model.NewRolePermission) (*model.RolePermissions, error)
@@ -160,6 +161,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	ec := executionContext{nil, e, 0, 0, nil}
 	_ = ec
 	switch typeName + "." + field {
+
+	case "Address.address":
+		if e.complexity.Address.Address == nil {
+			break
+		}
+
+		return e.complexity.Address.Address(childComplexity), true
 
 	case "Address.city":
 		if e.complexity.Address.City == nil {
@@ -189,6 +197,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Address.Number(childComplexity), true
 
+	case "Address.postalCode":
+		if e.complexity.Address.PostalCode == nil {
+			break
+		}
+
+		return e.complexity.Address.PostalCode(childComplexity), true
+
 	case "Address.state":
 		if e.complexity.Address.State == nil {
 			break
@@ -209,13 +224,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Address.UserID(childComplexity), true
-
-	case "Address.zipCode":
-		if e.complexity.Address.ZipCode == nil {
-			break
-		}
-
-		return e.complexity.Address.ZipCode(childComplexity), true
 
 	case "ContactInfo.email":
 		if e.complexity.ContactInfo.Email == nil {
@@ -496,12 +504,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Roles.Name(childComplexity), true
 
-	case "User.addresses":
-		if e.complexity.User.Addresses == nil {
+	case "User.address":
+		if e.complexity.User.Address == nil {
 			break
 		}
 
-		return e.complexity.User.Addresses(childComplexity), true
+		return e.complexity.User.Address(childComplexity), true
 
 	case "User.document_number":
 		if e.complexity.User.DocumentNumber == nil {
@@ -949,6 +957,50 @@ func (ec *executionContext) fieldContext_Address_id(ctx context.Context, field g
 	return fc, nil
 }
 
+func (ec *executionContext) _Address_address(ctx context.Context, field graphql.CollectedField, obj *model.Address) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Address_address(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Address, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Address_address(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Address",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Address_street(ctx context.Context, field graphql.CollectedField, obj *model.Address) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Address_street(ctx, field)
 	if err != nil {
@@ -1169,8 +1221,8 @@ func (ec *executionContext) fieldContext_Address_country(ctx context.Context, fi
 	return fc, nil
 }
 
-func (ec *executionContext) _Address_zipCode(ctx context.Context, field graphql.CollectedField, obj *model.Address) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Address_zipCode(ctx, field)
+func (ec *executionContext) _Address_postalCode(ctx context.Context, field graphql.CollectedField, obj *model.Address) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Address_postalCode(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -1183,7 +1235,7 @@ func (ec *executionContext) _Address_zipCode(ctx context.Context, field graphql.
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.ZipCode, nil
+		return obj.PostalCode, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1200,7 +1252,7 @@ func (ec *executionContext) _Address_zipCode(ctx context.Context, field graphql.
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Address_zipCode(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Address_postalCode(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Address",
 		Field:      field,
@@ -1239,9 +1291,9 @@ func (ec *executionContext) _Address_userId(ctx context.Context, field graphql.C
 		}
 		return graphql.Null
 	}
-	res := resTmp.(int)
+	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalNInt2int(ctx, field.Selections, res)
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Address_userId(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1251,7 +1303,7 @@ func (ec *executionContext) fieldContext_Address_userId(ctx context.Context, fie
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Int does not have child fields")
+			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -1759,8 +1811,8 @@ func (ec *executionContext) fieldContext_Mutation_createCompleteUser(ctx context
 				return ec.fieldContext_User_document_type(ctx, field)
 			case "document_number":
 				return ec.fieldContext_User_document_number(ctx, field)
-			case "addresses":
-				return ec.fieldContext_User_addresses(ctx, field)
+			case "address":
+				return ec.fieldContext_User_address(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
@@ -1884,9 +1936,9 @@ func (ec *executionContext) _Mutation_createAddress(ctx context.Context, field g
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*model.Address)
+	res := resTmp.(*model.Message)
 	fc.Result = res
-	return ec.marshalNAddress2ᚖgithubᚗcomᚋdiogoX451ᚋinventoryᚑmanagementᚑapiᚋinternalᚋgraphᚋmodelᚐAddress(ctx, field.Selections, res)
+	return ec.marshalNMessage2ᚖgithubᚗcomᚋdiogoX451ᚋinventoryᚑmanagementᚑapiᚋinternalᚋgraphᚋmodelᚐMessage(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_createAddress(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1897,24 +1949,10 @@ func (ec *executionContext) fieldContext_Mutation_createAddress(ctx context.Cont
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "id":
-				return ec.fieldContext_Address_id(ctx, field)
-			case "street":
-				return ec.fieldContext_Address_street(ctx, field)
-			case "number":
-				return ec.fieldContext_Address_number(ctx, field)
-			case "city":
-				return ec.fieldContext_Address_city(ctx, field)
-			case "state":
-				return ec.fieldContext_Address_state(ctx, field)
-			case "country":
-				return ec.fieldContext_Address_country(ctx, field)
-			case "zipCode":
-				return ec.fieldContext_Address_zipCode(ctx, field)
-			case "userId":
-				return ec.fieldContext_Address_userId(ctx, field)
+			case "message":
+				return ec.fieldContext_Message_message(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type Address", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type Message", field.Name)
 		},
 	}
 	defer func() {
@@ -2435,8 +2473,8 @@ func (ec *executionContext) fieldContext_Query_user(ctx context.Context, field g
 				return ec.fieldContext_User_document_type(ctx, field)
 			case "document_number":
 				return ec.fieldContext_User_document_number(ctx, field)
-			case "addresses":
-				return ec.fieldContext_User_addresses(ctx, field)
+			case "address":
+				return ec.fieldContext_User_address(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
@@ -2526,8 +2564,8 @@ func (ec *executionContext) fieldContext_Query_users(ctx context.Context, field 
 				return ec.fieldContext_User_document_type(ctx, field)
 			case "document_number":
 				return ec.fieldContext_User_document_number(ctx, field)
-			case "addresses":
-				return ec.fieldContext_User_addresses(ctx, field)
+			case "address":
+				return ec.fieldContext_User_address(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
@@ -2576,6 +2614,8 @@ func (ec *executionContext) fieldContext_Query_address(ctx context.Context, fiel
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Address_id(ctx, field)
+			case "address":
+				return ec.fieldContext_Address_address(ctx, field)
 			case "street":
 				return ec.fieldContext_Address_street(ctx, field)
 			case "number":
@@ -2586,8 +2626,8 @@ func (ec *executionContext) fieldContext_Query_address(ctx context.Context, fiel
 				return ec.fieldContext_Address_state(ctx, field)
 			case "country":
 				return ec.fieldContext_Address_country(ctx, field)
-			case "zipCode":
-				return ec.fieldContext_Address_zipCode(ctx, field)
+			case "postalCode":
+				return ec.fieldContext_Address_postalCode(ctx, field)
 			case "userId":
 				return ec.fieldContext_Address_userId(ctx, field)
 			}
@@ -2649,6 +2689,8 @@ func (ec *executionContext) fieldContext_Query_addresses(ctx context.Context, fi
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Address_id(ctx, field)
+			case "address":
+				return ec.fieldContext_Address_address(ctx, field)
 			case "street":
 				return ec.fieldContext_Address_street(ctx, field)
 			case "number":
@@ -2659,8 +2701,8 @@ func (ec *executionContext) fieldContext_Query_addresses(ctx context.Context, fi
 				return ec.fieldContext_Address_state(ctx, field)
 			case "country":
 				return ec.fieldContext_Address_country(ctx, field)
-			case "zipCode":
-				return ec.fieldContext_Address_zipCode(ctx, field)
+			case "postalCode":
+				return ec.fieldContext_Address_postalCode(ctx, field)
 			case "userId":
 				return ec.fieldContext_Address_userId(ctx, field)
 			}
@@ -3391,8 +3433,8 @@ func (ec *executionContext) fieldContext_User_document_number(ctx context.Contex
 	return fc, nil
 }
 
-func (ec *executionContext) _User_addresses(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_User_addresses(ctx, field)
+func (ec *executionContext) _User_address(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_User_address(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -3405,7 +3447,7 @@ func (ec *executionContext) _User_addresses(ctx context.Context, field graphql.C
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Addresses, nil
+		return obj.Address, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3417,12 +3459,12 @@ func (ec *executionContext) _User_addresses(ctx context.Context, field graphql.C
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*model.Address)
+	res := resTmp.(*model.Address)
 	fc.Result = res
-	return ec.marshalNAddress2ᚕᚖgithubᚗcomᚋdiogoX451ᚋinventoryᚑmanagementᚑapiᚋinternalᚋgraphᚋmodelᚐAddressᚄ(ctx, field.Selections, res)
+	return ec.marshalNAddress2ᚖgithubᚗcomᚋdiogoX451ᚋinventoryᚑmanagementᚑapiᚋinternalᚋgraphᚋmodelᚐAddress(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_User_addresses(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_User_address(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "User",
 		Field:      field,
@@ -3432,6 +3474,8 @@ func (ec *executionContext) fieldContext_User_addresses(ctx context.Context, fie
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Address_id(ctx, field)
+			case "address":
+				return ec.fieldContext_Address_address(ctx, field)
 			case "street":
 				return ec.fieldContext_Address_street(ctx, field)
 			case "number":
@@ -3442,8 +3486,8 @@ func (ec *executionContext) fieldContext_User_addresses(ctx context.Context, fie
 				return ec.fieldContext_Address_state(ctx, field)
 			case "country":
 				return ec.fieldContext_Address_country(ctx, field)
-			case "zipCode":
-				return ec.fieldContext_Address_zipCode(ctx, field)
+			case "postalCode":
+				return ec.fieldContext_Address_postalCode(ctx, field)
 			case "userId":
 				return ec.fieldContext_Address_userId(ctx, field)
 			}
@@ -5233,18 +5277,27 @@ func (ec *executionContext) unmarshalInputNewAddress(ctx context.Context, obj in
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"street", "number", "city", "state", "country", "zipCode", "userId"}
+	fieldsInOrder := [...]string{"address", "street", "number", "city", "state", "country", "postalCode", "userId"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
+		case "address":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("address"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Address = data
 		case "street":
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("street"))
-			data, err := ec.unmarshalNString2string(ctx, v)
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -5253,7 +5306,7 @@ func (ec *executionContext) unmarshalInputNewAddress(ctx context.Context, obj in
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("number"))
-			data, err := ec.unmarshalNString2string(ctx, v)
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -5285,20 +5338,20 @@ func (ec *executionContext) unmarshalInputNewAddress(ctx context.Context, obj in
 				return it, err
 			}
 			it.Country = data
-		case "zipCode":
+		case "postalCode":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("zipCode"))
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("postalCode"))
 			data, err := ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.ZipCode = data
+			it.PostalCode = data
 		case "userId":
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("userId"))
-			data, err := ec.unmarshalNInt2int(ctx, v)
+			data, err := ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -5709,6 +5762,11 @@ func (ec *executionContext) _Address(ctx context.Context, sel ast.SelectionSet, 
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "address":
+			out.Values[i] = ec._Address_address(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		case "street":
 			out.Values[i] = ec._Address_street(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -5734,8 +5792,8 @@ func (ec *executionContext) _Address(ctx context.Context, sel ast.SelectionSet, 
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "zipCode":
-			out.Values[i] = ec._Address_zipCode(ctx, field, obj)
+		case "postalCode":
+			out.Values[i] = ec._Address_postalCode(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -6401,8 +6459,8 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
-		case "addresses":
-			out.Values[i] = ec._User_addresses(ctx, field, obj)
+		case "address":
+			out.Values[i] = ec._User_address(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -6849,21 +6907,6 @@ func (ec *executionContext) unmarshalNID2string(ctx context.Context, v interface
 
 func (ec *executionContext) marshalNID2string(ctx context.Context, sel ast.SelectionSet, v string) graphql.Marshaler {
 	res := graphql.MarshalID(v)
-	if res == graphql.Null {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-	}
-	return res
-}
-
-func (ec *executionContext) unmarshalNInt2int(ctx context.Context, v interface{}) (int, error) {
-	res, err := graphql.UnmarshalInt(v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.SelectionSet, v int) graphql.Marshaler {
-	res := graphql.MarshalInt(v)
 	if res == graphql.Null {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")

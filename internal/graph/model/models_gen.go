@@ -3,14 +3,15 @@
 package model
 
 type Address struct {
-	ID      string `json:"id"`
-	Street  string `json:"street"`
-	Number  string `json:"number"`
-	City    string `json:"city"`
-	State   string `json:"state"`
-	Country string `json:"country"`
-	ZipCode string `json:"zipCode"`
-	UserID  int    `json:"userId"`
+	ID         string `json:"id"`
+	Address    string `json:"address"`
+	Street     string `json:"street"`
+	Number     string `json:"number"`
+	City       string `json:"city"`
+	State      string `json:"state"`
+	Country    string `json:"country"`
+	PostalCode string `json:"postalCode"`
+	UserID     string `json:"userId"`
 }
 
 type ContactInfo struct {
@@ -29,13 +30,14 @@ type Message struct {
 }
 
 type NewAddress struct {
-	Street  string `json:"street"`
-	Number  string `json:"number"`
-	City    string `json:"city"`
-	State   string `json:"state"`
-	Country string `json:"country"`
-	ZipCode string `json:"zipCode"`
-	UserID  int    `json:"userId"`
+	Address    string  `json:"address"`
+	Street     *string `json:"street,omitempty"`
+	Number     *string `json:"number,omitempty"`
+	City       string  `json:"city"`
+	State      string  `json:"state"`
+	Country    string  `json:"country"`
+	PostalCode string  `json:"postalCode"`
+	UserID     string  `json:"userId"`
 }
 
 type NewContactInfo struct {
@@ -111,11 +113,11 @@ type Roles struct {
 }
 
 type User struct {
-	ID             string     `json:"id"`
-	Name           string     `json:"name"`
-	Email          string     `json:"email"`
-	Phone          string     `json:"phone"`
-	DocumentType   string     `json:"document_type"`
-	DocumentNumber string     `json:"document_number"`
-	Addresses      []*Address `json:"addresses"`
+	ID             string   `json:"id"`
+	Name           string   `json:"name"`
+	Email          string   `json:"email"`
+	Phone          string   `json:"phone"`
+	DocumentType   string   `json:"document_type"`
+	DocumentNumber string   `json:"document_number"`
+	Address        *Address `json:"address"`
 }

@@ -66,6 +66,13 @@ func (s *AddressService) DeleteAddress(userID string) (*sql.Result, error) {
 	return delete, nil
 }
 
-func (s *AddressService) GetAddress(userID string) ([]*database.Address, error) {
-	li
+func (s *AddressService) GetAddressByID(userID string) (*database.Address, error) {
+	list, err := s.addressRepo.GetAddressByID(userID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return list, nil
+
 }

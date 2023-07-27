@@ -11,11 +11,13 @@ import (
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/diogoX451/inventory-management-api/internal/database"
 	"github.com/diogoX451/inventory-management-api/internal/graph"
+	"github.com/diogoX451/inventory-management-api/internal/graph/dataloade"
 	"github.com/diogoX451/inventory-management-api/internal/graph/directives"
 	"github.com/diogoX451/inventory-management-api/internal/graph/middleware"
 	"github.com/diogoX451/inventory-management-api/internal/repository"
 	"github.com/diogoX451/inventory-management-api/internal/service"
 	"github.com/gorilla/mux"
+	"github.com/graph-gophers/dataloader"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 )
@@ -63,6 +65,10 @@ func main() {
 	contactRepository := repository.NewRepositoryContactInfo(queries)
 	contactService := service.NewContactInfoService(contactRepository)
 	loginService := service.NewAuthUser(*userRepository)
+	addressRepository := repository.NewAddressRepository(queries)
+	addressRepositoryService := service.NewAddressService(addressRepository)
+	userLoader := dataloader.NewBatchedLoader(dataloade.UserBatchFn(userService), dataloader.WithClearCacheOnBatch())
+	addressLoader := dataloader.NewBatchedLoader(dataloade.AddressBatchFn(addressRepositoryService), dataloader.WithClearCacheOnBatch())
 
 	resolvers := &graph.Resolver{
 		UserRepository:        userRepository,
@@ -72,6 +78,10 @@ func main() {
 		RBCARepository:        rcba,
 		RBCAService:           rcbaService,
 		AuthUserService:       loginService,
+		AddressRepository:     addressRepository,
+		AddressService:        addressRepositoryService,
+		UserLoader:            userLoader,
+		AddressLoader:         addressLoader,
 	}
 
 	c := graph.Config{

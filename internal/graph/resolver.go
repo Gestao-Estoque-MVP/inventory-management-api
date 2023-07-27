@@ -9,6 +9,7 @@ import (
 	"github.com/diogoX451/inventory-management-api/internal/database"
 	"github.com/diogoX451/inventory-management-api/internal/repository"
 	"github.com/diogoX451/inventory-management-api/internal/service"
+	"github.com/graph-gophers/dataloader"
 )
 
 type Resolver struct {
@@ -19,6 +20,10 @@ type Resolver struct {
 	RBCARepository        repository.IRBCA
 	RBCAService           *service.RCBAService
 	AuthUserService       *service.AuthUser
+	AddressRepository     repository.IAddressRepository
+	AddressService        *service.AddressService
+	UserLoader            *dataloader.Loader
+	AddressLoader         *dataloader.Loader
 }
 
 func (r *Resolver) Login(ctx context.Context, args struct {
