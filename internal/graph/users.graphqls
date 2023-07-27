@@ -1,0 +1,37 @@
+type User {
+  id: ID!
+  name: String!
+  email: String!
+  phone: String!
+  document_type: String!
+  document_number: String!
+  address: Address!
+}
+
+type PreUser {
+  id: ID!
+  name: String!
+  email: String!
+}
+
+input NewPreUser {
+  name: String!
+  email: String!
+  status: String!
+}
+
+input NewUserComplete {
+  phone: String!
+  password: String!
+  document_type: String!
+  document_number: String!
+  RegisterToken: String!
+}
+
+input NewUser {
+  name: String!
+  email: String!
+  phone: String!
+  document_type: String!
+  document_number: String!
+}
