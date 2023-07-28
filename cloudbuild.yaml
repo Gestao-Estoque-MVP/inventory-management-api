@@ -1,9 +1,0 @@
-steps:
-  - name: 'gcr.io/cloud-builders/docker'
-    args: ['build', '-t', 'gcr.io/swift-stock-api/golang-graphql-api', '.']
-  - name: 'gcr.io/cloud-builders/docker'
-    args: ['push', 'gcr.io/swift-stock-api/golang-graphql-api']
-  - name: 'gcr.io/cloud-builders/gcloud'
-    args: ['run', 'deploy', 'swift-stock-ap', '--image', 'gcr.io/swift-stock-api/golang-graphql-api', '--region', 'southamerica-east1']
-    env:
-      - 'PORT=8080'
