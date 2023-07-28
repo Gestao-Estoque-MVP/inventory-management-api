@@ -1,5 +1,5 @@
 steps:
-  - name: 'gcr.io/cloud-builders/docker
+  - name: 'gcr.io/cloud-builders/docker'
     args: ['build', '-t', 'gcr.io/swift-stock-api/golang-graphql-api', '.']
   - name: 'gcr.io/cloud-builders/docker'
     args: ['push', 'gcr.io/swift-stock-api/golang-graphql-api']
