@@ -55,6 +55,10 @@ func main() {
 	router.Use(middleware.AuthMiddleware)
 	port := os.Getenv("PORT")
 
+	if port == "" {
+		port = "8080"
+	}
+
 	queries := database.New(db)
 	rcba := repository.NewRBCARepository(queries)
 	rcbaService := service.NewRCBAService(rcba)
