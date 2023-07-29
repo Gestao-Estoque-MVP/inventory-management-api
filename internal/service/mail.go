@@ -14,8 +14,8 @@ type SendEmail struct {
 func (s *SendEmail) Send(email []string) error {
 	auth := smtp.PlainAuth(
 		"",
-		"d77214b7e8c1eb", // username do Mailtrap
-		"fc5c082967dc26", // password do Mailtrap
+		"d77214b7e8c1eb",
+		"fc5c082967dc26",
 		"sandbox.smtp.mailtrap.io",
 	)
 
