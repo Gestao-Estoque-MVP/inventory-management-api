@@ -3,7 +3,7 @@
 package model
 
 type Address struct {
-	ID         string `json:"id"`
+	ID         int    `json:"id"`
 	Address    string `json:"address"`
 	Street     string `json:"street"`
 	Number     string `json:"number"`

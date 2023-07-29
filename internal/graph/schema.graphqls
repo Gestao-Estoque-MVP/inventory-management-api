@@ -38,18 +38,6 @@ type ContactInfo {
   phone: String!
 }
 
-type Address {
-  id: ID!
-  address: String!
-  street: String!
-  number: String!
-  city: String!
-  state: String!
-  country: String!
-  postalCode: String!
-  userId: String!
-}
-
 
 type Message {
   message: String!
@@ -81,16 +69,6 @@ input NewContactInfo {
   phone: String!
 }
 
-input NewAddress {
-  address: String!
-  street: String
-  number: String
-  city: String!
-  state: String!
-  country: String!
-  postalCode: String!
-  userId: String!
-}
 
 
 type Mutation {

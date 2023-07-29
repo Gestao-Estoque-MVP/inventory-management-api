@@ -1,0 +1,22 @@
+type Address {
+  id: Int!
+  address: String!
+  street: String!
+  number: String!
+  city: String!
+  state: String!
+  country: String!
+  postalCode: String!
+  userId: String!
+}
+
+input NewAddress {
+  address: String!
+  street: String
+  number: String
+  city: String!
+  state: String!
+  country: String!
+  postalCode: String!
+  userId: String!
+}

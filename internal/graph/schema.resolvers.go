@@ -292,7 +292,22 @@ func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
 
 // Address is the resolver for the address field.
 func (r *queryResolver) Address(ctx context.Context, id string) (*model.Address, error) {
-	panic(fmt.Errorf("not implemented: Address - address"))
+	get, err := r.Resolver.AddressRepository.GetAddressByID(id)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &model.Address{
+		ID:         int(get.ID),
+		Address:    get.Address.String,
+		Street:     get.Street.String,
+		Number:     get.Number.String,
+		City:       get.City.String,
+		State:      get.State.String,
+		Country:    get.Country.String,
+		PostalCode: get.PostalCode.String,
+	}, nil
 }
 
 // Addresses is the resolver for the addresses field.

@@ -15,6 +15,7 @@ import (
 type UserService struct {
 	userRepo repository.IUserRepository
 	role     repository.IRBCA
+	send     SendEmail
 }
 
 func NewServiceUser(userRepo repository.IUserRepository, role repository.IRBCA) *UserService {
@@ -43,6 +44,13 @@ func (us *UserService) CreatePreUser(user *database.User) (*database.User, error
 		log.Printf("Erro ao criar usuário: %v\n", err)
 		return nil, err
 	}
+
+	go func(email string) {
+		err := us.send.Send([]string{email})
+		if err != nil {
+			log.Printf("error sending %v", err)
+		}
+	}(createUser.Email)
 
 	return createUser, nil
 }

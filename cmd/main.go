@@ -18,6 +18,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
+	"github.com/rs/cors"
 )
 
 func init() {
@@ -53,6 +54,11 @@ func main() {
 
 	router := mux.NewRouter()
 	router.Use(middleware.AuthMiddleware)
+	router.Use(cors.New(cors.Options{
+		AllowedOrigins:   []string{"*"},
+		AllowCredentials: true,
+	}).Handler)
+
 	port := os.Getenv("PORT")
 
 	if port == "" {
