@@ -27,7 +27,11 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		customClaim, _ := validate.Claims.(*service.JwtCustomClaim)
+		customClaim, ok := validate.Claims.(*service.JwtCustomClaim)
+		if !ok {
+			http.Error(w, "Invalid token claims", http.StatusForbidden)
+			return
+		}
 
 		ctx := context.WithValue(r.Context(), authString("auth"), customClaim)
 

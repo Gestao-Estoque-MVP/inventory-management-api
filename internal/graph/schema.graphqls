@@ -6,8 +6,14 @@ directive @goField(forceResolver: Boolean, name: String) on FIELD_DEFINITION | I
 
 # new directive
 directive @auth on FIELD_DEFINITION
+directive @hasRole(role: Role!) on FIELD_DEFINITION
 
 scalar Any
+
+enum Role{
+  users,
+  admin,
+}
 
 type Login {
   token: String!
@@ -100,13 +106,13 @@ type Mutation {
   createCompleteUser(input: NewUserComplete!): User!
   updateUser(id: ID!, input: NewUser!): Message! @auth
   createAddress(input: NewAddress!): Message!
-  createRole(input: NewRole!): Roles!
-  createPermission(input: NewPermission!): Permissions!
-  createRolePermission(input: NewRolePermission!): RolePermissions!
+  createRole(input: NewRole!): Roles! @auth @hasRole(role: admin)
+  createPermission(input: NewPermission!): Permissions! @auth @hasRole(role: admin)
+  createRolePermission(input: NewRolePermission!): RolePermissions! @auth @hasRole(role: admin)
 }
 
 type Query {
-  user(id: ID!): User! @goField(forceResolver: true)
-  users: [User!]! @goField(forceResolver: true) @auth
+  user(id: ID!): User! @goField(forceResolver: true) @auth 
+  users: [User!]! @goField(forceResolver: true) @auth @hasRole(role: admin)
   protected: String! @goField(forceResolver: true) @auth
 }

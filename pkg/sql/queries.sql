@@ -44,6 +44,9 @@ SELECT * FROM address;
 -- name: GetRole :one
 SELECT * FROM roles WHERE name = $1;
 
+-- name: GetRoleByID :one
+SELECT * from roles WHERE id = $1;
+
 
 -- name: CreateContactInfo :one
 INSERT INTO contact_info (id, name, email, phone, created_at) 

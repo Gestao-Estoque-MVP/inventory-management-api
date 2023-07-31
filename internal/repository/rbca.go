@@ -15,6 +15,7 @@ type IRBCA interface {
 	CreateTenant(*database.Tenant) (*database.Tenant, error)
 	GetRolesPermissions(role string) ([]*database.GetRolesPermissionsRow, error)
 	GetUsersPermissions(user string) ([]*database.GetUsersPermissionsRow, error)
+	GetRoleByID(id string) (*database.Role, error)
 }
 
 type RBCARepository struct {
@@ -132,4 +133,14 @@ func (r *RBCARepository) CreateTenant(tenant *database.Tenant) (*database.Tenant
 	}
 
 	return &create, nil
+}
+
+func (r *RBCARepository) GetRoleByID(id string) (*database.Role, error) {
+	get, err := r.DB.GetRoleByID(context.Background(), id)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &get, nil
 }
