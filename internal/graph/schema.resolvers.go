@@ -272,7 +272,7 @@ func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
 		consult, err := r.Resolver.AddressService.GetAddressByID(user.ID)
 
 		if err != nil {
-			return nil, err
+			continue
 		}
 
 		listUser := &model.User{
@@ -282,6 +282,7 @@ func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
 			Phone:          user.Phone.String,
 			DocumentNumber: user.DocumentNumber.String,
 			Address: &model.Address{
+				ID:         int(consult.ID),
 				Address:    consult.Address.String,
 				Street:     consult.Street.String,
 				Number:     consult.Number.String,
@@ -296,16 +297,6 @@ func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
 	}
 
 	return users, nil
-}
-
-// Address is the resolver for the address field.
-func (r *queryResolver) Address(ctx context.Context, id string) (*model.Address, error) {
-	panic(fmt.Errorf("not implemented: Address - address"))
-}
-
-// Addresses is the resolver for the addresses field.
-func (r *queryResolver) Addresses(ctx context.Context) ([]*model.Address, error) {
-	panic(fmt.Errorf("not implemented: Addresses - addresses"))
 }
 
 // Protected is the resolver for the protected field.

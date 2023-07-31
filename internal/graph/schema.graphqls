@@ -39,7 +39,7 @@ type ContactInfo {
 }
 
 type Address {
-  id: ID!
+  id: Int!
   address: String!
   street: String!
   number: String!
@@ -108,7 +108,5 @@ type Mutation {
 type Query {
   user(id: ID!): User! @goField(forceResolver: true)
   users: [User!]! @goField(forceResolver: true) @auth
-  address(id: ID!): Address!
-  addresses: [Address!]!
   protected: String! @goField(forceResolver: true) @auth
 }
