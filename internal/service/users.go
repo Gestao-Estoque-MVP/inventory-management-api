@@ -46,7 +46,7 @@ func (us *UserService) CreatePreUser(user *database.User) (*database.User, error
 	}
 
 	go func(email string) {
-		err := us.send.Send([]string{email})
+		err := us.send.SendOneEmail([]string{email}, user.Name)
 		if err != nil {
 			log.Printf("error sending %v "+email+":", err)
 		}

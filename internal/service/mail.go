@@ -1,37 +1,67 @@
 package service
 
 import (
+	"bytes"
+	"html/template"
 	"log"
 	"net/smtp"
+	"os"
+
+	"github.com/joho/godotenv"
 )
 
 type SendEmail struct {
-	to   []string
-	from string
-	msg  []byte
+	from    string
+	to      []string
+	subject string
+	body    string
 }
 
-func (s *SendEmail) Send(email []string) error {
-	auth := smtp.PlainAuth(
-		"",
-		"d77214b7e8c1eb",
-		"fc5c082967dc26",
-		"sandbox.smtp.mailtrap.io",
-	)
+func (s *SendEmail) SendOneEmail(email []string, name string) error {
 
-	s.msg = []byte("To: " + email[0] + "\r\n" +
-		"Subject: Assunto do email\r\n" +
-		"\r\n" +
-		"Este é o corpo do email.\r\n")
+	if err := godotenv.Load(); err != nil {
+		panic("No .env variable")
+	}
 
-	err := smtp.SendMail("sandbox.smtp.mailtrap.io:587", auth, "diogosgn@gmail.com", email, s.msg)
+	tmp, err := template.ParseFiles("./internal/templates/index.html")
+	data := struct {
+		Name string
+	}{
+		Name: name,
+	}
+
+	if err != nil {
+		return err
+	}
+
+	buf := new(bytes.Buffer)
+
+	if err = tmp.Execute(buf, data); err != nil {
+		return err
+	}
+
+	s.body = buf.String()
+
+	auth := smtp.PlainAuth("", os.Getenv("MAIL_TRAP_USERNAME"), os.Getenv("MAIL_TRAP_PASSWORD"), os.Getenv("MAIL_TRAP_HOST"))
+	mime := "MIME-version: 1.0;\nContent-Type: text/html; charset=\"UTF-8\";\n\n"
+	s.subject = "Se prepare para inovação..."
+	s.from = "SwiftStock <mailtrap@swiftstock.com.br>"
+	msg := []byte("From: " + s.from + "\r\n" +
+		"Subject: " + s.subject + "\r\n" +
+		mime + "\r\n" + s.body)
+
+	err = smtp.SendMail(os.Getenv("MAIL_TRAP_HOST")+":587", auth, os.Getenv("MAIL_TRAP_FROM"), email, msg)
 
 	if err != nil {
 		log.Printf("Erro ao enviar o email: %v", err)
 		return err
 	}
 
-	log.Printf("Email enviado com sucesso")
+	log.Printf("Email enviado com sucesso ")
 
+	return nil
+}
+
+func (s *SendEmail) SendMultiEmail(email []string) error {
 	return nil
 }
