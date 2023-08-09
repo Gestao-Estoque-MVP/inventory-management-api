@@ -2,6 +2,7 @@ package service
 
 import (
 	"bytes"
+	"fmt"
 	"html/template"
 	"log"
 	"net/smtp"
@@ -64,4 +65,8 @@ func (s *SendEmail) SendOneEmail(email []string, name string) error {
 
 func (s *SendEmail) SendMultiEmail(email []string) error {
 	return nil
+}
+
+func findTemplate(name string) (string, error) {
+	return "", fmt.Errorf("Rodando")
 }
