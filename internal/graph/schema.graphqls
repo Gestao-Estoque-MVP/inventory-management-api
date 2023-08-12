@@ -8,6 +8,7 @@ directive @goField(forceResolver: Boolean, name: String) on FIELD_DEFINITION | I
 directive @auth on FIELD_DEFINITION
 
 scalar Any
+scalar Upload 
 
 type Login {
   token: String!
@@ -81,6 +82,7 @@ type Mutation {
   createRole(input: NewRole!): Roles!
   createPermission(input: NewPermission!): Permissions!
   createRolePermission(input: NewRolePermission!): RolePermissions!
+  uploadTemplate(file: Upload!): Message!
 }
 
 type Query {

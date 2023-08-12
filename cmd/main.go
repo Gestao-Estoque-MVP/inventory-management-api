@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"log"
 	"net/http"
@@ -9,6 +10,9 @@ import (
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/credentials"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/diogoX451/inventory-management-api/internal/database"
 	"github.com/diogoX451/inventory-management-api/internal/graph"
 	"github.com/diogoX451/inventory-management-api/internal/graph/directives"
@@ -26,7 +30,18 @@ func init() {
 	if err := godotenv.Load(); err != nil {
 		panic("No .env variable")
 	}
+	configS3()
+}
 
+func configS3() {
+	credential := credentials.NewStaticCredentialsProvider(os.Getenv("S3_ACESS_KEY_ID"), os.Getenv("S3_SECRET_ACCESS_KEY"), "")
+	config, err := config.LoadDefaultConfig(context.TODO(), config.WithCredentialsProvider(credential), config.WithRegion(os.Getenv("S3_REGION")))
+	if err != nil {
+		log.Fatal(err)
+	}
+	client := s3.NewFromConfig(config)
+	s3Service := &service.S3Service{S3: client}
+	service.NewServiceS3(s3Service)
 }
 
 func main() {
