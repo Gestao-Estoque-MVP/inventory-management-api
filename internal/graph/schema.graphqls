@@ -6,9 +6,15 @@ directive @goField(forceResolver: Boolean, name: String) on FIELD_DEFINITION | I
 
 # new directive
 directive @auth on FIELD_DEFINITION
+directive @hasRole(role: Role!) on FIELD_DEFINITION
 
 scalar Any
 scalar Upload 
+
+enum Role{
+  users,
+  admin,
+}
 
 type Login {
   token: String!
@@ -38,7 +44,6 @@ type ContactInfo {
   email: String!
   phone: String!
 }
-
 
 type Message {
   message: String!
@@ -82,13 +87,14 @@ type Mutation {
   createRole(input: NewRole!): Roles!
   createPermission(input: NewPermission!): Permissions!
   createRolePermission(input: NewRolePermission!): RolePermissions!
-  uploadTemplate(file: Upload!): Message!
+  uploadTemplate(file: Upload!): Message! @auth @hasRole(role: admin)
+  createRole(input: NewRole!): Roles! @auth @hasRole(role: admin)
+  createPermission(input: NewPermission!): Permissions! @auth @hasRole(role: admin)
+  createRolePermission(input: NewRolePermission!): RolePermissions! @auth @hasRole(role: admin)
 }
 
 type Query {
-  user(id: ID!): User! @goField(forceResolver: true)
-  users: [User!]! @goField(forceResolver: true) @auth
-  address(id: ID!): Address!
-  addresses: [Address!]!
+  user(id: ID!): User! @goField(forceResolver: true) @auth 
+  users: [User!]! @goField(forceResolver: true) @auth @hasRole(role: admin)
   protected: String! @goField(forceResolver: true) @auth
 }

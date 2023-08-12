@@ -6,11 +6,13 @@ import (
 	"os"
 	"time"
 
+	"github.com/diogoX451/inventory-management-api/internal/graph/model"
 	"github.com/golang-jwt/jwt/v5"
 )
 
 type JwtCustomClaim struct {
-	ID string `json:"id"`
+	ID   string `json:"id"`
+	Role model.Role
 	jwt.RegisteredClaims
 }
 
@@ -24,12 +26,10 @@ func getJwtSecret() string {
 	return secret
 }
 
-// ExpiresAt: time.Now().Add(time.Hour * 72).Unix(),
-// 			IssuedAt:  time.Now().Unix(),
-
-func JwtGenerate(ctx context.Context, userID string) (string, error) {
+func JwtGenerate(ctx context.Context, userID string, role model.Role) (string, error) {
 	t := jwt.NewWithClaims(jwt.SigningMethodHS256, &JwtCustomClaim{
-		ID: userID,
+		ID:   userID,
+		Role: role,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: &jwt.NumericDate{Time: time.Now().Add(time.Hour * 24)},
 			IssuedAt:  &jwt.NumericDate{Time: time.Now()},

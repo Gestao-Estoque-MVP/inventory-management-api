@@ -18,7 +18,7 @@ SELECT * FROM users WHERE email = $1;
 SELECT * FROM users WHERE register_token = $1;
 
 -- name: ListUsers :many
-SELECT * FROM users;
+SELECT * FROM users ORDER BY id;
 
 -- name: UpdateUser :exec
 UPDATE users SET name = $1, email = $2, phone = $3, document_type = $4, document_number = $5 WHERE id = $6;
@@ -43,6 +43,9 @@ SELECT * FROM address;
 
 -- name: GetRole :one
 SELECT * FROM roles WHERE name = $1;
+
+-- name: GetRoleByID :one
+SELECT * from roles WHERE id = $1;
 
 
 -- name: CreateContactInfo :one

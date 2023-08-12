@@ -246,9 +246,13 @@ func (r *queryResolver) User(ctx context.Context, id string) (*model.User, error
 		Phone:          find.Phone.String,
 		DocumentNumber: find.DocumentNumber.String,
 		Address: &model.Address{
-			Address: consult.Address.String,
-			Street:  consult.Street.String,
-			Number:  consult.Number.String,
+			Address:    consult.Address.String,
+			Street:     consult.Street.String,
+			Number:     consult.Number.String,
+			City:       consult.City.String,
+			State:      consult.State.String,
+			Country:    consult.Country.String,
+			PostalCode: consult.PostalCode.String,
 		},
 	}
 
@@ -268,7 +272,7 @@ func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
 		consult, err := r.Resolver.AddressService.GetAddressByID(user.ID)
 
 		if err != nil {
-			return nil, err
+			continue
 		}
 
 		listUser := &model.User{
@@ -278,9 +282,14 @@ func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
 			Phone:          user.Phone.String,
 			DocumentNumber: user.DocumentNumber.String,
 			Address: &model.Address{
-				Address: consult.Address.String,
-				Street:  consult.Street.String,
-				Number:  consult.Number.String,
+				ID:         int(consult.ID),
+				Address:    consult.Address.String,
+				Street:     consult.Street.String,
+				Number:     consult.Number.String,
+				City:       consult.City.String,
+				State:      consult.State.String,
+				Country:    consult.Country.String,
+				PostalCode: consult.PostalCode.String,
 			},
 		}
 

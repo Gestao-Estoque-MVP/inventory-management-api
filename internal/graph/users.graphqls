@@ -3,7 +3,6 @@ type User {
   name: String!
   email: String!
   phone: String!
-  document_type: String!
   document_number: String!
   address: Address!
 }

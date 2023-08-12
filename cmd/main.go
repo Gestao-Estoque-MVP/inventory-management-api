@@ -87,7 +87,7 @@ func main() {
 	userService := service.NewServiceUser(userRepository, rcba)
 	contactRepository := repository.NewRepositoryContactInfo(queries)
 	contactService := service.NewContactInfoService(contactRepository)
-	loginService := service.NewAuthUser(*userRepository)
+	loginService := service.NewAuthUser(*userRepository, *rcba)
 	addressRepository := repository.NewAddressRepository(queries)
 	addressRepositoryService := service.NewAddressService(addressRepository)
 
@@ -106,7 +106,8 @@ func main() {
 	c := graph.Config{
 		Resolvers: resolvers,
 		Directives: graph.DirectiveRoot{
-			Auth: directives.Auth,
+			Auth:    directives.Auth,
+			HasRole: directives.HasRole,
 		},
 	}
 

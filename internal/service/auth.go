@@ -4,22 +4,26 @@ import (
 	"context"
 	"log"
 
+	"github.com/diogoX451/inventory-management-api/internal/graph/model"
 	"github.com/diogoX451/inventory-management-api/internal/repository"
 	token "github.com/diogoX451/inventory-management-api/pkg/Token"
 )
 
 type AuthUser struct {
-	us repository.UserRepository
+	us   repository.UserRepository
+	role repository.RBCARepository
 }
 
-func NewAuthUser(us repository.UserRepository) *AuthUser {
+func NewAuthUser(us repository.UserRepository, role repository.RBCARepository) *AuthUser {
 	return &AuthUser{
-		us: us,
+		us:   us,
+		role: role,
 	}
 }
 
 func (a *AuthUser) UserLogin(ctx context.Context, email string, password string) (interface{}, error) {
 	getUser, err := a.us.GetUserByEmail(email)
+	role, _ := a.role.GetRoleByID(getUser.RoleID.String)
 
 	if err != nil {
 		log.Printf("error em trazer user login: %v", err)
@@ -31,7 +35,7 @@ func (a *AuthUser) UserLogin(ctx context.Context, email string, password string)
 		return nil, err
 	}
 
-	token, err := JwtGenerate(ctx, getUser.ID)
+	jwtToken, err := JwtGenerate(ctx, getUser.ID, model.Role(role.Name))
 
 	if err != nil {
 		log.Printf("Erro em gerar o JWT")
@@ -39,6 +43,6 @@ func (a *AuthUser) UserLogin(ctx context.Context, email string, password string)
 	}
 
 	return map[string]interface{}{
-		"token": token,
+		"token": jwtToken,
 	}, nil
 }

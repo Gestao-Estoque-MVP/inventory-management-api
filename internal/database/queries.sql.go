@@ -307,6 +307,17 @@ func (q *Queries) GetRole(ctx context.Context, name string) (Role, error) {
 	return i, err
 }
 
+const getRoleByID = `-- name: GetRoleByID :one
+SELECT id, name, description from roles WHERE id = $1
+`
+
+func (q *Queries) GetRoleByID(ctx context.Context, id string) (Role, error) {
+	row := q.db.QueryRowContext(ctx, getRoleByID, id)
+	var i Role
+	err := row.Scan(&i.ID, &i.Name, &i.Description)
+	return i, err
+}
+
 const getRolesPermissions = `-- name: GetRolesPermissions :many
 SELECT
     u.id AS user_id,
@@ -516,7 +527,7 @@ func (q *Queries) ListAddresses(ctx context.Context) ([]Address, error) {
 }
 
 const listUsers = `-- name: ListUsers :many
-SELECT id, name, email, phone, document_type, document_number, password, avatar, status, register_token, token_expires_at, created_at, updated_at, role_id, tenant_id FROM users
+SELECT id, name, email, phone, document_type, document_number, password, avatar, status, register_token, token_expires_at, created_at, updated_at, role_id, tenant_id FROM users ORDER BY id
 `
 
 func (q *Queries) ListUsers(ctx context.Context) ([]User, error) {

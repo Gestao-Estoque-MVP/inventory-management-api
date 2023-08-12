@@ -105,3 +105,14 @@ func (r *RCBAService) CreateTenant(tenant string) (*database.Tenant, error) {
 
 	return create, nil
 }
+
+func (r *RCBAService) GetRoleByID(id string) (*database.Role, error) {
+	get, err := r.rcba.GetRoleByID(id)
+
+	if err != nil {
+		log.Printf("Erro ao Trazer os dados role by ID %v", err)
+		return nil, err
+	}
+
+	return get, nil
+}

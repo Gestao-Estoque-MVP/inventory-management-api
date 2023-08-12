@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"log"
 	"time"
 
 	"github.com/diogoX451/inventory-management-api/internal/database"
@@ -122,6 +123,7 @@ func (i *UserRepository) GetUsers() ([]*database.User, error) {
 	list, err := i.DB.ListUsers(context.Background())
 
 	if err != nil {
+		log.Printf("Error getting users", err)
 		return nil, err
 	}
 
