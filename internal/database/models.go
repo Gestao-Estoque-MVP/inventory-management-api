@@ -94,6 +94,15 @@ type RolesPermission struct {
 	PermissionID string
 }
 
+type TemplateEmail struct {
+	ID          string
+	Name        string
+	Url         string
+	Description string
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
+}
+
 type Tenant struct {
 	ID   string
 	Name sql.NullString

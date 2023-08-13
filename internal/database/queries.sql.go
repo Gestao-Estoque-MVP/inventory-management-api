@@ -217,6 +217,39 @@ func (q *Queries) CreateRolePermissions(ctx context.Context, arg CreateRolePermi
 	return i, err
 }
 
+const createTemplate = `-- name: CreateTemplate :one
+INSERT INTO template_email (id, name, url, description, created_at, updated_at) 
+    VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, name
+`
+
+type CreateTemplateParams struct {
+	ID          string
+	Name        string
+	Url         string
+	Description string
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
+}
+
+type CreateTemplateRow struct {
+	ID   string
+	Name string
+}
+
+func (q *Queries) CreateTemplate(ctx context.Context, arg CreateTemplateParams) (CreateTemplateRow, error) {
+	row := q.db.QueryRowContext(ctx, createTemplate,
+		arg.ID,
+		arg.Name,
+		arg.Url,
+		arg.Description,
+		arg.CreatedAt,
+		arg.UpdatedAt,
+	)
+	var i CreateTemplateRow
+	err := row.Scan(&i.ID, &i.Name)
+	return i, err
+}
+
 const createTenant = `-- name: CreateTenant :one
 INSERT INTO tenant (id, name) 
     VALUES ($1, $2) RETURNING id, name
@@ -362,6 +395,17 @@ func (q *Queries) GetRolesPermissions(ctx context.Context, id string) ([]GetRole
 		return nil, err
 	}
 	return items, nil
+}
+
+const getTemplate = `-- name: GetTemplate :one
+SELECT url FROM template_email WHERE id = $1
+`
+
+func (q *Queries) GetTemplate(ctx context.Context, id string) (string, error) {
+	row := q.db.QueryRowContext(ctx, getTemplate, id)
+	var url string
+	err := row.Scan(&url)
+	return url, err
 }
 
 const getUser = `-- name: GetUser :one

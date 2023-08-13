@@ -21,6 +21,8 @@ type Resolver struct {
 	AuthUserService       *service.AuthUser
 	AddressRepository     repository.IAddressRepository
 	AddressService        *service.AddressService
+	S3Repository          repository.IS3
+	S3Service             *service.S3Service
 }
 
 func (r *Resolver) Login(ctx context.Context, args struct {

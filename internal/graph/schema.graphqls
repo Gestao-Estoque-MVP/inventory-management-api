@@ -49,6 +49,12 @@ type Message {
   message: String!
 }
 
+type Template {
+  id: ID!
+  name: String!
+  url: String!
+}
+
 input NewLogin {
   email: String!
   password: String!
@@ -75,6 +81,12 @@ input NewContactInfo {
   phone: String!
 }
 
+input NewTemplate {
+  file: Upload!
+  name: String!
+  description: String!
+}
+
 
 
 type Mutation {
@@ -84,11 +96,8 @@ type Mutation {
   createCompleteUser(input: NewUserComplete!): User!
   updateUser(id: ID!, input: NewUser!): Message! @auth
   createAddress(input: NewAddress!): Message!
-  createRole(input: NewRole!): Roles!
-  createPermission(input: NewPermission!): Permissions!
-  createRolePermission(input: NewRolePermission!): RolePermissions!
-  uploadTemplate(file: Upload!): Message! @auth @hasRole(role: admin)
-  createRole(input: NewRole!): Roles! @auth @hasRole(role: admin)
+  uploadTemplate(input: NewTemplate!): Template! @auth @hasRole(role: users)
+  createRole(input: NewRole!): Roles! 
   createPermission(input: NewPermission!): Permissions! @auth @hasRole(role: admin)
   createRolePermission(input: NewRolePermission!): RolePermissions! @auth @hasRole(role: admin)
 }
@@ -97,4 +106,5 @@ type Query {
   user(id: ID!): User! @goField(forceResolver: true) @auth 
   users: [User!]! @goField(forceResolver: true) @auth @hasRole(role: admin)
   protected: String! @goField(forceResolver: true) @auth
+  template(id: ID!): Template! @goField(forceResolver: true) @auth @hasRole(role: users)
 }

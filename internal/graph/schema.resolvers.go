@@ -168,6 +168,25 @@ func (r *mutationResolver) CreateAddress(ctx context.Context, input model.NewAdd
 	}, nil
 }
 
+// UploadTemplate is the resolver for the uploadTemplate field.
+func (r *mutationResolver) UploadTemplate(ctx context.Context, input model.NewTemplate) (*model.Template, error) {
+	file := database.TemplateEmail{
+		Name:        input.Name,
+		Description: input.Description,
+	}
+
+	create, err := r.Resolver.S3Service.UploadTemplate(input.File.File, file)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &model.Template{
+		ID:   create.ID,
+		Name: create.Name,
+	}, nil
+}
+
 // CreateRole is the resolver for the createRole field.
 func (r *mutationResolver) CreateRole(ctx context.Context, input model.NewRole) (*model.Roles, error) {
 	role := database.Role{
@@ -299,34 +318,22 @@ func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
 	return users, nil
 }
 
-// Address is the resolver for the address field.
-func (r *queryResolver) Address(ctx context.Context, id string) (*model.Address, error) {
-	get, err := r.Resolver.AddressRepository.GetAddressByID(id)
+// Protected is the resolver for the protected field.
+func (r *queryResolver) Protected(ctx context.Context) (string, error) {
+	return "Success", nil
+}
+
+// Template is the resolver for the template field.
+func (r *queryResolver) Template(ctx context.Context, id string) (*model.Template, error) {
+	get, err := r.Resolver.S3Service.GetTemplate(id)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return &model.Address{
-		ID:         int(get.ID),
-		Address:    get.Address.String,
-		Street:     get.Street.String,
-		Number:     get.Number.String,
-		City:       get.City.String,
-		State:      get.State.String,
-		Country:    get.Country.String,
-		PostalCode: get.PostalCode.String,
+	return &model.Template{
+		URL: get.Url,
 	}, nil
-}
-
-// Addresses is the resolver for the addresses field.
-func (r *queryResolver) Addresses(ctx context.Context) ([]*model.Address, error) {
-	panic(fmt.Errorf("not implemented: Addresses - addresses"))
-}
-
-// Protected is the resolver for the protected field.
-func (r *queryResolver) Protected(ctx context.Context) (string, error) {
-	return "Success", nil
 }
 
 // Mutation returns MutationResolver implementation.
