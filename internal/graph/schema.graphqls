@@ -92,7 +92,7 @@ input NewTemplate {
 type Mutation {
   login(input: NewLogin!): Login! @goField(forceResolver: true)
   createContactInfo(input: NewContactInfo!): ContactInfo!
-  createPreUser(input: NewPreUser!): PreUser!
+  createPreUser(input: NewPreUser!): PreUser! 
   createCompleteUser(input: NewUserComplete!): User!
   updateUser(id: ID!, input: NewUser!): Message! @auth
   createAddress(input: NewAddress!): Message!
