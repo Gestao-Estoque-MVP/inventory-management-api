@@ -3,7 +3,7 @@ INSERT INTO users (id, name, email, status, role_id, tenant_id, register_token, 
     VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id, name, email;
 
 -- name: CompleteRegisterUser :one
-UPDATE users SET phone = $1, document_type = $2, document_number = $3, password = $4, avatar = $5, updated_at = $6 WHERE register_token = $7 RETURNING id, name, email;
+UPDATE users SET phone = $1, document_type = $2, document_number = $3, password = $4, updated_at = $5 WHERE register_token = $6 RETURNING id, name, email;
 
 -- name: DeleteUser :execresult
 DELETE FROM users WHERE id = $1 RETURNING id, name, email;
@@ -12,10 +12,10 @@ DELETE FROM users WHERE id = $1 RETURNING id, name, email;
 SELECT * FROM users WHERE id = $1;
 
 -- name: GetUserByEmail :one
-SELECT * FROM users WHERE email = $1;
+SELECT id, role_id, password FROM users WHERE email = $1;
 
 -- name: GetUserRegisterToken :one
-SELECT * FROM users WHERE register_token = $1;
+SELECT register_token FROM users WHERE register_token = $1;
 
 -- name: ListUsers :many
 SELECT * FROM users ORDER BY id;

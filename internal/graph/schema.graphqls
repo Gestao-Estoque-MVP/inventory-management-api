@@ -96,7 +96,7 @@ type Mutation {
   createCompleteUser(input: NewUserComplete!): User!
   updateUser(id: ID!, input: NewUser!): Message! @auth
   createAddress(input: NewAddress!): Message!
-  uploadTemplate(input: NewTemplate!): Template! @auth @hasRole(role: users)
+  uploadTemplate(input: NewTemplate!): Template! @auth @hasRole(role: admin)
   createRole(input: NewRole!): Roles! 
   createPermission(input: NewPermission!): Permissions! @auth @hasRole(role: admin)
   createRolePermission(input: NewRolePermission!): RolePermissions! @auth @hasRole(role: admin)
@@ -106,5 +106,5 @@ type Query {
   user(id: ID!): User! @goField(forceResolver: true) @auth 
   users: [User!]! @goField(forceResolver: true) @auth @hasRole(role: admin)
   protected: String! @goField(forceResolver: true) @auth
-  template(id: ID!): Template! @goField(forceResolver: true) @auth @hasRole(role: users)
+  template(id: ID!): Template! @goField(forceResolver: true) @auth @hasRole(role: admin)
 }

@@ -45,12 +45,12 @@ func (us *UserService) CreatePreUser(user *database.User) (*database.User, error
 		return nil, err
 	}
 
-	go func(email string) {
-		err := us.send.SendOneEmail([]string{email}, user.Name)
-		if err != nil {
-			log.Printf("error sending %v "+email+":", err)
-		}
-	}(createUser.Email)
+	// go func(email string) {
+	// 	err := us.send.SendOneEmail([]string{email}, user.Name)
+	// 	if err != nil {
+	// 		log.Printf("error sending %v "+email+":", err)
+	// 	}
+	// }(createUser.Email)
 
 	return createUser, nil
 }
@@ -59,12 +59,12 @@ func (us *UserService) CompleteRegisterUser(RegisterToken string, user *database
 
 	verifyUser, err := us.userRepo.GetUserRegisterToken(RegisterToken)
 
-	if err != nil || verifyUser == nil {
+	if err != nil {
 		log.Printf("Erro ao buscar usuário: %v\n", err)
 		return nil, fmt.Errorf("no user found with register token %s", RegisterToken)
 	}
 
-	updateUser, err := us.userRepo.CreateCompleteUser(verifyUser.RegisterToken.String, user)
+	updateUser, err := us.userRepo.CreateCompleteUser(verifyUser, user)
 
 	if err != nil {
 		log.Printf("Erro ao criar usuário completo %v\n", err)
@@ -107,7 +107,7 @@ func (us *UserService) GetUser(id string) (*database.User, error) {
 	return get, nil
 }
 
-func (us *UserService) GetUserByEmail(email string) (*database.User, error) {
+func (us *UserService) GetUserByEmail(email string) (*database.GetUserByEmailRow, error) {
 	get, err := us.userRepo.GetUserByEmail(email)
 
 	if err != nil {

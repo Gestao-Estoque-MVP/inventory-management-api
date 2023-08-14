@@ -12,7 +12,7 @@ import (
 )
 
 const completeRegisterUser = `-- name: CompleteRegisterUser :one
-UPDATE users SET phone = $1, document_type = $2, document_number = $3, password = $4, avatar = $5, updated_at = $6 WHERE register_token = $7 RETURNING id, name, email
+UPDATE users SET phone = $1, document_type = $2, document_number = $3, password = $4, updated_at = $5 WHERE register_token = $6 RETURNING id, name, email
 `
 
 type CompleteRegisterUserParams struct {
@@ -20,7 +20,6 @@ type CompleteRegisterUserParams struct {
 	DocumentType   sql.NullString
 	DocumentNumber sql.NullString
 	Password       sql.NullString
-	Avatar         sql.NullString
 	UpdatedAt      sql.NullTime
 	RegisterToken  sql.NullString
 }
@@ -37,7 +36,6 @@ func (q *Queries) CompleteRegisterUser(ctx context.Context, arg CompleteRegister
 		arg.DocumentType,
 		arg.DocumentNumber,
 		arg.Password,
-		arg.Avatar,
 		arg.UpdatedAt,
 		arg.RegisterToken,
 	)
@@ -436,57 +434,31 @@ func (q *Queries) GetUser(ctx context.Context, id string) (User, error) {
 }
 
 const getUserByEmail = `-- name: GetUserByEmail :one
-SELECT id, name, email, phone, document_type, document_number, password, avatar, status, register_token, token_expires_at, created_at, updated_at, role_id, tenant_id FROM users WHERE email = $1
+SELECT id, role_id, password FROM users WHERE email = $1
 `
 
-func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error) {
+type GetUserByEmailRow struct {
+	ID       string
+	RoleID   sql.NullString
+	Password sql.NullString
+}
+
+func (q *Queries) GetUserByEmail(ctx context.Context, email string) (GetUserByEmailRow, error) {
 	row := q.db.QueryRowContext(ctx, getUserByEmail, email)
-	var i User
-	err := row.Scan(
-		&i.ID,
-		&i.Name,
-		&i.Email,
-		&i.Phone,
-		&i.DocumentType,
-		&i.DocumentNumber,
-		&i.Password,
-		&i.Avatar,
-		&i.Status,
-		&i.RegisterToken,
-		&i.TokenExpiresAt,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-		&i.RoleID,
-		&i.TenantID,
-	)
+	var i GetUserByEmailRow
+	err := row.Scan(&i.ID, &i.RoleID, &i.Password)
 	return i, err
 }
 
 const getUserRegisterToken = `-- name: GetUserRegisterToken :one
-SELECT id, name, email, phone, document_type, document_number, password, avatar, status, register_token, token_expires_at, created_at, updated_at, role_id, tenant_id FROM users WHERE register_token = $1
+SELECT register_token FROM users WHERE register_token = $1
 `
 
-func (q *Queries) GetUserRegisterToken(ctx context.Context, registerToken sql.NullString) (User, error) {
+func (q *Queries) GetUserRegisterToken(ctx context.Context, registerToken sql.NullString) (sql.NullString, error) {
 	row := q.db.QueryRowContext(ctx, getUserRegisterToken, registerToken)
-	var i User
-	err := row.Scan(
-		&i.ID,
-		&i.Name,
-		&i.Email,
-		&i.Phone,
-		&i.DocumentType,
-		&i.DocumentNumber,
-		&i.Password,
-		&i.Avatar,
-		&i.Status,
-		&i.RegisterToken,
-		&i.TokenExpiresAt,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-		&i.RoleID,
-		&i.TenantID,
-	)
-	return i, err
+	var register_token sql.NullString
+	err := row.Scan(&register_token)
+	return register_token, err
 }
 
 const getUsersPermissions = `-- name: GetUsersPermissions :many

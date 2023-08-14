@@ -8,6 +8,10 @@ export $(shell sed 's/=.*//' .env)
 migrate-up:
 	migrate -path pkg/sql/migrations -database $$DB_URL_MIGRATE  -verbose up
 
+
+migrate-up-version:
+	migrate -path pkg/sql/migrations -database $$DB_URL_MIGRATE -verbose up $(version)
+
 migrate-down:
 	migrate -path pkg/sql/migrations -database $$DB_URL_MIGRATE  -verbose down
 

@@ -6,6 +6,16 @@ type ISendEmail interface {
 	SendEmail(templateID string, filter interface{}) (string, error)
 }
 
-func MultiEmail(filter interface{}) (ISendEmail, error) {}
+type SendEmailInternal struct {
+	to             string
+	from           string
+	typeTemplate   string
+	templateStruct interface{}
+}
 
-func SendOneEmail(userID string, templateID string, filter interface{}) (string, error) {}
+func (si *SendEmailInternal) MultiEmail() (string, error) {
+
+}
+
+func (si *SendEmailInternal) SendOneEmail(userID string, templateID string, filter interface{}) (string, error) {
+}
