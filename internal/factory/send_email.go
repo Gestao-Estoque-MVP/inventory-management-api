@@ -6,8 +6,6 @@ type ISendEmail interface {
 	SendEmail(templateID string, filter interface{}) (string, error)
 }
 
-func MultiEmail(filter interface{}) (ISendEmail, error) {
-
-}
+func MultiEmail(filter interface{}) (ISendEmail, error) {}
 
 func SendOneEmail(userID string, templateID string, filter interface{}) (string, error) {}
