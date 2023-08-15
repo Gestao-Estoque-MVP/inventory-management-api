@@ -2,12 +2,12 @@ package service
 
 import (
 	"bytes"
-	"fmt"
 	"html/template"
 	"log"
 	"net/smtp"
 	"os"
 
+	"github.com/diogoX451/inventory-management-api/internal/factory"
 	"github.com/joho/godotenv"
 )
 
@@ -16,6 +16,7 @@ type SendEmail struct {
 	to      []string
 	subject string
 	body    string
+	send    factory.SendEmailInternal
 }
 
 func (s *SendEmail) SendOneEmail(email []string, name string) error {
@@ -67,6 +68,6 @@ func (s *SendEmail) SendMultiEmail(email []string) error {
 	return nil
 }
 
-func findTemplate(name string) (string, error) {
-	return "", fmt.Errorf("Rodando")
+func findTemplate(id string) (string, error) {
+
 }
