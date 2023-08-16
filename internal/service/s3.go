@@ -4,6 +4,7 @@ import (
 	"context"
 	"io"
 	"log"
+	"os"
 	"path/filepath"
 	"time"
 
@@ -34,7 +35,7 @@ func NewServiceS3(S3 *S3Service, S3Repository repository.S3Repository, bucket st
 	}
 }
 
-func (s *S3Service) UploadTemplate(file io.Reader, template database.TemplateEmail) (*database.CreateTemplateRow, error) {
+func (s *S3Service) UploadTemplateS3(file io.Reader, template database.TemplateEmail) (*database.CreateTemplateRow, error) {
 	keyPath := filepath.Join("template_email", template.Name)
 
 	upload := manager.NewUploader(s.S3)
@@ -52,7 +53,7 @@ func (s *S3Service) UploadTemplate(file io.Reader, template database.TemplateEma
 		}
 	}
 
-	create, err := s.S3Repository.UploadTemplate(database.TemplateEmail{
+	create, err := s.S3Repository.UploadTemplateS3(database.TemplateEmail{
 		ID:          uuid.NewGen().NewV4().String(),
 		Name:        template.Name,
 		Url:         keyPath,
@@ -68,8 +69,8 @@ func (s *S3Service) UploadTemplate(file io.Reader, template database.TemplateEma
 	return create, nil
 }
 
-func (s *S3Service) GetTemplate(id string) (*database.TemplateEmail, error) {
-	findTemplate, err := s.S3Repository.GetTemplate(id)
+func (s *S3Service) GetTemplateUrlS3(id string) (*database.TemplateEmail, error) {
+	findTemplate, err := s.S3Repository.GetTemplateUrlS3(id)
 
 	if err != nil {
 		log.Printf("Error getting template")
@@ -92,4 +93,32 @@ func (s *S3Service) GetTemplate(id string) (*database.TemplateEmail, error) {
 		Url: consult.URL,
 	}, nil
 
+}
+
+func (s *S3Service) GetTemplateObject(id string) error {
+	find, err := s.S3Repository.GetTemplateUrlS3(id)
+
+	if err != nil {
+		return err
+	}
+
+	obj, err := s.S3.GetObject(context.TODO(), &s3.GetObjectInput{
+		Bucket: aws.String(s.Bucket),
+		Key:    aws.String(find),
+	})
+
+	defer obj.Body.Close()
+
+	tmp, err := os.CreateTemp("", "s3-template.html")
+
+	defer tmp.Close()
+
+	_, err = io.Copy(tmp, obj.Body)
+
+	if err != nil {
+		log.Printf("Error creating temporary")
+		return err
+	}
+
+	return nil
 }

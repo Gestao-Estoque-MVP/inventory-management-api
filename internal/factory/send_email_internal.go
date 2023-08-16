@@ -8,74 +8,59 @@ import (
 	"net/smtp"
 	"os"
 
-	"github.com/joho/godotenv"
+	"github.com/diogoX451/inventory-management-api/internal/service"
 )
 
-type ISendEmail interface {
-	MultiEmail() (string, error)
-	SendOneEmail() (string, error)
-}
-
 type SendEmailInternal struct {
-	userID         string
-	typeTemplate   string
-	templateStruct interface{}
+	name           string
+	email          string
+	title          string
+	templateID     string
+	templateStruct map[string]interface{}
+	S3             service.S3Service
 }
 
 func (si *SendEmailInternal) MultiEmail() (string, error) {
-	if err := godotenv.Load(); err != nil {
-		panic("No .env variable")
-	}
-
 	return "", fmt.Errorf("Error")
 
 }
 
 func (si *SendEmailInternal) SendOneEmail() (string, error) {
-	return "", fmt.Errorf("Error")
-}
 
-type SendEmailFactory struct{}
-
-const (
-	internal = "internal"
-	external = "external"
-)
-
-func SendEmail(typeSend string, userID string, templateID string, filter interface{}) ISendEmail {
-	switch typeSend {
-	case internal:
-		return &SendEmailInternal{
-			typeTemplate:   templateID,
-			templateStruct: filter,
-			userID:         userID,
-		}
-	case external:
-		return &SendEmailExternal{}
-	default:
-		return nil
+	err := si.S3.GetTemplateObject(si.templateID)
+	if err != nil {
+		return "", fmt.Errorf("Error: %v", err)
 	}
+
+	file, err := template.ParseFiles("./s3-template.html")
+	if err != nil {
+		return "", fmt.Errorf("Error get file: %v", err)
+	}
+
+	data := struct {
+		Name  string
+		Email string
+	}{
+		Name:  si.name,
+		Email: si.email,
+	}
+
+	buffer := new(bytes.Buffer)
+	if err = file.Execute(buffer, data); err != nil {
+		return "", fmt.Errorf("Error executing file: % %", err)
+	}
+
+	send(buffer.String(), si.title)
+
+	return "Send", nil
+
 }
 
-type SendEmail struct {
-	from    string
-	to      []string
-	subject string
-	body    string
-}
+func send(body string, subject string) {}
 
 func (s *SendEmail) SendOneEmail(email []string, name string) error {
 
-	if err := godotenv.Load(); err != nil {
-		panic("No .env variable")
-	}
-
 	tmp, err := template.ParseFiles("./internal/templates/index.html")
-	data := struct {
-		Name string
-	}{
-		Name: name,
-	}
 
 	if err != nil {
 		return err

@@ -396,11 +396,29 @@ func (q *Queries) GetRolesPermissions(ctx context.Context, id string) ([]GetRole
 }
 
 const getTemplate = `-- name: GetTemplate :one
+SELECT id, name, url, description, created_at, updated_at FROM template_email WHERE id = $1
+`
+
+func (q *Queries) GetTemplate(ctx context.Context, id string) (TemplateEmail, error) {
+	row := q.db.QueryRowContext(ctx, getTemplate, id)
+	var i TemplateEmail
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Url,
+		&i.Description,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const getTemplateS3 = `-- name: GetTemplateS3 :one
 SELECT url FROM template_email WHERE id = $1
 `
 
-func (q *Queries) GetTemplate(ctx context.Context, id string) (string, error) {
-	row := q.db.QueryRowContext(ctx, getTemplate, id)
+func (q *Queries) GetTemplateS3(ctx context.Context, id string) (string, error) {
+	row := q.db.QueryRowContext(ctx, getTemplateS3, id)
 	var url string
 	err := row.Scan(&url)
 	return url, err

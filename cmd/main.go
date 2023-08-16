@@ -91,6 +91,8 @@ func main() {
 	addressRepository := repository.NewAddressRepository(queries)
 	addressRepositoryService := service.NewAddressService(addressRepository)
 	s3Repository := repository.NewS3Repository(queries)
+	templateRepository := repository.NewTemplateRepository(queries)
+	service.NewTemplateService(*templateRepository)
 
 	resolvers := &graph.Resolver{
 		UserRepository:        userRepository,

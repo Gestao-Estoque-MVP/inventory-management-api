@@ -7,8 +7,8 @@ import (
 )
 
 type S3Repository interface {
-	UploadTemplate(template database.TemplateEmail) (*database.CreateTemplateRow, error)
-	GetTemplate(id string) (string, error)
+	UploadTemplateS3(template database.TemplateEmail) (*database.CreateTemplateRow, error)
+	GetTemplateUrlS3(id string) (string, error)
 }
 
 type IS3 struct {
@@ -21,7 +21,7 @@ func NewS3Repository(db *database.Queries) *IS3 {
 	}
 }
 
-func (s *IS3) UploadTemplate(template database.TemplateEmail) (*database.CreateTemplateRow, error) {
+func (s *IS3) UploadTemplateS3(template database.TemplateEmail) (*database.CreateTemplateRow, error) {
 	create, err := s.DB.CreateTemplate(context.Background(), database.CreateTemplateParams{
 		ID:          template.ID,
 		Name:        template.Name,
@@ -38,8 +38,8 @@ func (s *IS3) UploadTemplate(template database.TemplateEmail) (*database.CreateT
 	return &create, err
 }
 
-func (s *IS3) GetTemplate(id string) (string, error) {
-	get, err := s.DB.GetTemplate(context.Background(), id)
+func (s *IS3) GetTemplateUrlS3(id string) (string, error) {
+	get, err := s.DB.GetTemplateS3(context.Background(), id)
 
 	if err != nil {
 		return "", err

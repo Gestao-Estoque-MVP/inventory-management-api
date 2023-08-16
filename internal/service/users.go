@@ -96,7 +96,7 @@ func (us *UserService) GetUsers() ([]*database.User, error) {
 	return list, nil
 }
 
-func (us *UserService) GetUser(id string) (*database.User, error) {
+func (us UserService) GetUser(id string) (*database.User, error) {
 	get, err := us.userRepo.GetUser(id)
 
 	if err != nil {
