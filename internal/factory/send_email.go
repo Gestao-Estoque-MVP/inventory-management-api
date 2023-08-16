@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"html/template"
-	"io"
 	"log"
 	"net/smtp"
 	"os"
@@ -18,19 +17,9 @@ type ISendEmail interface {
 }
 
 type SendEmailInternal struct {
-	to             string
-	from           string
-	typeTemplate   io.Reader
+	userID         string
+	typeTemplate   string
 	templateStruct interface{}
-}
-
-func NewSendEmailInternal(to string, from string, typeTemplate io.Reader, templateStruct interface{}) *SendEmailInternal {
-	return &SendEmailInternal{
-		to:             to,
-		from:           from,
-		typeTemplate:   typeTemplate,
-		templateStruct: templateStruct,
-	}
 }
 
 func (si *SendEmailInternal) MultiEmail() (string, error) {
@@ -53,10 +42,14 @@ const (
 	external = "external"
 )
 
-func (f *SendEmailFactory) SendEmail(typeSend string, userID string, templateID string, filter interface{}) ISendEmail {
+func SendEmail(typeSend string, userID string, templateID string, filter interface{}) ISendEmail {
 	switch typeSend {
 	case internal:
-		return &SendEmailInternal{}
+		return &SendEmailInternal{
+			typeTemplate:   templateID,
+			templateStruct: filter,
+			userID:         userID,
+		}
 	case external:
 		return &SendEmailExternal{}
 	default:

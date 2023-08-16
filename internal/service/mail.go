@@ -20,7 +20,8 @@ type SendEmail struct {
 }
 
 func (s *SendEmail) SendOneEmail(email []string, name string) error {
-
+	factory.SendEmail("internal")
+	s.send.MultiEmail()
 	if err := godotenv.Load(); err != nil {
 		panic("No .env variable")
 	}
