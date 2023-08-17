@@ -2,6 +2,8 @@ package factory
 
 import (
 	"fmt"
+
+	"github.com/diogoX451/inventory-management-api/internal/repository"
 )
 
 type ISendEmail interface {
@@ -9,12 +11,24 @@ type ISendEmail interface {
 	SendOneEmail() (string, error)
 }
 
-type SendEmailFactory struct{}
+type SendEmailFactory struct {
+	templateRepo repository.TemplateEmail
+	userRepo     repository.UserRepository
+	s3           repository.S3Repository
+}
 
 const (
 	internal = "internal"
 	external = "external"
 )
+
+func NewSendEmailFactory(template repository.TemplateEmail, userRepo repository.UserRepository, s3 repository.S3Repository) *SendEmailFactory {
+	return &SendEmailFactory{
+		templateRepo: template,
+		userRepo:     userRepo,
+		s3:           s3,
+	}
+}
 
 func SendEmail(typeSend string, email string, templateID string, filter interface{}) (ISendEmail, error) {
 	switch typeSend {
