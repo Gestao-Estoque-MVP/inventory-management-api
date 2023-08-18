@@ -14,6 +14,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/diogoX451/inventory-management-api/internal/database"
+	"github.com/diogoX451/inventory-management-api/internal/factory"
 	"github.com/diogoX451/inventory-management-api/internal/graph"
 	"github.com/diogoX451/inventory-management-api/internal/graph/directives"
 	"github.com/diogoX451/inventory-management-api/internal/graph/middleware"
@@ -83,15 +84,17 @@ func main() {
 	queries := database.New(db)
 	rcba := repository.NewRBCARepository(queries)
 	rcbaService := service.NewRCBAService(rcba)
+	s3Repository := repository.NewS3Repository(queries)
+	templateRepository := repository.NewTemplateRepository(queries)
 	userRepository := repository.NewRepositoryUser(queries)
-	userService := service.NewServiceUser(userRepository, rcba)
+	fact := factory.NewSendEmailFactory(templateRepository, userRepository, configS3(s3Repository))
+	userService := service.NewServiceUser(userRepository, rcba, fact)
 	contactRepository := repository.NewRepositoryContactInfo(queries)
 	contactService := service.NewContactInfoService(contactRepository)
 	loginService := service.NewAuthUser(*userRepository, *rcba)
 	addressRepository := repository.NewAddressRepository(queries)
 	addressRepositoryService := service.NewAddressService(addressRepository)
-	s3Repository := repository.NewS3Repository(queries)
-	templateRepository := repository.NewTemplateRepository(queries)
+
 	service.NewTemplateService(*templateRepository)
 
 	resolvers := &graph.Resolver{

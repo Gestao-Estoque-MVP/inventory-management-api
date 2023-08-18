@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/diogoX451/inventory-management-api/internal/database"
+	"github.com/diogoX451/inventory-management-api/internal/factory"
 	"github.com/diogoX451/inventory-management-api/internal/repository"
 	token "github.com/diogoX451/inventory-management-api/pkg/Token"
 	"nullprogram.com/x/uuid"
@@ -15,11 +16,11 @@ import (
 type UserService struct {
 	userRepo repository.IUserRepository
 	role     repository.IRBCA
-	send     SendEmail
+	send     *factory.SendEmailFactory
 }
 
-func NewServiceUser(userRepo repository.IUserRepository, role repository.IRBCA) *UserService {
-	return &UserService{userRepo: userRepo, role: role}
+func NewServiceUser(userRepo repository.IUserRepository, role repository.IRBCA, send *factory.SendEmailFactory) *UserService {
+	return &UserService{userRepo: userRepo, role: role, send: send}
 }
 
 func (us *UserService) CreatePreUser(user *database.User) (*database.User, error) {
@@ -45,12 +46,12 @@ func (us *UserService) CreatePreUser(user *database.User) (*database.User, error
 		return nil, err
 	}
 
-	// go func(email string) {
-	// 	err := us.send.SendOneEmail([]string{email}, user.Name)
-	// 	if err != nil {
-	// 		log.Printf("error sending %v "+email+":", err)
-	// 	}
-	// }(createUser.Email)
+	go func(email string) {
+		err := us.send.SendOneEmail([]string{email}, user.Name)
+		if err != nil {
+			log.Printf("error sending %v "+email+":", err)
+		}
+	}(createUser.Email)
 
 	return createUser, nil
 }

@@ -7,7 +7,6 @@ import (
 	"net/smtp"
 	"os"
 
-	"github.com/diogoX451/inventory-management-api/internal/factory"
 	"github.com/joho/godotenv"
 )
 
@@ -16,12 +15,9 @@ type SendEmail struct {
 	to      []string
 	subject string
 	body    string
-	send    factory.SendEmailInternal
 }
 
 func (s *SendEmail) SendOneEmail(email []string, name string) error {
-	factory.SendEmail("internal")
-	s.send.MultiEmail()
 	if err := godotenv.Load(); err != nil {
 		panic("No .env variable")
 	}
