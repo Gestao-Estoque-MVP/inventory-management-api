@@ -13,6 +13,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/diogoX451/inventory-management-api/internal/database"
 	"github.com/diogoX451/inventory-management-api/internal/repository"
+	configs3 "github.com/diogoX451/inventory-management-api/pkg/configS3"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 	"nullprogram.com/x/uuid"
 )
@@ -37,8 +38,8 @@ func NewServiceS3(S3 *S3Service, S3Repository repository.S3Repository, bucket st
 
 func (s *S3Service) UploadTemplateS3(file io.Reader, template database.TemplateEmail) (*database.CreateTemplateRow, error) {
 	keyPath := filepath.Join("template_email", template.Name)
-
-	upload := manager.NewUploader(s.S3)
+	find := configs3.S3Config()
+	upload := manager.NewUploader(find)
 	_, err := upload.Upload(context.TODO(), &s3.PutObjectInput{
 		Bucket:      &s.Bucket,
 		Key:         aws.String(keyPath),

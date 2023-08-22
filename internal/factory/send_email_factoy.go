@@ -7,7 +7,6 @@ import (
 	"os"
 
 	"github.com/diogoX451/inventory-management-api/internal/repository"
-	"github.com/diogoX451/inventory-management-api/internal/service"
 )
 
 type ISendEmail interface {
@@ -18,7 +17,6 @@ type ISendEmail interface {
 type SendEmailFactory struct {
 	templateRepo *repository.TemplateEmail
 	userRepo     *repository.UserRepository
-	s3           *service.S3Service
 }
 
 const (
@@ -26,11 +24,10 @@ const (
 	external = "external"
 )
 
-func NewSendEmailFactory(template *repository.TemplateEmail, userRepo *repository.UserRepository, s3 *service.S3Service) *SendEmailFactory {
+func NewSendEmailFactory(template *repository.TemplateEmail, userRepo *repository.UserRepository) *SendEmailFactory {
 	return &SendEmailFactory{
 		templateRepo: template,
 		userRepo:     userRepo,
-		s3:           s3,
 	}
 }
 
@@ -64,7 +61,6 @@ func (send *SendEmailFactory) SendEmail(typeSend string, templateID string, user
 			title:      title,
 			template:   send.templateRepo,
 			user:       send.userRepo,
-			S3:         send.s3,
 		}, nil
 	case external:
 		return &SendEmailExternal{}, nil

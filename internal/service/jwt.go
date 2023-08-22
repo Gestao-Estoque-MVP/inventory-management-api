@@ -26,6 +26,7 @@ func getJwtSecret() string {
 	return secret
 }
 
+
 func JwtGenerate(ctx context.Context, userID string, role model.Role) (string, error) {
 	t := jwt.NewWithClaims(jwt.SigningMethodHS256, &JwtCustomClaim{
 		ID:   userID,

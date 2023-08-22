@@ -34,16 +34,7 @@ func init() {
 
 }
 
-func configS3(repository *repository.IS3) *service.S3Service {
-	credential := credentials.NewStaticCredentialsProvider(os.Getenv("S3_ACESS_KEY_ID"), os.Getenv("S3_SECRET_ACCESS_KEY"), "")
-	config, err := config.LoadDefaultConfig(context.TODO(), config.WithCredentialsProvider(credential), config.WithRegion(os.Getenv("S3_REGION")))
-	if err != nil {
-		log.Fatal(err)
-	}
-	client := s3.NewFromConfig(config)
-	s3Service := &service.S3Service{S3: client}
-	return service.NewServiceS3(s3Service, repository, os.Getenv("S3_BUCKET_NAME"), os.Getenv("S3_ACESS_KEY_ID"), os.Getenv("S3_REGION"))
-}
+
 
 func main() {
 	db, err := sql.Open("postgres", os.Getenv("DB_URL"))
