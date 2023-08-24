@@ -19,16 +19,14 @@ import (
 )
 
 type S3Service struct {
-	S3           *s3.Client
 	S3Repository repository.S3Repository
 	Bucket       string
 	Key          string
 	Region       string
 }
 
-func NewServiceS3(S3 *S3Service, S3Repository repository.S3Repository, bucket string, key string, region string) *S3Service {
+func NewServiceS3(S3Repository repository.S3Repository, bucket string, key string, region string) *S3Service {
 	return &S3Service{
-		S3:           S3.S3,
 		S3Repository: S3Repository,
 		Bucket:       bucket,
 		Key:          key,
@@ -78,7 +76,7 @@ func (s *S3Service) GetTemplateUrlS3(id string) (*database.TemplateEmail, error)
 		return nil, err
 	}
 
-	presignClient := s3.NewPresignClient(s.S3)
+	presignClient := s3.NewPresignClient(configs3.S3Config())
 
 	consult, err := presignClient.PresignGetObject(context.TODO(), &s3.GetObjectInput{
 		Bucket: aws.String(s.Bucket),
@@ -103,7 +101,7 @@ func (s *S3Service) GetTemplateObject(id string) error {
 		return err
 	}
 
-	obj, err := s.S3.GetObject(context.TODO(), &s3.GetObjectInput{
+	obj, err := configs3.S3Config().GetObject(context.TODO(), &s3.GetObjectInput{
 		Bucket: aws.String(s.Bucket),
 		Key:    aws.String(find),
 	})

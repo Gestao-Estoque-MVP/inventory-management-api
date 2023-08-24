@@ -23,6 +23,7 @@ type Resolver struct {
 	AddressService        *service.AddressService
 	S3Repository          repository.IS3
 	S3Service             *service.S3Service
+	EmailService          *service.EmailService
 }
 
 func (r *Resolver) Login(ctx context.Context, args struct {

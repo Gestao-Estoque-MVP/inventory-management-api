@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/diogoX451/inventory-management-api/internal/database"
-	"github.com/diogoX451/inventory-management-api/internal/factory"
 	"github.com/diogoX451/inventory-management-api/internal/repository"
 	token "github.com/diogoX451/inventory-management-api/pkg/Token"
 	"nullprogram.com/x/uuid"
@@ -16,11 +15,11 @@ import (
 type UserService struct {
 	userRepo repository.IUserRepository
 	role     repository.IRBCA
-	send     *factory.SendEmailFactory
+	email    *EmailService
 }
 
-func NewServiceUser(userRepo repository.IUserRepository, role repository.IRBCA, send *factory.SendEmailFactory) *UserService {
-	return &UserService{userRepo: userRepo, role: role, send: send}
+func NewServiceUser(userRepo repository.IUserRepository, role repository.IRBCA, email *EmailService) *UserService {
+	return &UserService{userRepo: userRepo, role: role, email: email}
 }
 
 func (us *UserService) CreatePreUser(user *database.User) (*database.User, error) {
@@ -46,12 +45,16 @@ func (us *UserService) CreatePreUser(user *database.User) (*database.User, error
 		return nil, err
 	}
 
-	go func(email string) {
-		_, err := us.send.SendEmail("internal", "35d41202-e5d5-4d21-9db9-c67bf88e8334", user.ID, "Funcionou")
-		if err != nil {
-			log.Printf("error sending %v "+email+":", err)
-		}
-	}(createUser.Email)
+	detail := &EmailDetails{
+		to:         []string{createUser.Email},
+		subject:    "Bem-vindo a Plataforma",
+		templateID: "35d41202-e5d5-4d21-9db9-c67bf88e8334",
+	}
+
+	err = us.email.SendEmail(detail, "one")
+	if err != nil {
+		log.Printf("error sending %v "+createUser.Email+":", err)
+	}
 
 	return createUser, nil
 }

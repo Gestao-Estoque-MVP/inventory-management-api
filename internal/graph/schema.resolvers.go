@@ -175,7 +175,7 @@ func (r *mutationResolver) UploadTemplate(ctx context.Context, input model.NewTe
 		Description: input.Description,
 	}
 
-	create, err := r.Resolver.S3Service.UploadTemplate(input.File.File, file)
+	create, err := r.Resolver.S3Service.UploadTemplateS3(input.File.File, file)
 
 	if err != nil {
 		return nil, err
@@ -325,7 +325,7 @@ func (r *queryResolver) Protected(ctx context.Context) (string, error) {
 
 // Template is the resolver for the template field.
 func (r *queryResolver) Template(ctx context.Context, id string) (*model.Template, error) {
-	get, err := r.Resolver.S3Service.GetTemplate(id)
+	get, err := r.Resolver.S3Service.GetTemplateUrlS3(id)
 
 	if err != nil {
 		return nil, err

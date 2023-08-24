@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"database/sql"
 	"log"
 	"net/http"
@@ -10,11 +9,7 @@ import (
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
-	"github.com/aws/aws-sdk-go-v2/config"
-	"github.com/aws/aws-sdk-go-v2/credentials"
-	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/diogoX451/inventory-management-api/internal/database"
-	"github.com/diogoX451/inventory-management-api/internal/factory"
 	"github.com/diogoX451/inventory-management-api/internal/graph"
 	"github.com/diogoX451/inventory-management-api/internal/graph/directives"
 	"github.com/diogoX451/inventory-management-api/internal/graph/middleware"
@@ -33,8 +28,6 @@ func init() {
 	}
 
 }
-
-
 
 func main() {
 	db, err := sql.Open("postgres", os.Getenv("DB_URL"))
@@ -73,19 +66,19 @@ func main() {
 	}
 
 	queries := database.New(db)
+
 	rcba := repository.NewRBCARepository(queries)
 	rcbaService := service.NewRCBAService(rcba)
 	s3Repository := repository.NewS3Repository(queries)
 	templateRepository := repository.NewTemplateRepository(queries)
 	userRepository := repository.NewRepositoryUser(queries)
-	fact := factory.NewSendEmailFactory(templateRepository, userRepository, configS3(s3Repository))
-	userService := service.NewServiceUser(userRepository, rcba, fact)
+	emailService := service.NewServiceEmail(s3Repository, *userRepository)
+	userService := service.NewServiceUser(userRepository, rcba, emailService)
 	contactRepository := repository.NewRepositoryContactInfo(queries)
 	contactService := service.NewContactInfoService(contactRepository)
 	loginService := service.NewAuthUser(*userRepository, *rcba)
 	addressRepository := repository.NewAddressRepository(queries)
 	addressRepositoryService := service.NewAddressService(addressRepository)
-
 	service.NewTemplateService(*templateRepository)
 
 	resolvers := &graph.Resolver{
@@ -99,7 +92,7 @@ func main() {
 		AddressRepository:     addressRepository,
 		AddressService:        addressRepositoryService,
 		S3Repository:          *s3Repository,
-		S3Service:             configS3(s3Repository),
+		EmailService:          emailService,
 	}
 
 	c := graph.Config{
