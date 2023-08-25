@@ -13,7 +13,6 @@ require (
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/kr/pretty v0.3.0 // indirect
-	github.com/opentracing/opentracing-go v1.2.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 	nullprogram.com/x/isaac64 v1.0.0 // indirect
@@ -27,7 +26,6 @@ require (
 	github.com/golang/mock v1.6.0
 	github.com/gorilla/mux v1.8.0
 	github.com/gorilla/websocket v1.5.0 // indirect
-	github.com/graph-gophers/dataloader v5.0.0+incompatible
 	github.com/hashicorp/golang-lru/v2 v2.0.3 // indirect
 	github.com/joho/godotenv v1.5.1
 	github.com/mitchellh/mapstructure v1.5.0 // indirect

@@ -37,26 +37,6 @@ type RolePermissions {
   permissionId: String!
 }
 
-type ContactInfo {
-  id: ID!
-  Name: String!
-  email: String!
-  phone: String!
-}
-
-type Address {
-  id: Int!
-  address: String!
-  street: String!
-  number: String!
-  city: String!
-  state: String!
-  country: String!
-  postalCode: String!
-  userId: String!
-}
-
-
 type Message {
   message: String!
 }
@@ -81,38 +61,12 @@ input NewRolePermission {
   permissionId: String!
 }
 
-input NewContactInfo {
-  Name: String!
-  email: String!
-  phone: String!
-}
-
-input NewAddress {
-  address: String!
-  street: String
-  number: String
-  city: String!
-  state: String!
-  country: String!
-  postalCode: String!
-  userId: String!
-}
-
-
 type Mutation {
-  login(input: NewLogin!): Login! @goField(forceResolver: true)
-  createContactInfo(input: NewContactInfo!): ContactInfo!
-  createPreUser(input: NewPreUser!): PreUser! @auth @hasRole(role: admin)
-  createCompleteUser(input: NewUserComplete!): User!
-  updateUser(id: ID!, input: NewUser!): Message! @auth
-  createAddress(input: NewAddress!): Message!
   createRole(input: NewRole!): Roles! @auth @hasRole(role: admin)
   createPermission(input: NewPermission!): Permissions! @auth @hasRole(role: admin)
   createRolePermission(input: NewRolePermission!): RolePermissions! @auth @hasRole(role: admin)
 }
 
 type Query {
-  user(id: ID!): User! @goField(forceResolver: true) @auth 
-  users: [User!]! @goField(forceResolver: true) @auth @hasRole(role: admin)
   protected: String! @goField(forceResolver: true) @auth
 }

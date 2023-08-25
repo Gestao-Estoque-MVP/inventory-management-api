@@ -1,0 +1,91 @@
+type User {
+  id: ID!
+  name: String!
+  email: String!
+  phone: String!
+  document_number: String!
+  address: Address!
+}
+
+type PreUser {
+  id: ID!
+  name: String!
+  email: String!
+}
+
+input NewPreUser {
+  name: String!
+  email: String!
+  status: String!
+}
+
+input NewUserComplete {
+  phone: String!
+  password: String!
+  document_type: String!
+  document_number: String!
+  RegisterToken: String!
+}
+
+input NewUser {
+  name: String!
+  email: String!
+  phone: String!
+  document_type: String!
+  document_number: String!
+}
+
+input VerifyToken {
+  token: String!
+}
+
+type ContactInfo {
+  id: ID!
+  Name: String!
+  email: String!
+  phone: String!
+}
+
+type Address {
+  id: Int!
+  address: String!
+  street: String!
+  number: String!
+  city: String!
+  state: String!
+  country: String!
+  postalCode: String!
+  userId: String!
+}
+
+input NewContactInfo {
+  Name: String!
+  email: String!
+  phone: String!
+}
+
+input NewAddress {
+  address: String!
+  street: String
+  number: String
+  city: String!
+  state: String!
+  country: String!
+  postalCode: String!
+  userId: String!
+}
+
+extend type Mutation {
+  login(input: NewLogin!): Login! @goField(forceResolver: true)
+  createContactInfo(input: NewContactInfo!): ContactInfo!
+  createPreUser(input: NewPreUser!): PreUser! @auth @hasRole(role: admin)
+  createCompleteUser(input: NewUserComplete!): User!
+  updateUser(id: ID!, input: NewUser!): Message! @auth
+  createAddress(input: NewAddress!): Message!
+  verifyToken(input: VerifyToken!): Boolean!
+}
+
+extend type Query {
+  user(id: ID!): User! @goField(forceResolver: true) @auth 
+  users: [User!]! @goField(forceResolver: true) @auth @hasRole(role: admin)
+}

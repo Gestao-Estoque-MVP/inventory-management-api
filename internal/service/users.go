@@ -109,3 +109,10 @@ func (us *UserService) GetUserByEmail(email string) (*database.User, error) {
 
 	return get, nil
 }
+
+func (us *UserService) VerifyToken(token string) bool {
+	find := us.userRepo.VerifyToken(token)
+
+	return find.TokenExpiresAt.Time == time.Now().Local().Add(time.Hour*2)
+
+}

@@ -19,6 +19,7 @@ type IUserRepository interface {
 	GetUsers() ([]*database.User, error)
 	GetUserByEmail(email string) (*database.User, error)
 	GetUserRegisterToken(token string) (*database.User, error)
+	VerifyToken(token string) *database.GetTokenPreRegisterRow
 }
 
 type UserRepository struct {
@@ -123,7 +124,7 @@ func (i *UserRepository) GetUsers() ([]*database.User, error) {
 	list, err := i.DB.ListUsers(context.Background())
 
 	if err != nil {
-		log.Printf("Error getting users", err)
+		log.Printf("Error getting users %v", err)
 		return nil, err
 	}
 
@@ -154,4 +155,17 @@ func (i *UserRepository) GetUserRegisterToken(token string) (*database.User, err
 	}
 
 	return &get, nil
+}
+
+func (i *UserRepository) VerifyToken(token string) *database.GetTokenPreRegisterRow {
+	find, err := i.DB.GetTokenPreRegister(context.Background(), sql.NullString{
+		String: token,
+		Valid:  true,
+	})
+
+	if err != nil {
+		return nil
+	}
+
+	return &find
 }

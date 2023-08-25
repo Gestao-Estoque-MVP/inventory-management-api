@@ -1,4 +1,4 @@
-package graph
+package resolvers
 
 // This file will be automatically regenerated based on the schema, any resolver implementations
 // will be copied through when generating and any unknown code will be moved to the end.
@@ -168,65 +168,15 @@ func (r *mutationResolver) CreateAddress(ctx context.Context, input model.NewAdd
 	}, nil
 }
 
-// CreateRole is the resolver for the createRole field.
-func (r *mutationResolver) CreateRole(ctx context.Context, input model.NewRole) (*model.Roles, error) {
-	role := database.Role{
-		Name:        input.Name,
-		Description: input.Description,
+// VerifyToken is the resolver for the verifyToken field.
+func (r *mutationResolver) VerifyToken(ctx context.Context, input model.VerifyToken) (bool, error) {
+	data := database.User{
+		RegisterToken: convert.ConvertString(&input.Token),
 	}
 
-	created, err := r.Resolver.RBCAService.CreateRoles(&role)
+	verify := r.Resolver.UserService.VerifyToken(data.RegisterToken.String)
 
-	if err != nil {
-		return nil, err
-	}
-
-	response := &model.Roles{
-		ID:          created.ID,
-		Name:        created.Name,
-		Description: created.Description,
-	}
-
-	return response, nil
-}
-
-// CreatePermission is the resolver for the createPermission field.
-func (r *mutationResolver) CreatePermission(ctx context.Context, input model.NewPermission) (*model.Permissions, error) {
-	permission := database.Permission{
-		Name:        input.Name,
-		Description: input.Description,
-	}
-
-	created, err := r.Resolver.RBCAService.CreatePermissions(&permission)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return &model.Permissions{
-		ID:          created.ID,
-		Name:        created.Name,
-		Description: created.Description,
-	}, nil
-}
-
-// CreateRolePermission is the resolver for the createRolePermission field.
-func (r *mutationResolver) CreateRolePermission(ctx context.Context, input model.NewRolePermission) (*model.RolePermissions, error) {
-	assign := database.RolesPermission{
-		RoleID:       input.RoleID,
-		PermissionID: input.PermissionID,
-	}
-
-	created, err := r.Resolver.RBCAService.CreateRolesPermissions(&assign)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return &model.RolePermissions{
-		RoleID:       created.RoleID,
-		PermissionID: created.PermissionID,
-	}, nil
+	return verify, nil
 }
 
 // User is the resolver for the user field.
@@ -298,17 +248,3 @@ func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
 
 	return users, nil
 }
-
-// Protected is the resolver for the protected field.
-func (r *queryResolver) Protected(ctx context.Context) (string, error) {
-	return "Success", nil
-}
-
-// Mutation returns MutationResolver implementation.
-func (r *Resolver) Mutation() MutationResolver { return &mutationResolver{r} }
-
-// Query returns QueryResolver implementation.
-func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
-
-type mutationResolver struct{ *Resolver }
-type queryResolver struct{ *Resolver }

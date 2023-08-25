@@ -127,6 +127,10 @@ type User struct {
 	Address        *Address `json:"address"`
 }
 
+type VerifyToken struct {
+	Token string `json:"token"`
+}
+
 type Role string
 
 const (
