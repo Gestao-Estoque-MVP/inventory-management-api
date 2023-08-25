@@ -99,7 +99,7 @@ input SendEmail {
 type Mutation {
   login(input: NewLogin!): Login! @goField(forceResolver: true)
   createContactInfo(input: NewContactInfo!): ContactInfo!
-  createPreUser(input: NewPreUser!): PreUser! 
+  createPreUser(input: NewPreUser!): PreUser! @auth @hasRole(role: admin)
   createCompleteUser(input: NewUserComplete!): User!
   updateUser(id: ID!, input: NewUser!): Message! @auth
   createAddress(input: NewAddress!): Message!
@@ -107,7 +107,7 @@ type Mutation {
   createRole(input: NewRole!): Roles! 
   createPermission(input: NewPermission!): Permissions! @auth @hasRole(role: admin)
   createRolePermission(input: NewRolePermission!): RolePermissions! @auth @hasRole(role: admin)
-  SendEmail(input: SendEmail!): Message! @auth @hasRole(role: admin)
+  sendEmail(input: SendEmail!): Message! @auth @hasRole(role: admin)
 }
 
 type Query {

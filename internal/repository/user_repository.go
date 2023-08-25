@@ -17,8 +17,8 @@ type IUserRepository interface {
 	DeleteUser(id string) (*sql.Result, error)
 	GetUser(id string) (*database.User, error)
 	GetUsers() ([]*database.User, error)
-	GetUserByEmail(email string) (*database.GetUserByEmailRow, error)
-	GetUserRegisterToken(token string) (string, error)
+	GetUserByEmail(email string) (*database.GetEmailRow, error)
+	GetUserRegisterToken(token string) (*database.User, error)
 }
 
 type UserRepository struct {
@@ -136,8 +136,8 @@ func (i *UserRepository) GetUsers() ([]*database.User, error) {
 	return ptrList, nil
 }
 
-func (i *UserRepository) GetUserByEmail(email string) (*database.GetUserByEmailRow, error) {
-	get, err := i.DB.GetUserByEmail(context.Background(), email)
+func (i *UserRepository) GetUserByEmail(email string) (*database.GetEmailRow, error) {
+	get, err := i.DB.GetEmail(context.Background(), email)
 
 	if err != nil {
 		return nil, err
@@ -146,12 +146,12 @@ func (i *UserRepository) GetUserByEmail(email string) (*database.GetUserByEmailR
 	return &get, nil
 }
 
-func (i *UserRepository) GetUserRegisterToken(token string) (string, error) {
+func (i *UserRepository) GetUserRegisterToken(token string) (*database.User, error) {
 	get, err := i.DB.GetUserRegisterToken(context.Background(), sql.NullString{String: token, Valid: true})
 
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	return get.String, nil
+	return &get, nil
 }

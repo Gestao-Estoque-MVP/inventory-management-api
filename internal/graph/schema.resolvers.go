@@ -268,7 +268,6 @@ func (r *mutationResolver) SendEmail(ctx context.Context, input model.SendEmail)
 	return &model.Message{
 		Message: "Email sent",
 	}, nil
-
 }
 
 // User is the resolver for the user field.

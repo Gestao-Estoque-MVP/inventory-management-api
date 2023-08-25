@@ -68,7 +68,7 @@ func (us *UserService) CompleteRegisterUser(RegisterToken string, user *database
 		return nil, fmt.Errorf("no user found with register token %s", RegisterToken)
 	}
 
-	updateUser, err := us.userRepo.CreateCompleteUser(verifyUser, user)
+	updateUser, err := us.userRepo.CreateCompleteUser(verifyUser.RegisterToken.String, user)
 
 	if err != nil {
 		log.Printf("Erro ao criar usuário completo %v\n", err)
@@ -111,7 +111,7 @@ func (us UserService) GetUser(id string) (*database.User, error) {
 	return get, nil
 }
 
-func (us *UserService) GetUserByEmail(email string) (*database.GetUserByEmailRow, error) {
+func (us *UserService) GetUserByEmail(email string) (*database.GetEmailRow, error) {
 	get, err := us.userRepo.GetUserByEmail(email)
 
 	if err != nil {
