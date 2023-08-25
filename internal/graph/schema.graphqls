@@ -87,6 +87,13 @@ input NewTemplate {
   description: String!
 }
 
+input SendEmail {
+  templateId: String!
+  subject: String!
+  to: [String!]
+  typeSend: String!
+}
+
 
 
 type Mutation {
@@ -100,6 +107,7 @@ type Mutation {
   createRole(input: NewRole!): Roles! 
   createPermission(input: NewPermission!): Permissions! @auth @hasRole(role: admin)
   createRolePermission(input: NewRolePermission!): RolePermissions! @auth @hasRole(role: admin)
+  SendEmail(input: SendEmail!): Message! @auth @hasRole(role: admin)
 }
 
 type Query {

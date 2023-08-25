@@ -3,7 +3,6 @@ package service
 import (
 	"bytes"
 	"context"
-	"fmt"
 	"html/template"
 	"io"
 	"log"
@@ -18,9 +17,9 @@ import (
 )
 
 type EmailDetails struct {
-	to         []string
-	subject    string
-	templateID string
+	To         []string
+	Subject    string
+	TemplateID string
 }
 
 type EmailService struct {
@@ -42,11 +41,13 @@ func (s EmailService) SendEmail(details *EmailDetails, typesSend string) error {
 	s.details = details
 	switch typesSend {
 	case "one":
-		return s.sendOneEmail(s.details.to, s.details.templateID)
+		return s.sendOneEmail(s.details.To, s.details.TemplateID)
 	case "multi":
-		return s.sendMultiEmail(s.details.to, s.details.templateID)
+		return s.sendMultiEmail(s.details.To, s.details.TemplateID)
 	default:
-		return fmt.Errorf("Don't know how to send")
+		return &gqlerror.Error{
+			Message: "Don't know how to send %v " + typesSend,
+		}
 	}
 }
 
@@ -57,21 +58,21 @@ func (e *EmailService) getTemplateObject(templateID string) (string, error) {
 		return "", err
 	}
 
-	obj, err := configs3.S3Config().GetObject(context.TODO(), &s3.GetObjectInput{
+	obj, _ := configs3.S3Config().GetObject(context.TODO(), &s3.GetObjectInput{
 		Bucket: aws.String(os.Getenv("S3_BUCKET_NAME")),
 		Key:    aws.String(find),
 	})
 
 	defer obj.Body.Close()
 
-	tmp, err := os.CreateTemp("./internal/templates", "s3-template-*.html")
+	tmp, _ := os.CreateTemp("./internal/templates", "s3-template-*.html")
 
 	defer tmp.Close()
 
 	_, err = io.Copy(tmp, obj.Body)
 
 	if err != nil {
-		log.Printf("Error creating temporary", err)
+		log.Printf("Error creating temporary %v", err)
 		return "", err
 	}
 
@@ -115,14 +116,55 @@ func (s *EmailService) sendOneEmail(to []string, templateID string) error {
 		return err
 	}
 
-	if len(s.details.subject) > 0 {
-		subject = s.details.subject
+	if len(s.details.Subject) > 0 {
+		subject = s.details.Subject
 	}
 
 	email.SendEmailAsync([]string{to[0]}, subject, buf.String())
 	return nil
 }
-
 func (s *EmailService) sendMultiEmail(to []string, templateID string) error {
+	path, err := s.getTemplateObject(templateID)
+	if err != nil {
+		return &gqlerror.Error{
+			Message: "Error getting template object " + err.Error(),
+		}
+	}
+
+	defer os.Remove(path)
+
+	tmp, err := template.ParseFiles(path)
+	if err != nil {
+		return err
+	}
+
+	go func(emails []string, t *template.Template) {
+		for _, e := range emails {
+			find, err := s.user.GetUserByEmail(e)
+			if err != nil {
+				log.Printf("Error getting user by email %s: %s", e, err)
+				continue
+			}
+
+			data := struct {
+				Name string
+			}{
+				Name: find.Name,
+			}
+			buf := new(bytes.Buffer)
+			if err = t.Execute(buf, data); err != nil {
+				log.Printf("Error executing")
+				break
+			}
+
+			subject := ""
+			if len(s.details.Subject) > 0 {
+				subject = s.details.Subject
+			}
+
+			email.SendEmailAsync([]string{e}, subject, buf.String())
+		}
+	}(to, tmp)
+
 	return nil
 }

@@ -126,6 +126,13 @@ type Roles struct {
 	Description string `json:"description"`
 }
 
+type SendEmail struct {
+	TemplateID string   `json:"templateId"`
+	Subject    string   `json:"subject"`
+	To         []string `json:"to,omitempty"`
+	TypeSend   string   `json:"typeSend"`
+}
+
 type Template struct {
 	ID   string `json:"id"`
 	Name string `json:"name"`

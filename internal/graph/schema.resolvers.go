@@ -11,6 +11,7 @@ import (
 
 	"github.com/diogoX451/inventory-management-api/internal/database"
 	"github.com/diogoX451/inventory-management-api/internal/graph/model"
+	"github.com/diogoX451/inventory-management-api/internal/service"
 	"github.com/diogoX451/inventory-management-api/pkg/convert"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
@@ -246,6 +247,28 @@ func (r *mutationResolver) CreateRolePermission(ctx context.Context, input model
 		RoleID:       created.RoleID,
 		PermissionID: created.PermissionID,
 	}, nil
+}
+
+// SendEmail is the resolver for the SendEmail field.
+func (r *mutationResolver) SendEmail(ctx context.Context, input model.SendEmail) (*model.Message, error) {
+	details := service.EmailDetails{
+		To:         input.To,
+		Subject:    input.Subject,
+		TemplateID: input.TemplateID,
+	}
+
+	err := r.Resolver.EmailService.SendEmail(&details, input.TypeSend)
+
+	if err != nil {
+		return &model.Message{}, &gqlerror.Error{
+			Message: "Error sending email " + err.Error(),
+		}
+	}
+
+	return &model.Message{
+		Message: "Email sent",
+	}, nil
+
 }
 
 // User is the resolver for the user field.
