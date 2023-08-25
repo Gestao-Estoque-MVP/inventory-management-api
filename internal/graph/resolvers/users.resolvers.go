@@ -6,12 +6,11 @@ package resolvers
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 
 	"github.com/diogoX451/inventory-management-api/internal/database"
 	"github.com/diogoX451/inventory-management-api/internal/graph/model"
-	"github.com/diogoX451/inventory-management-api/pkg/convert"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
@@ -45,7 +44,7 @@ func (r *mutationResolver) CreateContactInfo(ctx context.Context, input model.Ne
 	contact_info := database.ContactInfo{
 		Name:  input.Name,
 		Email: input.Email,
-		Phone: sql.NullString{String: input.Phone, Valid: true},
+		Phone: pgtype.Text{String: input.Phone, Valid: true},
 	}
 
 	create, err := r.Resolver.ContactInfoService.CreateContactInfo(&contact_info)
@@ -100,10 +99,10 @@ func (r *mutationResolver) CreatePreUser(ctx context.Context, input model.NewPre
 // CreateCompleteUser is the resolver for the createCompleteUser field.
 func (r *mutationResolver) CreateCompleteUser(ctx context.Context, input model.NewUserComplete) (*model.User, error) {
 	user := database.User{
-		Phone:          sql.NullString{String: input.Phone, Valid: true},
-		Password:       sql.NullString{String: input.Password, Valid: true},
-		DocumentType:   sql.NullString{String: input.DocumentType, Valid: true},
-		DocumentNumber: sql.NullString{String: input.DocumentNumber, Valid: true},
+		Phone:          pgtype.Text{String: input.Phone, Valid: true},
+		Password:       pgtype.Text{String: input.Password, Valid: true},
+		DocumentType:   pgtype.Text{String: input.DocumentType, Valid: true},
+		DocumentNumber: pgtype.Text{String: input.DocumentNumber, Valid: true},
 	}
 
 	create, err := r.Resolver.UserService.CompleteRegisterUser(input.RegisterToken, &user)
@@ -126,9 +125,9 @@ func (r *mutationResolver) UpdateUser(ctx context.Context, id string, input mode
 		ID:             id,
 		Name:           input.Name,
 		Email:          input.Email,
-		Phone:          sql.NullString{String: input.Phone, Valid: true},
-		DocumentNumber: sql.NullString{String: input.DocumentNumber, Valid: true},
-		DocumentType:   sql.NullString{String: input.DocumentType, Valid: true},
+		Phone:          pgtype.Text{String: input.Phone, Valid: true},
+		DocumentNumber: pgtype.Text{String: input.DocumentNumber, Valid: true},
+		DocumentType:   pgtype.Text{String: input.DocumentType, Valid: true},
 	}
 
 	err := r.Resolver.UserService.UpdateUser(id, &user)
@@ -148,13 +147,13 @@ func (r *mutationResolver) UpdateUser(ctx context.Context, id string, input mode
 func (r *mutationResolver) CreateAddress(ctx context.Context, input model.NewAddress) (*model.Message, error) {
 	address := database.Address{
 		UserID:     input.UserID,
-		Address:    sql.NullString{String: input.Address, Valid: true},
-		Street:     convert.ConvertString(input.Street),
-		City:       convert.ConvertString(&input.City),
-		State:      convert.ConvertString(&input.State),
-		PostalCode: convert.ConvertString(&input.State),
-		Country:    convert.ConvertString(&input.Country),
-		Number:     convert.ConvertString(input.Number),
+		Address:    pgtype.Text{String: input.Address, Valid: true},
+		Street:     pgtype.Text{String: *input.Street, Valid: true},
+		City:       pgtype.Text{String: input.City, Valid: true},
+		State:      pgtype.Text{String: input.State, Valid: true},
+		PostalCode: pgtype.Text{String: input.PostalCode},
+		Country:    pgtype.Text{String: input.Country, Valid: true},
+		Number:     pgtype.Text{String: *input.Number, Valid: true},
 	}
 
 	_, err := r.Resolver.AddressService.CreateAddress(&address)
@@ -170,7 +169,13 @@ func (r *mutationResolver) CreateAddress(ctx context.Context, input model.NewAdd
 
 // VerifyToken is the resolver for the verifyToken field.
 func (r *mutationResolver) VerifyToken(ctx context.Context, input model.VerifyToken) (bool, error) {
-	panic(fmt.Errorf("not implemented: VerifyToken - verifyToken"))
+	data := database.User{
+		RegisterToken: pgtype.Text{String: input.Token, Valid: true},
+	}
+
+	verify := r.Resolver.UserService.VerifyToken(data.RegisterToken.String)
+
+	return verify, nil
 }
 
 // User is the resolver for the user field.

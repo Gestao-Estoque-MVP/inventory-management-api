@@ -1,11 +1,11 @@
 package service
 
 import (
-	"database/sql"
 	"time"
 
 	"github.com/diogoX451/inventory-management-api/internal/database"
 	"github.com/diogoX451/inventory-management-api/internal/repository"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type AddressService struct {
@@ -26,7 +26,7 @@ func (s *AddressService) CreateAddress(address *database.Address) (*database.Add
 		PostalCode: address.PostalCode,
 		State:      address.State,
 		Number:     address.Number,
-		CreatedAt:  time.Now(),
+		CreatedAt:  pgtype.Timestamp{Time: time.Now(), Valid: true},
 	})
 
 	if err != nil {
@@ -46,7 +46,7 @@ func (s *AddressService) UpdateAddress(address *database.Address) (*database.Add
 		PostalCode: address.PostalCode,
 		State:      address.State,
 		Number:     address.Number,
-		UpdatedAt:  sql.NullTime{Time: time.Now(), Valid: true},
+		UpdatedAt:  pgtype.Timestamp{Time: time.Now(), Valid: true},
 	})
 
 	if err != nil {
@@ -56,14 +56,14 @@ func (s *AddressService) UpdateAddress(address *database.Address) (*database.Add
 	return update, nil
 }
 
-func (s *AddressService) DeleteAddress(userID string) (*sql.Result, error) {
-	delete, err := s.addressRepo.DeleteAddress(userID)
+func (s *AddressService) DeleteAddress(userID string) (bool, error) {
+	_, err := s.addressRepo.DeleteAddress(userID)
 
 	if err != nil {
-		return nil, err
+		return false, err
 	}
 
-	return delete, nil
+	return true, nil
 }
 
 func (s *AddressService) GetAddressByID(userID string) (*database.Address, error) {

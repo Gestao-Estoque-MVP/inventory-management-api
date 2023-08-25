@@ -2,15 +2,15 @@ package repository
 
 import (
 	"context"
-	"database/sql"
 
 	"github.com/diogoX451/inventory-management-api/internal/database"
+	"github.com/jackc/pgconn"
 )
 
 type IAddressRepository interface {
 	CreateAddress(address *database.Address) (*database.Address, error)
 	UpdateAddress(*database.Address) (*database.Address, error)
-	DeleteAddress(userID string) (*sql.Result, error)
+	DeleteAddress(userID string) (*pgconn.CommandTag, error)
 	GetAddressByID(userID string) (*database.Address, error)
 	GetAddress() ([]*database.Address, error)
 }
@@ -64,14 +64,14 @@ func (a *IAddress) UpdateAddress(address *database.Address) (*database.Address, 
 	return &update, nil
 }
 
-func (a *IAddress) DeleteAddress(userID string) (*sql.Result, error) {
-	delete, err := a.DB.DeleteAddress(context.Background(), userID)
+func (a *IAddress) DeleteAddress(userID string) (bool, error) {
+	_, err := a.DB.DeleteAddress(context.Background(), userID) // renamed to avoid using Go reserved word
 
 	if err != nil {
-		return nil, err
+		return false, err
 	}
 
-	return &delete, nil
+	return true, nil
 }
 
 func (a *IAddress) GetAddressByID(userID string) (*database.Address, error) {

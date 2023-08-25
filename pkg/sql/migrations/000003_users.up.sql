@@ -9,7 +9,6 @@ CREATE TABLE users
  document_type VARCHAR(50),   
  document_number VARCHAR(50),
  password CHAR(64),
- avatar VARCHAR(255),
  status user_status NOT NULL,
  register_token VARCHAR(255),
  token_expires_at TIMESTAMP,

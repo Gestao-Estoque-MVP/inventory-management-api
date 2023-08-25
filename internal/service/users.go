@@ -1,7 +1,6 @@
 package service
 
 import (
-	"database/sql"
 	"fmt"
 	"log"
 	"time"
@@ -9,6 +8,7 @@ import (
 	"github.com/diogoX451/inventory-management-api/internal/database"
 	"github.com/diogoX451/inventory-management-api/internal/repository"
 	token "github.com/diogoX451/inventory-management-api/pkg/Token"
+	"github.com/jackc/pgx/v5/pgtype"
 	"nullprogram.com/x/uuid"
 )
 
@@ -31,11 +31,11 @@ func (us *UserService) CreatePreUser(user *database.User) (*database.User, error
 		Name:           user.Name,
 		Email:          user.Email,
 		Status:         user.Status,
-		RoleID:         sql.NullString{String: assign.ID, Valid: true},
+		RoleID:         pgtype.Text{String: assign.ID, Valid: true},
 		TenantID:       user.TenantID,
-		RegisterToken:  sql.NullString{String: token, Valid: true},
-		TokenExpiresAt: sql.NullTime{Time: time.Now().Add(1 * time.Hour), Valid: true},
-		CreatedAt:      time.Now().Local(),
+		RegisterToken:  pgtype.Text{String: token, Valid: true},
+		TokenExpiresAt: pgtype.Timestamp{Time: time.Now().Add(1 * time.Hour), Valid: true},
+		CreatedAt:      pgtype.Timestamp{Time: time.Now().Local(), Valid: true},
 	}
 
 	createUser, err := us.userRepo.CreatePreUser(params)

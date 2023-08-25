@@ -1,11 +1,10 @@
 package main
 
 import (
-	"database/sql"
+	"context"
 	"log"
 	"net/http"
 	"os"
-	"time"
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
@@ -17,8 +16,8 @@ import (
 	"github.com/diogoX451/inventory-management-api/internal/repository"
 	"github.com/diogoX451/inventory-management-api/internal/service"
 	"github.com/gorilla/mux"
+	"github.com/jackc/pgx/v5"
 	"github.com/joho/godotenv"
-	_ "github.com/lib/pq"
 	"github.com/rs/cors"
 )
 
@@ -31,16 +30,13 @@ func init() {
 }
 
 func main() {
-	db, err := sql.Open("postgres", os.Getenv("DB_URL"))
+	db, err := pgx.Connect(context.Background(), os.Getenv("DB_URL"))
 	if err != nil {
 		log.Fatalf("Erro ao abrir a conexão com o banco de dados: %v\n", err)
 	}
-	db.SetConnMaxLifetime(time.Minute * 3)
-	db.SetMaxOpenConns(10)
-	db.SetMaxIdleConns(10)
 
 	defer func() {
-		err := db.Close()
+		err := db.Close(context.Background())
 		if err != nil {
 			log.Fatalf("Erro ao fechar a conexão com o banco de dados: %v\n", err)
 		}

@@ -7,22 +7,22 @@ package database
 
 import (
 	"context"
-	"database/sql"
-	"time"
+
+	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const completeRegisterUser = `-- name: CompleteRegisterUser :one
-UPDATE users SET phone = $1, document_type = $2, document_number = $3, password = $4, avatar = $5, updated_at = $6 WHERE register_token = $7 RETURNING id, name, email
+UPDATE users SET phone = $1, document_type = $2, document_number = $3, password = $4, updated_at = $5 WHERE register_token = $6 RETURNING id, name, email
 `
 
 type CompleteRegisterUserParams struct {
-	Phone          sql.NullString
-	DocumentType   sql.NullString
-	DocumentNumber sql.NullString
-	Password       sql.NullString
-	Avatar         sql.NullString
-	UpdatedAt      sql.NullTime
-	RegisterToken  sql.NullString
+	Phone          pgtype.Text
+	DocumentType   pgtype.Text
+	DocumentNumber pgtype.Text
+	Password       pgtype.Text
+	UpdatedAt      pgtype.Timestamp
+	RegisterToken  pgtype.Text
 }
 
 type CompleteRegisterUserRow struct {
@@ -32,12 +32,11 @@ type CompleteRegisterUserRow struct {
 }
 
 func (q *Queries) CompleteRegisterUser(ctx context.Context, arg CompleteRegisterUserParams) (CompleteRegisterUserRow, error) {
-	row := q.db.QueryRowContext(ctx, completeRegisterUser,
+	row := q.db.QueryRow(ctx, completeRegisterUser,
 		arg.Phone,
 		arg.DocumentType,
 		arg.DocumentNumber,
 		arg.Password,
-		arg.Avatar,
 		arg.UpdatedAt,
 		arg.RegisterToken,
 	)
@@ -56,11 +55,11 @@ type CreatePreRegisterUserParams struct {
 	Name           string
 	Email          string
 	Status         UserStatus
-	RoleID         sql.NullString
+	RoleID         pgtype.Text
 	TenantID       string
-	RegisterToken  sql.NullString
-	TokenExpiresAt sql.NullTime
-	CreatedAt      time.Time
+	RegisterToken  pgtype.Text
+	TokenExpiresAt pgtype.Timestamp
+	CreatedAt      pgtype.Timestamp
 }
 
 type CreatePreRegisterUserRow struct {
@@ -70,7 +69,7 @@ type CreatePreRegisterUserRow struct {
 }
 
 func (q *Queries) CreatePreRegisterUser(ctx context.Context, arg CreatePreRegisterUserParams) (CreatePreRegisterUserRow, error) {
-	row := q.db.QueryRowContext(ctx, createPreRegisterUser,
+	row := q.db.QueryRow(ctx, createPreRegisterUser,
 		arg.ID,
 		arg.Name,
 		arg.Email,
@@ -93,11 +92,11 @@ INSERT INTO tenant (id, name)
 
 type CreateTenantParams struct {
 	ID   string
-	Name sql.NullString
+	Name pgtype.Text
 }
 
 func (q *Queries) CreateTenant(ctx context.Context, arg CreateTenantParams) (Tenant, error) {
-	row := q.db.QueryRowContext(ctx, createTenant, arg.ID, arg.Name)
+	row := q.db.QueryRow(ctx, createTenant, arg.ID, arg.Name)
 	var i Tenant
 	err := row.Scan(&i.ID, &i.Name)
 	return i, err
@@ -113,8 +112,8 @@ type DeleteUserRow struct {
 	Email string
 }
 
-func (q *Queries) DeleteUser(ctx context.Context, id string) (sql.Result, error) {
-	return q.db.ExecContext(ctx, deleteUser, id)
+func (q *Queries) DeleteUser(ctx context.Context, id string) (pgconn.CommandTag, error) {
+	return q.db.Exec(ctx, deleteUser, id)
 }
 
 const getEmail = `-- name: GetEmail :one
@@ -147,23 +146,23 @@ SELECT register_token, token_expires_at FROM users WHERE register_token = $1
 `
 
 type GetTokenPreRegisterRow struct {
-	RegisterToken  sql.NullString
-	TokenExpiresAt sql.NullTime
+	RegisterToken  pgtype.Text
+	TokenExpiresAt pgtype.Timestamp
 }
 
-func (q *Queries) GetTokenPreRegister(ctx context.Context, registerToken sql.NullString) (GetTokenPreRegisterRow, error) {
-	row := q.db.QueryRowContext(ctx, getTokenPreRegister, registerToken)
+func (q *Queries) GetTokenPreRegister(ctx context.Context, registerToken pgtype.Text) (GetTokenPreRegisterRow, error) {
+	row := q.db.QueryRow(ctx, getTokenPreRegister, registerToken)
 	var i GetTokenPreRegisterRow
 	err := row.Scan(&i.RegisterToken, &i.TokenExpiresAt)
 	return i, err
 }
 
 const getUser = `-- name: GetUser :one
-SELECT id, name, email, phone, document_type, document_number, password, avatar, status, register_token, token_expires_at, created_at, updated_at, role_id, tenant_id FROM users WHERE id = $1
+SELECT id, name, email, phone, document_type, document_number, password, status, register_token, token_expires_at, created_at, updated_at, role_id, tenant_id FROM users WHERE id = $1
 `
 
 func (q *Queries) GetUser(ctx context.Context, id string) (User, error) {
-	row := q.db.QueryRowContext(ctx, getUser, id)
+	row := q.db.QueryRow(ctx, getUser, id)
 	var i User
 	err := row.Scan(
 		&i.ID,
@@ -173,7 +172,32 @@ func (q *Queries) GetUser(ctx context.Context, id string) (User, error) {
 		&i.DocumentType,
 		&i.DocumentNumber,
 		&i.Password,
-		&i.Avatar,
+		&i.Status,
+		&i.RegisterToken,
+		&i.TokenExpiresAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.RoleID,
+		&i.TenantID,
+	)
+	return i, err
+}
+
+const getUserByEmail = `-- name: GetUserByEmail :one
+SELECT id, name, email, phone, document_type, document_number, password, status, register_token, token_expires_at, created_at, updated_at, role_id, tenant_id FROM users WHERE email = $1
+`
+
+func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error) {
+	row := q.db.QueryRow(ctx, getUserByEmail, email)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Email,
+		&i.Phone,
+		&i.DocumentType,
+		&i.DocumentNumber,
+		&i.Password,
 		&i.Status,
 		&i.RegisterToken,
 		&i.TokenExpiresAt,
@@ -186,11 +210,11 @@ func (q *Queries) GetUser(ctx context.Context, id string) (User, error) {
 }
 
 const getUserRegisterToken = `-- name: GetUserRegisterToken :one
-SELECT id, name, email, phone, document_type, document_number, password, avatar, status, register_token, token_expires_at, created_at, updated_at, role_id, tenant_id FROM users WHERE register_token = $1
+SELECT id, name, email, phone, document_type, document_number, password, status, register_token, token_expires_at, created_at, updated_at, role_id, tenant_id FROM users WHERE register_token = $1
 `
 
-func (q *Queries) GetUserRegisterToken(ctx context.Context, registerToken sql.NullString) (User, error) {
-	row := q.db.QueryRowContext(ctx, getUserRegisterToken, registerToken)
+func (q *Queries) GetUserRegisterToken(ctx context.Context, registerToken pgtype.Text) (User, error) {
+	row := q.db.QueryRow(ctx, getUserRegisterToken, registerToken)
 	var i User
 	err := row.Scan(
 		&i.ID,
@@ -200,7 +224,6 @@ func (q *Queries) GetUserRegisterToken(ctx context.Context, registerToken sql.Nu
 		&i.DocumentType,
 		&i.DocumentNumber,
 		&i.Password,
-		&i.Avatar,
 		&i.Status,
 		&i.RegisterToken,
 		&i.TokenExpiresAt,
@@ -213,11 +236,11 @@ func (q *Queries) GetUserRegisterToken(ctx context.Context, registerToken sql.Nu
 }
 
 const listUsers = `-- name: ListUsers :many
-SELECT id, name, email, phone, document_type, document_number, password, avatar, status, register_token, token_expires_at, created_at, updated_at, role_id, tenant_id FROM users ORDER BY id
+SELECT id, name, email, phone, document_type, document_number, password, status, register_token, token_expires_at, created_at, updated_at, role_id, tenant_id FROM users ORDER BY id
 `
 
 func (q *Queries) ListUsers(ctx context.Context) ([]User, error) {
-	rows, err := q.db.QueryContext(ctx, listUsers)
+	rows, err := q.db.Query(ctx, listUsers)
 	if err != nil {
 		return nil, err
 	}
@@ -233,7 +256,6 @@ func (q *Queries) ListUsers(ctx context.Context) ([]User, error) {
 			&i.DocumentType,
 			&i.DocumentNumber,
 			&i.Password,
-			&i.Avatar,
 			&i.Status,
 			&i.RegisterToken,
 			&i.TokenExpiresAt,
@@ -245,9 +267,6 @@ func (q *Queries) ListUsers(ctx context.Context) ([]User, error) {
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -262,14 +281,14 @@ UPDATE users SET name = $1, email = $2, phone = $3, document_type = $4, document
 type UpdateUserParams struct {
 	Name           string
 	Email          string
-	Phone          sql.NullString
-	DocumentType   sql.NullString
-	DocumentNumber sql.NullString
+	Phone          pgtype.Text
+	DocumentType   pgtype.Text
+	DocumentNumber pgtype.Text
 	ID             string
 }
 
 func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) error {
-	_, err := q.db.ExecContext(ctx, updateUser,
+	_, err := q.db.Exec(ctx, updateUser,
 		arg.Name,
 		arg.Email,
 		arg.Phone,

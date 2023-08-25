@@ -2,11 +2,11 @@ package repository
 
 import (
 	"context"
-	"database/sql"
 	"log"
 	"time"
 
 	"github.com/diogoX451/inventory-management-api/internal/database"
+	"github.com/jackc/pgx/v5/pgtype"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -14,7 +14,7 @@ type IUserRepository interface {
 	CreatePreUser(*database.User) (*database.User, error)
 	CreateCompleteUser(token string, user *database.User) (*database.CompleteRegisterUserRow, error)
 	UpdateUser(id string, user *database.UpdateUserParams) error
-	DeleteUser(id string) (*sql.Result, error)
+	DeleteUser(id string) (bool, error)
 	GetUser(id string) (*database.User, error)
 	GetUsers() ([]*database.User, error)
 	GetUserByEmail(email string) (*database.GetEmailRow, error)
@@ -68,9 +68,9 @@ func (i *UserRepository) CreateCompleteUser(token string, user *database.User) (
 		Phone:          user.Phone,
 		DocumentType:   user.DocumentType,
 		DocumentNumber: user.DocumentNumber,
-		Password:       sql.NullString{String: string(bytes), Valid: true},
-		RegisterToken:  sql.NullString{String: token, Valid: true},
-		UpdatedAt:      sql.NullTime{Time: time.Now(), Valid: true},
+		Password:       pgtype.Text{String: string(bytes), Valid: true},
+		RegisterToken:  pgtype.Text{String: token, Valid: true},
+		UpdatedAt:      pgtype.Timestamp{Time: time.Now(), Valid: true},
 	})
 
 	if err != nil {
@@ -100,14 +100,14 @@ func (i *UserRepository) UpdateUser(id string, user *database.UpdateUserParams) 
 	return err
 }
 
-func (i *UserRepository) DeleteUser(id string) (*sql.Result, error) {
-	delete, err := i.DB.DeleteUser(context.Background(), id)
+func (i *UserRepository) DeleteUser(id string) (bool, error) {
+	_, err := i.DB.DeleteUser(context.Background(), id)
 
 	if err != nil {
-		return nil, err
+		return false, err
 	}
 
-	return &delete, nil
+	return true, nil
 }
 
 func (i *UserRepository) GetUser(id string) (*database.User, error) {
@@ -148,7 +148,7 @@ func (i *UserRepository) GetUserByEmail(email string) (*database.GetEmailRow, er
 }
 
 func (i *UserRepository) GetUserRegisterToken(token string) (*database.User, error) {
-	get, err := i.DB.GetUserRegisterToken(context.Background(), sql.NullString{String: token, Valid: true})
+	get, err := i.DB.GetUserRegisterToken(context.Background(), pgtype.Text{String: token, Valid: true})
 
 	if err != nil {
 		return nil, err
@@ -158,7 +158,7 @@ func (i *UserRepository) GetUserRegisterToken(token string) (*database.User, err
 }
 
 func (i *UserRepository) VerifyToken(token string) *database.GetTokenPreRegisterRow {
-	find, err := i.DB.GetTokenPreRegister(context.Background(), sql.NullString{
+	find, err := i.DB.GetTokenPreRegister(context.Background(), pgtype.Text{
 		String: token,
 		Valid:  true,
 	})

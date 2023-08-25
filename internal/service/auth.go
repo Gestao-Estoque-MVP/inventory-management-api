@@ -23,7 +23,13 @@ func NewAuthUser(us repository.UserRepository, role repository.RBCARepository) *
 
 func (a *AuthUser) UserLogin(ctx context.Context, email string, password string) (interface{}, error) {
 	getUser, err := a.us.GetUserByEmail(email)
-	role, _ := a.role.GetRoleByID(getUser.RoleID.String)
+
+	if err != nil {
+		log.Printf("error em trazer user login: %v", err)
+		return nil, err
+	}
+
+	role, err := a.role.GetRoleByID(getUser.RoleID.String)
 
 	if err != nil {
 		log.Printf("error em trazer user login: %v", err)

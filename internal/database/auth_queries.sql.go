@@ -7,8 +7,8 @@ package database
 
 import (
 	"context"
-	"database/sql"
-	"time"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createContactInfo = `-- name: CreateContactInfo :one
@@ -20,12 +20,12 @@ type CreateContactInfoParams struct {
 	ID        string
 	Name      string
 	Email     string
-	Phone     sql.NullString
-	CreatedAt time.Time
+	Phone     pgtype.Text
+	CreatedAt pgtype.Timestamp
 }
 
 func (q *Queries) CreateContactInfo(ctx context.Context, arg CreateContactInfoParams) (ContactInfo, error) {
-	row := q.db.QueryRowContext(ctx, createContactInfo,
+	row := q.db.QueryRow(ctx, createContactInfo,
 		arg.ID,
 		arg.Name,
 		arg.Email,
@@ -55,7 +55,7 @@ type CreatePermissionsParams struct {
 }
 
 func (q *Queries) CreatePermissions(ctx context.Context, arg CreatePermissionsParams) (Permission, error) {
-	row := q.db.QueryRowContext(ctx, createPermissions, arg.ID, arg.Name, arg.Description)
+	row := q.db.QueryRow(ctx, createPermissions, arg.ID, arg.Name, arg.Description)
 	var i Permission
 	err := row.Scan(&i.ID, &i.Name, &i.Description)
 	return i, err
@@ -73,7 +73,7 @@ type CreateRoleParams struct {
 }
 
 func (q *Queries) CreateRole(ctx context.Context, arg CreateRoleParams) (Role, error) {
-	row := q.db.QueryRowContext(ctx, createRole, arg.ID, arg.Name, arg.Description)
+	row := q.db.QueryRow(ctx, createRole, arg.ID, arg.Name, arg.Description)
 	var i Role
 	err := row.Scan(&i.ID, &i.Name, &i.Description)
 	return i, err
@@ -90,7 +90,7 @@ type CreateRolePermissionsParams struct {
 }
 
 func (q *Queries) CreateRolePermissions(ctx context.Context, arg CreateRolePermissionsParams) (RolesPermission, error) {
-	row := q.db.QueryRowContext(ctx, createRolePermissions, arg.RoleID, arg.PermissionID)
+	row := q.db.QueryRow(ctx, createRolePermissions, arg.RoleID, arg.PermissionID)
 	var i RolesPermission
 	err := row.Scan(&i.ID, &i.RoleID, &i.PermissionID)
 	return i, err
@@ -102,12 +102,12 @@ INSERT INTO users_permissions (user_id, permission_id)
 `
 
 type CreateUsersPermissionsParams struct {
-	UserID       sql.NullString
-	PermissionID sql.NullString
+	UserID       pgtype.Text
+	PermissionID pgtype.Text
 }
 
 func (q *Queries) CreateUsersPermissions(ctx context.Context, arg CreateUsersPermissionsParams) (UsersPermission, error) {
-	row := q.db.QueryRowContext(ctx, createUsersPermissions, arg.UserID, arg.PermissionID)
+	row := q.db.QueryRow(ctx, createUsersPermissions, arg.UserID, arg.PermissionID)
 	var i UsersPermission
 	err := row.Scan(&i.ID, &i.UserID, &i.PermissionID)
 	return i, err
@@ -118,7 +118,7 @@ SELECT id, name, description FROM roles WHERE name = $1
 `
 
 func (q *Queries) GetRole(ctx context.Context, name string) (Role, error) {
-	row := q.db.QueryRowContext(ctx, getRole, name)
+	row := q.db.QueryRow(ctx, getRole, name)
 	var i Role
 	err := row.Scan(&i.ID, &i.Name, &i.Description)
 	return i, err
@@ -129,7 +129,7 @@ SELECT id, name, description from roles WHERE id = $1
 `
 
 func (q *Queries) GetRoleByID(ctx context.Context, id string) (Role, error) {
-	row := q.db.QueryRowContext(ctx, getRoleByID, id)
+	row := q.db.QueryRow(ctx, getRoleByID, id)
 	var i Role
 	err := row.Scan(&i.ID, &i.Name, &i.Description)
 	return i, err
@@ -159,7 +159,7 @@ type GetRolesPermissionsRow struct {
 }
 
 func (q *Queries) GetRolesPermissions(ctx context.Context, id string) ([]GetRolesPermissionsRow, error) {
-	rows, err := q.db.QueryContext(ctx, getRolesPermissions, id)
+	rows, err := q.db.Query(ctx, getRolesPermissions, id)
 	if err != nil {
 		return nil, err
 	}
@@ -171,9 +171,6 @@ func (q *Queries) GetRolesPermissions(ctx context.Context, id string) ([]GetRole
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -201,7 +198,7 @@ type GetUsersPermissionsRow struct {
 }
 
 func (q *Queries) GetUsersPermissions(ctx context.Context, id string) ([]GetUsersPermissionsRow, error) {
-	rows, err := q.db.QueryContext(ctx, getUsersPermissions, id)
+	rows, err := q.db.Query(ctx, getUsersPermissions, id)
 	if err != nil {
 		return nil, err
 	}
@@ -213,9 +210,6 @@ func (q *Queries) GetUsersPermissions(ctx context.Context, id string) ([]GetUser
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
