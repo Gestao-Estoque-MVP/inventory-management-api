@@ -1,4 +1,4 @@
-package graph
+package resolvers
 
 // This file will be automatically regenerated based on the schema, any resolver implementations
 // will be copied through when generating and any unknown code will be moved to the end.
@@ -11,7 +11,6 @@ import (
 
 	"github.com/diogoX451/inventory-management-api/internal/database"
 	"github.com/diogoX451/inventory-management-api/internal/graph/model"
-	"github.com/diogoX451/inventory-management-api/internal/service"
 	"github.com/diogoX451/inventory-management-api/pkg/convert"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
@@ -169,105 +168,9 @@ func (r *mutationResolver) CreateAddress(ctx context.Context, input model.NewAdd
 	}, nil
 }
 
-// UploadTemplate is the resolver for the uploadTemplate field.
-func (r *mutationResolver) UploadTemplate(ctx context.Context, input model.NewTemplate) (*model.Template, error) {
-	file := database.TemplateEmail{
-		Name:        input.Name,
-		Description: input.Description,
-	}
-
-	create, err := r.Resolver.S3Service.UploadTemplateS3(input.File.File, file)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return &model.Template{
-		ID:   create.ID,
-		Name: create.Name,
-	}, nil
-}
-
-// CreateRole is the resolver for the createRole field.
-func (r *mutationResolver) CreateRole(ctx context.Context, input model.NewRole) (*model.Roles, error) {
-	role := database.Role{
-		Name:        input.Name,
-		Description: input.Description,
-	}
-
-	created, err := r.Resolver.RBCAService.CreateRoles(&role)
-
-	if err != nil {
-		return nil, err
-	}
-
-	response := &model.Roles{
-		ID:          created.ID,
-		Name:        created.Name,
-		Description: created.Description,
-	}
-
-	return response, nil
-}
-
-// CreatePermission is the resolver for the createPermission field.
-func (r *mutationResolver) CreatePermission(ctx context.Context, input model.NewPermission) (*model.Permissions, error) {
-	permission := database.Permission{
-		Name:        input.Name,
-		Description: input.Description,
-	}
-
-	created, err := r.Resolver.RBCAService.CreatePermissions(&permission)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return &model.Permissions{
-		ID:          created.ID,
-		Name:        created.Name,
-		Description: created.Description,
-	}, nil
-}
-
-// CreateRolePermission is the resolver for the createRolePermission field.
-func (r *mutationResolver) CreateRolePermission(ctx context.Context, input model.NewRolePermission) (*model.RolePermissions, error) {
-	assign := database.RolesPermission{
-		RoleID:       input.RoleID,
-		PermissionID: input.PermissionID,
-	}
-
-	created, err := r.Resolver.RBCAService.CreateRolesPermissions(&assign)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return &model.RolePermissions{
-		RoleID:       created.RoleID,
-		PermissionID: created.PermissionID,
-	}, nil
-}
-
-// SendEmail is the resolver for the SendEmail field.
-func (r *mutationResolver) SendEmail(ctx context.Context, input model.SendEmail) (*model.Message, error) {
-	details := service.EmailDetails{
-		To:         input.To,
-		Subject:    input.Subject,
-		TemplateID: input.TemplateID,
-	}
-
-	err := r.Resolver.EmailService.SendEmail(&details, input.TypeSend)
-
-	if err != nil {
-		return &model.Message{}, &gqlerror.Error{
-			Message: "Error sending email " + err.Error(),
-		}
-	}
-
-	return &model.Message{
-		Message: "Email sent",
-	}, nil
+// VerifyToken is the resolver for the verifyToken field.
+func (r *mutationResolver) VerifyToken(ctx context.Context, input model.VerifyToken) (bool, error) {
+	panic(fmt.Errorf("not implemented: VerifyToken - verifyToken"))
 }
 
 // User is the resolver for the user field.
@@ -339,30 +242,3 @@ func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
 
 	return users, nil
 }
-
-// Protected is the resolver for the protected field.
-func (r *queryResolver) Protected(ctx context.Context) (string, error) {
-	return "Success", nil
-}
-
-// Template is the resolver for the template field.
-func (r *queryResolver) Template(ctx context.Context, id string) (*model.Template, error) {
-	get, err := r.Resolver.S3Service.GetTemplateUrlS3(id)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return &model.Template{
-		URL: get.Url,
-	}, nil
-}
-
-// Mutation returns MutationResolver implementation.
-func (r *Resolver) Mutation() MutationResolver { return &mutationResolver{r} }
-
-// Query returns QueryResolver implementation.
-func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
-
-type mutationResolver struct{ *Resolver }
-type queryResolver struct{ *Resolver }

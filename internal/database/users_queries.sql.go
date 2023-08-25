@@ -143,14 +143,19 @@ func (q *Queries) GetEmail(ctx context.Context, email string) (GetEmailRow, erro
 }
 
 const getTokenPreRegister = `-- name: GetTokenPreRegister :one
-SELECT register_token FROM users WHERE register_token = $1
+SELECT register_token, token_expires_at FROM users WHERE register_token = $1
 `
 
-func (q *Queries) GetTokenPreRegister(ctx context.Context, registerToken sql.NullString) (sql.NullString, error) {
+type GetTokenPreRegisterRow struct {
+	RegisterToken  sql.NullString
+	TokenExpiresAt sql.NullTime
+}
+
+func (q *Queries) GetTokenPreRegister(ctx context.Context, registerToken sql.NullString) (GetTokenPreRegisterRow, error) {
 	row := q.db.QueryRowContext(ctx, getTokenPreRegister, registerToken)
-	var register_token sql.NullString
-	err := row.Scan(&register_token)
-	return register_token, err
+	var i GetTokenPreRegisterRow
+	err := row.Scan(&i.RegisterToken, &i.TokenExpiresAt)
+	return i, err
 }
 
 const getUser = `-- name: GetUser :one

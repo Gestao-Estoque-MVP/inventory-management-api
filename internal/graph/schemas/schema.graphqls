@@ -1,0 +1,66 @@
+# GraphQL schema example
+#
+# https://gqlgen.com/getting-started/
+
+directive @goField(forceResolver: Boolean, name: String) on FIELD_DEFINITION | INPUT_FIELD_DEFINITION
+
+# new directive
+directive @auth on FIELD_DEFINITION
+directive @hasRole(role: Role!) on FIELD_DEFINITION
+
+scalar Any
+
+enum Role{
+  users,
+  admin,
+}
+
+type Roles {
+  id: ID!
+  name: String!
+  description: String!
+}
+
+type Permissions {
+  id: ID!
+  name: String!
+  description: String!
+}
+
+type RolePermissions {
+  id: ID!
+  roleId: String!
+  permissionId: String!
+}
+
+
+type Message {
+  message: String!
+}
+
+
+input NewRole {
+  name: String!
+  description: String!
+}
+
+input NewPermission {
+  name: String!
+  description: String!
+}
+
+input NewRolePermission {
+  roleId: String!
+  permissionId: String!
+}
+
+
+type Mutation {
+  createRole(input: NewRole!): Roles! @auth @hasRole(role: admin)
+  createPermission(input: NewPermission!): Permissions! @auth @hasRole(role: admin)
+  createRolePermission(input: NewRolePermission!): RolePermissions! @auth @hasRole(role: admin)
+}
+
+type Query {
+  protected: String! @goField(forceResolver: true) @auth
+}

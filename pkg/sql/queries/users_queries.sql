@@ -24,7 +24,7 @@ SELECT * FROM users ORDER BY id;
 UPDATE users SET name = $1, email = $2, phone = $3, document_type = $4, document_number = $5 WHERE id = $6;
 
 -- name: GetTokenPreRegister :one
-SELECT register_token FROM users WHERE register_token = $1;
+SELECT register_token, token_expires_at FROM users WHERE register_token = $1;
 
 -- name: CreateTenant :one 
 INSERT INTO tenant (id, name) 

@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"io"
 	"strconv"
-
-	"github.com/99designs/gqlgen/graphql"
 )
 
 type Address struct {
@@ -80,12 +78,6 @@ type NewRolePermission struct {
 	PermissionID string `json:"permissionId"`
 }
 
-type NewTemplate struct {
-	File        graphql.Upload `json:"file"`
-	Name        string         `json:"name"`
-	Description string         `json:"description"`
-}
-
 type NewUser struct {
 	Name           string `json:"name"`
 	Email          string `json:"email"`
@@ -126,19 +118,6 @@ type Roles struct {
 	Description string `json:"description"`
 }
 
-type SendEmail struct {
-	TemplateID string   `json:"templateId"`
-	Subject    string   `json:"subject"`
-	To         []string `json:"to,omitempty"`
-	TypeSend   string   `json:"typeSend"`
-}
-
-type Template struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
-	URL  string `json:"url"`
-}
-
 type User struct {
 	ID             string   `json:"id"`
 	Name           string   `json:"name"`
@@ -146,6 +125,10 @@ type User struct {
 	Phone          string   `json:"phone"`
 	DocumentNumber string   `json:"document_number"`
 	Address        *Address `json:"address"`
+}
+
+type VerifyToken struct {
+	Token string `json:"token"`
 }
 
 type Role string

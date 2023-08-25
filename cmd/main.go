@@ -13,6 +13,7 @@ import (
 	"github.com/diogoX451/inventory-management-api/internal/graph"
 	"github.com/diogoX451/inventory-management-api/internal/graph/directives"
 	"github.com/diogoX451/inventory-management-api/internal/graph/middleware"
+	"github.com/diogoX451/inventory-management-api/internal/graph/resolvers"
 	"github.com/diogoX451/inventory-management-api/internal/repository"
 	"github.com/diogoX451/inventory-management-api/internal/service"
 	"github.com/gorilla/mux"
@@ -81,18 +82,12 @@ func main() {
 	addressRepositoryService := service.NewAddressService(addressRepository)
 	service.NewTemplateService(*templateRepository)
 
-	resolvers := &graph.Resolver{
-		UserRepository:        userRepository,
-		UserService:           userService,
-		ContactInfoRepository: contactRepository,
-		ContactInfoService:    contactService,
-		RBCARepository:        rcba,
-		RBCAService:           rcbaService,
-		AuthUserService:       loginService,
-		AddressRepository:     addressRepository,
-		AddressService:        addressRepositoryService,
-		S3Repository:          *s3Repository,
-		EmailService:          emailService,
+	resolvers := &resolvers.Resolver{
+		UserService:        userService,
+		ContactInfoService: contactService,
+		RBCAService:        rcbaService,
+		AuthUserService:    loginService,
+		AddressService:     addressRepositoryService,
 	}
 
 	c := graph.Config{
