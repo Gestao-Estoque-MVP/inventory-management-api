@@ -1,11 +1,11 @@
 package service
 
 import (
-	"database/sql"
 	"log"
 
 	"github.com/diogoX451/inventory-management-api/internal/database"
 	"github.com/diogoX451/inventory-management-api/internal/repository"
+	"github.com/jackc/pgx/v5/pgtype"
 	"nullprogram.com/x/uuid"
 )
 
@@ -96,7 +96,7 @@ func (r *RCBAService) GetRole(name string) (*database.Role, error) {
 func (r *RCBAService) CreateTenant(tenant string) (*database.Tenant, error) {
 	create, err := r.rcba.CreateTenant(&database.Tenant{
 		ID:   uuid.NewGen().NewV4().String(),
-		Name: sql.NullString{String: tenant, Valid: true},
+		Name: pgtype.Text{String: tenant, Valid: true},
 	})
 
 	if err != nil {

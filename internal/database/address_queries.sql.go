@@ -7,8 +7,9 @@ package database
 
 import (
 	"context"
-	"database/sql"
-	"time"
+
+	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createAddress = `-- name: CreateAddress :one
@@ -18,18 +19,18 @@ INSERT INTO address (user_id, address, number, street, city, state, postal_code,
 
 type CreateAddressParams struct {
 	UserID     string
-	Address    sql.NullString
-	Number     sql.NullString
-	Street     sql.NullString
-	City       sql.NullString
-	State      sql.NullString
-	PostalCode sql.NullString
-	Country    sql.NullString
-	CreatedAt  time.Time
+	Address    pgtype.Text
+	Number     pgtype.Text
+	Street     pgtype.Text
+	City       pgtype.Text
+	State      pgtype.Text
+	PostalCode pgtype.Text
+	Country    pgtype.Text
+	CreatedAt  pgtype.Timestamp
 }
 
 func (q *Queries) CreateAddress(ctx context.Context, arg CreateAddressParams) (Address, error) {
-	row := q.db.QueryRowContext(ctx, createAddress,
+	row := q.db.QueryRow(ctx, createAddress,
 		arg.UserID,
 		arg.Address,
 		arg.Number,
@@ -58,11 +59,11 @@ func (q *Queries) CreateAddress(ctx context.Context, arg CreateAddressParams) (A
 }
 
 const deleteAddress = `-- name: DeleteAddress :execresult
-DELETE FROM address WHERE user_id = $1 RETURNING id, user_id, address, street, city, state, postal_code, country, number, created_at, updated_at
+DELETE FROM address WHERE user_id = $1
 `
 
-func (q *Queries) DeleteAddress(ctx context.Context, userID string) (sql.Result, error) {
-	return q.db.ExecContext(ctx, deleteAddress, userID)
+func (q *Queries) DeleteAddress(ctx context.Context, userID string) (pgconn.CommandTag, error) {
+	return q.db.Exec(ctx, deleteAddress, userID)
 }
 
 const getAddressByID = `-- name: GetAddressByID :one
@@ -70,7 +71,7 @@ SELECT id, user_id, address, street, city, state, postal_code, country, number, 
 `
 
 func (q *Queries) GetAddressByID(ctx context.Context, userID string) (Address, error) {
-	row := q.db.QueryRowContext(ctx, getAddressByID, userID)
+	row := q.db.QueryRow(ctx, getAddressByID, userID)
 	var i Address
 	err := row.Scan(
 		&i.ID,
@@ -93,7 +94,7 @@ SELECT id, user_id, address, street, city, state, postal_code, country, number, 
 `
 
 func (q *Queries) ListAddresses(ctx context.Context) ([]Address, error) {
-	rows, err := q.db.QueryContext(ctx, listAddresses)
+	rows, err := q.db.Query(ctx, listAddresses)
 	if err != nil {
 		return nil, err
 	}
@@ -118,9 +119,6 @@ func (q *Queries) ListAddresses(ctx context.Context) ([]Address, error) {
 		}
 		items = append(items, i)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -133,18 +131,18 @@ UPDATE address SET user_id = $1, address = $2, number = $3, street = $4, city = 
 
 type UpdateAddressParams struct {
 	UserID     string
-	Address    sql.NullString
-	Number     sql.NullString
-	Street     sql.NullString
-	City       sql.NullString
-	State      sql.NullString
-	PostalCode sql.NullString
-	Country    sql.NullString
+	Address    pgtype.Text
+	Number     pgtype.Text
+	Street     pgtype.Text
+	City       pgtype.Text
+	State      pgtype.Text
+	PostalCode pgtype.Text
+	Country    pgtype.Text
 	ID         int32
 }
 
 func (q *Queries) UpdateAddress(ctx context.Context, arg UpdateAddressParams) (Address, error) {
-	row := q.db.QueryRowContext(ctx, updateAddress,
+	row := q.db.QueryRow(ctx, updateAddress,
 		arg.UserID,
 		arg.Address,
 		arg.Number,

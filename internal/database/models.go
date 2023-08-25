@@ -5,10 +5,10 @@
 package database
 
 import (
-	"database/sql"
 	"database/sql/driver"
 	"fmt"
-	"time"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type UserStatus string
@@ -57,23 +57,23 @@ func (ns NullUserStatus) Value() (driver.Value, error) {
 type Address struct {
 	ID         int32
 	UserID     string
-	Address    sql.NullString
-	Street     sql.NullString
-	City       sql.NullString
-	State      sql.NullString
-	PostalCode sql.NullString
-	Country    sql.NullString
-	Number     sql.NullString
-	CreatedAt  time.Time
-	UpdatedAt  sql.NullTime
+	Address    pgtype.Text
+	Street     pgtype.Text
+	City       pgtype.Text
+	State      pgtype.Text
+	PostalCode pgtype.Text
+	Country    pgtype.Text
+	Number     pgtype.Text
+	CreatedAt  pgtype.Timestamp
+	UpdatedAt  pgtype.Timestamp
 }
 
 type ContactInfo struct {
 	ID        string
 	Name      string
 	Email     string
-	Phone     sql.NullString
-	CreatedAt time.Time
+	Phone     pgtype.Text
+	CreatedAt pgtype.Timestamp
 }
 
 type Permission struct {
@@ -96,29 +96,28 @@ type RolesPermission struct {
 
 type Tenant struct {
 	ID   string
-	Name sql.NullString
+	Name pgtype.Text
 }
 
 type User struct {
 	ID             string
 	Name           string
 	Email          string
-	Phone          sql.NullString
-	DocumentType   sql.NullString
-	DocumentNumber sql.NullString
-	Password       sql.NullString
-	Avatar         sql.NullString
+	Phone          pgtype.Text
+	DocumentType   pgtype.Text
+	DocumentNumber pgtype.Text
+	Password       pgtype.Text
 	Status         UserStatus
-	RegisterToken  sql.NullString
-	TokenExpiresAt sql.NullTime
-	CreatedAt      time.Time
-	UpdatedAt      sql.NullTime
-	RoleID         sql.NullString
+	RegisterToken  pgtype.Text
+	TokenExpiresAt pgtype.Timestamp
+	CreatedAt      pgtype.Timestamp
+	UpdatedAt      pgtype.Timestamp
+	RoleID         pgtype.Text
 	TenantID       string
 }
 
 type UsersPermission struct {
 	ID           int32
-	UserID       sql.NullString
-	PermissionID sql.NullString
+	UserID       pgtype.Text
+	PermissionID pgtype.Text
 }
