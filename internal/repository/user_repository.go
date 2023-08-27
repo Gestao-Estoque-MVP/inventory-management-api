@@ -19,7 +19,7 @@ type IUserRepository interface {
 	GetUsers() ([]*database.User, error)
 	GetUserByEmail(email string) (*database.User, error)
 	GetUserRegisterToken(token string) (*database.User, error)
-	VerifyToken(token string) *database.GetTokenPreRegisterRow
+	VerifyToken(token string) (*database.GetTokenPreRegisterRow, error)
 }
 
 type UserRepository struct {
@@ -157,15 +157,15 @@ func (i *UserRepository) GetUserRegisterToken(token string) (*database.User, err
 	return &get, nil
 }
 
-func (i *UserRepository) VerifyToken(token string) *database.GetTokenPreRegisterRow {
+func (i *UserRepository) VerifyToken(token string) (*database.GetTokenPreRegisterRow, error) {
 	find, err := i.DB.GetTokenPreRegister(context.Background(), pgtype.Text{
 		String: token,
 		Valid:  true,
 	})
 
 	if err != nil {
-		return nil
+		return nil, err
 	}
 
-	return &find
+	return &find, nil
 }
