@@ -123,7 +123,11 @@ func (us *UserService) GetUserByEmail(email string) (*database.GetEmailRow, erro
 }
 
 func (us *UserService) VerifyToken(token string) bool {
-	find := us.userRepo.VerifyToken(token)
+	find, err := us.userRepo.VerifyToken(token)
+
+	if err != nil {
+		return false
+	}
 
 	return find.TokenExpiresAt.Time == time.Now().Local().Add(time.Hour*2)
 
