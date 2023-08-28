@@ -1,0 +1,10 @@
+input Send {
+    to: String
+    templateID: String!
+    Subject: String
+    typeSend: String!
+}
+
+extend type Mutation {
+    sendEmail(input: Send!): Message! @auth @hasRole(role: "admin")
+}

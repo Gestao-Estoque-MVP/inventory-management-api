@@ -57,8 +57,6 @@ func (s *S3Service) UploadTemplateS3(file io.Reader, template database.TemplateE
 		Name:        template.Name,
 		Url:         keyPath,
 		Description: template.Description,
-		CreatedAt:   time.Now().Local(),
-		UpdatedAt:   time.Now().Local(),
 	})
 
 	if err != nil {

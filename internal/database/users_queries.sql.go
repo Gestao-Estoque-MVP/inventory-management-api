@@ -124,12 +124,12 @@ type GetEmailRow struct {
 	ID       string
 	Name     string
 	Email    string
-	Password sql.NullString
-	RoleID   sql.NullString
+	Password pgtype.Text
+	RoleID   pgtype.Text
 }
 
 func (q *Queries) GetEmail(ctx context.Context, email string) (GetEmailRow, error) {
-	row := q.db.QueryRowContext(ctx, getEmail, email)
+	row := q.db.QueryRow(ctx, getEmail, email)
 	var i GetEmailRow
 	err := row.Scan(
 		&i.ID,
@@ -183,32 +183,6 @@ func (q *Queries) GetUser(ctx context.Context, id string) (User, error) {
 	return i, err
 }
 
-const getUserByEmail = `-- name: GetUserByEmail :one
-SELECT id, name, email, phone, document_type, document_number, password, status, register_token, token_expires_at, created_at, updated_at, role_id, tenant_id FROM users WHERE email = $1
-`
-
-func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error) {
-	row := q.db.QueryRow(ctx, getUserByEmail, email)
-	var i User
-	err := row.Scan(
-		&i.ID,
-		&i.Name,
-		&i.Email,
-		&i.Phone,
-		&i.DocumentType,
-		&i.DocumentNumber,
-		&i.Password,
-		&i.Status,
-		&i.RegisterToken,
-		&i.TokenExpiresAt,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-		&i.RoleID,
-		&i.TenantID,
-	)
-	return i, err
-}
-
 const getUserRegisterToken = `-- name: GetUserRegisterToken :one
 SELECT id, name, email, phone, document_type, document_number, password, status, register_token, token_expires_at, created_at, updated_at, role_id, tenant_id FROM users WHERE register_token = $1
 `
@@ -233,6 +207,31 @@ func (q *Queries) GetUserRegisterToken(ctx context.Context, registerToken pgtype
 		&i.TenantID,
 	)
 	return i, err
+}
+
+const getUsersWithEmail = `-- name: GetUsersWithEmail :many
+
+SELECT email FROM users
+`
+
+func (q *Queries) GetUsersWithEmail(ctx context.Context) ([]string, error) {
+	rows, err := q.db.Query(ctx, getUsersWithEmail)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []string
+	for rows.Next() {
+		var email string
+		if err := rows.Scan(&email); err != nil {
+			return nil, err
+		}
+		items = append(items, email)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const listUsers = `-- name: ListUsers :many

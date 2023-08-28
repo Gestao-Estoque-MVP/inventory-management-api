@@ -14,4 +14,5 @@ type Resolver struct {
 	RBCAService        *service.RCBAService
 	AuthUserService    *service.AuthUser
 	AddressService     *service.AddressService
+	EmailService       *service.EmailService
 }

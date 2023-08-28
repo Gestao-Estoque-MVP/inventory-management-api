@@ -138,22 +138,23 @@ func (s *EmailService) sendMultiEmail(to []string, templateID string) error {
 		return err
 	}
 
-	go func(emails []string, t *template.Template) {
-		for _, e := range emails {
-			find, err := s.user.GetUserByEmail(e)
+	go func(t *template.Template) {
+		find, _ := s.user.GetUsersByEmail()
+		for _, e := range find {
+			user, err := s.user.GetUserByEmail(*e)
 			if err != nil {
-				log.Printf("Error getting user by email %s: %s", e, err)
+				log.Printf("Error getting user by email %v", err)
 				continue
 			}
 
 			data := struct {
 				Name string
 			}{
-				Name: find.Name,
+				Name: user.Name,
 			}
 			buf := new(bytes.Buffer)
 			if err = t.Execute(buf, data); err != nil {
-				log.Printf("Error executing")
+				log.Printf("Error executing template: %s", err)
 				break
 			}
 
@@ -162,9 +163,9 @@ func (s *EmailService) sendMultiEmail(to []string, templateID string) error {
 				subject = s.details.Subject
 			}
 
-			email.SendEmailAsync([]string{e}, subject, buf.String())
+			email.SendEmailAsync([]string{*e}, subject, buf.String())
 		}
-	}(to, tmp)
+	}(tmp)
 
 	return nil
 }

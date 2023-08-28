@@ -7,7 +7,8 @@ package database
 
 import (
 	"context"
-	"time"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createTemplate = `-- name: CreateTemplate :one
@@ -20,8 +21,8 @@ type CreateTemplateParams struct {
 	Name        string
 	Url         string
 	Description string
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
+	CreatedAt   pgtype.Timestamp
+	UpdatedAt   pgtype.Timestamp
 }
 
 type CreateTemplateRow struct {
@@ -30,7 +31,7 @@ type CreateTemplateRow struct {
 }
 
 func (q *Queries) CreateTemplate(ctx context.Context, arg CreateTemplateParams) (CreateTemplateRow, error) {
-	row := q.db.QueryRowContext(ctx, createTemplate,
+	row := q.db.QueryRow(ctx, createTemplate,
 		arg.ID,
 		arg.Name,
 		arg.Url,
@@ -48,7 +49,7 @@ SELECT id, name, url, description, created_at, updated_at FROM template_email WH
 `
 
 func (q *Queries) GetTemplate(ctx context.Context, id string) (TemplateEmail, error) {
-	row := q.db.QueryRowContext(ctx, getTemplate, id)
+	row := q.db.QueryRow(ctx, getTemplate, id)
 	var i TemplateEmail
 	err := row.Scan(
 		&i.ID,
@@ -66,7 +67,7 @@ SELECT url FROM template_email WHERE id = $1
 `
 
 func (q *Queries) GetTemplateS3(ctx context.Context, id string) (string, error) {
-	row := q.db.QueryRowContext(ctx, getTemplateS3, id)
+	row := q.db.QueryRow(ctx, getTemplateS3, id)
 	var url string
 	err := row.Scan(&url)
 	return url, err

@@ -83,6 +83,7 @@ type ComplexityRoot struct {
 		CreateRole           func(childComplexity int, input model.NewRole) int
 		CreateRolePermission func(childComplexity int, input model.NewRolePermission) int
 		Login                func(childComplexity int, input model.NewLogin) int
+		SendEmail            func(childComplexity int, input model.Send) int
 		UpdateUser           func(childComplexity int, id string, input model.NewUser) int
 		VerifyToken          func(childComplexity int, input model.VerifyToken) int
 	}
@@ -131,6 +132,7 @@ type MutationResolver interface {
 	CreateRole(ctx context.Context, input model.NewRole) (*model.Roles, error)
 	CreatePermission(ctx context.Context, input model.NewPermission) (*model.Permissions, error)
 	CreateRolePermission(ctx context.Context, input model.NewRolePermission) (*model.RolePermissions, error)
+	SendEmail(ctx context.Context, input model.Send) (*model.Message, error)
 	Login(ctx context.Context, input model.NewLogin) (*model.Login, error)
 	CreateContactInfo(ctx context.Context, input model.NewContactInfo) (*model.ContactInfo, error)
 	CreatePreUser(ctx context.Context, input model.NewPreUser) (*model.PreUser, error)
@@ -361,6 +363,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.Login(childComplexity, args["input"].(model.NewLogin)), true
 
+	case "Mutation.sendEmail":
+		if e.complexity.Mutation.SendEmail == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_sendEmail_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.SendEmail(childComplexity, args["input"].(model.Send)), true
+
 	case "Mutation.updateUser":
 		if e.complexity.Mutation.UpdateUser == nil {
 			break
@@ -554,6 +568,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputNewRolePermission,
 		ec.unmarshalInputNewUser,
 		ec.unmarshalInputNewUserComplete,
+		ec.unmarshalInputSend,
 		ec.unmarshalInputVerifyToken,
 	)
 	first := true
@@ -651,7 +666,7 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 	return introspection.WrapTypeFromDef(parsedSchema, parsedSchema.Types[name]), nil
 }
 
-//go:embed "schemas/schema.graphqls" "schemas/users.graphqls"
+//go:embed "schemas/schema.graphqls" "schemas/send.graphqls" "schemas/users.graphqls"
 var sourcesFS embed.FS
 
 func sourceData(filename string) string {
@@ -664,6 +679,7 @@ func sourceData(filename string) string {
 
 var sources = []*ast.Source{
 	{Name: "schemas/schema.graphqls", Input: sourceData("schemas/schema.graphqls"), BuiltIn: false},
+	{Name: "schemas/send.graphqls", Input: sourceData("schemas/send.graphqls"), BuiltIn: false},
 	{Name: "schemas/users.graphqls", Input: sourceData("schemas/users.graphqls"), BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
@@ -799,6 +815,21 @@ func (ec *executionContext) field_Mutation_login_args(ctx context.Context, rawAr
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
 		arg0, err = ec.unmarshalNNewLogin2githubᚗcomᚋdiogoX451ᚋinventoryᚑmanagementᚑapiᚋinternalᚋgraphᚋmodelᚐNewLogin(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_sendEmail_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 model.Send
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNSend2githubᚗcomᚋdiogoX451ᚋinventoryᚑmanagementᚑapiᚋinternalᚋgraphᚋmodelᚐSend(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -1847,6 +1878,95 @@ func (ec *executionContext) fieldContext_Mutation_createRolePermission(ctx conte
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_createRolePermission_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_sendEmail(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_sendEmail(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().SendEmail(rctx, fc.Args["input"].(model.Send))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.Auth == nil {
+				return nil, errors.New("directive auth is not implemented")
+			}
+			return ec.directives.Auth(ctx, nil, directive0)
+		}
+		directive2 := func(ctx context.Context) (interface{}, error) {
+			role, err := ec.unmarshalNRole2githubᚗcomᚋdiogoX451ᚋinventoryᚑmanagementᚑapiᚋinternalᚋgraphᚋmodelᚐRole(ctx, "admin")
+			if err != nil {
+				return nil, err
+			}
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive1, role)
+		}
+
+		tmp, err := directive2(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*model.Message); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/diogoX451/inventory-management-api/internal/graph/model.Message`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Message)
+	fc.Result = res
+	return ec.marshalNMessage2ᚖgithubᚗcomᚋdiogoX451ᚋinventoryᚑmanagementᚑapiᚋinternalᚋgraphᚋmodelᚐMessage(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_sendEmail(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "message":
+				return ec.fieldContext_Message_message(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Message", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_sendEmail_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -5755,6 +5875,62 @@ func (ec *executionContext) unmarshalInputNewUserComplete(ctx context.Context, o
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputSend(ctx context.Context, obj interface{}) (model.Send, error) {
+	var it model.Send
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"to", "templateID", "Subject", "typeSend"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "to":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("to"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.To = data
+		case "templateID":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("templateID"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.TemplateID = data
+		case "Subject":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("Subject"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Subject = data
+		case "typeSend":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("typeSend"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.TypeSend = data
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputVerifyToken(ctx context.Context, obj interface{}) (model.VerifyToken, error) {
 	var it model.VerifyToken
 	asMap := map[string]interface{}{}
@@ -6039,6 +6215,13 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "createRolePermission":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_createRolePermission(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "sendEmail":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_sendEmail(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
@@ -7023,6 +7206,11 @@ func (ec *executionContext) marshalNRoles2ᚖgithubᚗcomᚋdiogoX451ᚋinventor
 		return graphql.Null
 	}
 	return ec._Roles(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNSend2githubᚗcomᚋdiogoX451ᚋinventoryᚑmanagementᚑapiᚋinternalᚋgraphᚋmodelᚐSend(ctx context.Context, v interface{}) (model.Send, error) {
+	res, err := ec.unmarshalInputSend(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalNString2string(ctx context.Context, v interface{}) (string, error) {

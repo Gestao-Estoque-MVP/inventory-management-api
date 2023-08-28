@@ -99,8 +99,8 @@ type TemplateEmail struct {
 	Name        string
 	Url         string
 	Description string
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
+	CreatedAt   pgtype.Timestamp
+	UpdatedAt   pgtype.Timestamp
 }
 
 type Tenant struct {

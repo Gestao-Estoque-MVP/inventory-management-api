@@ -2,8 +2,10 @@ package repository
 
 import (
 	"context"
+	"time"
 
 	"github.com/diogoX451/inventory-management-api/internal/database"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type S3Repository interface {
@@ -27,8 +29,8 @@ func (s *IS3) UploadTemplateS3(template database.TemplateEmail) (*database.Creat
 		Name:        template.Name,
 		Url:         template.Url,
 		Description: template.Description,
-		CreatedAt:   template.CreatedAt,
-		UpdatedAt:   template.UpdatedAt,
+		CreatedAt:   pgtype.Timestamp{Time: time.Now().UTC().Local(), Valid: true},
+		UpdatedAt:   pgtype.Timestamp{Time: time.Now().UTC().Local(), Valid: true},
 	})
 
 	if err != nil {

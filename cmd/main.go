@@ -84,6 +84,7 @@ func main() {
 		RBCAService:        rcbaService,
 		AuthUserService:    loginService,
 		AddressService:     addressRepositoryService,
+		EmailService:       emailService,
 	}
 
 	c := graph.Config{

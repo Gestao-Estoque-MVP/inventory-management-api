@@ -20,6 +20,7 @@ type IUserRepository interface {
 	GetUserByEmail(email string) (*database.GetEmailRow, error)
 	GetUserRegisterToken(token string) (*database.User, error)
 	VerifyToken(token string) (*database.GetTokenPreRegisterRow, error)
+	GetUsersByEmail() ([]*string, error)
 }
 
 type UserRepository struct {
@@ -168,4 +169,21 @@ func (i *UserRepository) VerifyToken(token string) (*database.GetTokenPreRegiste
 	}
 
 	return &find, nil
+}
+
+func (i *UserRepository) GetUsersByEmail() ([]*string, error) {
+	get, err := i.DB.GetUsersWithEmail(context.Background())
+
+	if err != nil {
+		return nil, err
+	}
+
+	list := make([]*string, len(get))
+
+	for i := range get {
+		user := get[i]
+		list[i] = &user
+	}
+
+	return list, nil
 }
