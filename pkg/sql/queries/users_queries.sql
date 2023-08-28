@@ -29,3 +29,4 @@ SELECT register_token, token_expires_at FROM users WHERE register_token = $1;
 -- name: CreateTenant :one 
 INSERT INTO tenant (id, name) 
     VALUES ($1, $2) RETURNING *;
+
