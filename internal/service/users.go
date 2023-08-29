@@ -47,8 +47,8 @@ func (us *UserService) CreatePreUser(user *database.User) (*database.User, error
 
 	detail := &EmailDetails{
 		To:         []string{createUser.Email},
-		Subject:    "Bem-vindo a Plataforma",
-		TemplateID: "35d41202-e5d5-4d21-9db9-c67bf88e8334",
+		Subject:    "Pré-Cadastro no SwiftStock",
+		TemplateID: "947cd590-5b82-4e1c-a7db-c80f6534168b",
 	}
 
 	err = us.email.SendEmail(detail, "one")

@@ -7,6 +7,7 @@ package resolvers
 import (
 	"context"
 
+	"github.com/diogoX451/inventory-management-api/internal/database"
 	"github.com/diogoX451/inventory-management-api/internal/graph/model"
 	"github.com/diogoX451/inventory-management-api/internal/service"
 	"github.com/vektah/gqlparser/v2/gqlerror"
@@ -17,6 +18,7 @@ func (r *mutationResolver) SendEmail(ctx context.Context, input model.Send) (*mo
 	details := service.EmailDetails{
 		Subject:    *input.Subject,
 		TemplateID: input.TemplateID,
+		To:         []string{*input.To},
 	}
 
 	err := r.Resolver.EmailService.SendEmail(&details, input.TypeSend)
@@ -29,5 +31,23 @@ func (r *mutationResolver) SendEmail(ctx context.Context, input model.Send) (*mo
 
 	return &model.Message{
 		Message: "Email sent",
+	}, nil
+}
+
+// UploadTemplate is the resolver for the uploadTemplate field.
+func (r *mutationResolver) UploadTemplate(ctx context.Context, input model.NewTemplate) (*model.Message, error) {
+	file := database.TemplateEmail{
+		Name:        input.Name,
+		Description: input.Description,
+	}
+
+	_, err := r.Resolver.S3Service.UploadTemplateS3(input.File.File, file)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &model.Message{
+		Message: "Criado com Sucesso",
 	}, nil
 }

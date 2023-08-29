@@ -1,3 +1,5 @@
+scalar Upload
+
 input Send {
     to: String
     templateID: String!
@@ -5,6 +7,13 @@ input Send {
     typeSend: String!
 }
 
+input NewTemplate {
+  file: Upload!
+  name: String!
+  description: String!
+}
+
 extend type Mutation {
-    sendEmail(input: Send!): Message! @auth @hasRole(role: "admin")
+    sendEmail(input: Send!, ): Message! @auth @hasRole(role: "admin")
+    uploadTemplate(input: NewTemplate!): Message! @auth @hasRole(role: "admin")
 }

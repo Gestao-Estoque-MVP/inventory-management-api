@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"io"
 	"strconv"
+
+	"github.com/99designs/gqlgen/graphql"
 )
 
 type Address struct {
@@ -76,6 +78,12 @@ type NewRole struct {
 type NewRolePermission struct {
 	RoleID       string `json:"roleId"`
 	PermissionID string `json:"permissionId"`
+}
+
+type NewTemplate struct {
+	File        graphql.Upload `json:"file"`
+	Name        string         `json:"name"`
+	Description string         `json:"description"`
 }
 
 type NewUser struct {

@@ -15,4 +15,5 @@ type Resolver struct {
 	AuthUserService    *service.AuthUser
 	AddressService     *service.AddressService
 	EmailService       *service.EmailService
+	S3Service          *service.S3Service
 }

@@ -8,7 +8,6 @@ directive @goField(forceResolver: Boolean, name: String) on FIELD_DEFINITION | I
 directive @auth on FIELD_DEFINITION
 directive @hasRole(role: Role!) on FIELD_DEFINITION
 
-scalar Any
 
 enum Role{
   users,

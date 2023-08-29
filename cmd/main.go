@@ -77,6 +77,7 @@ func main() {
 	addressRepository := repository.NewAddressRepository(queries)
 	addressRepositoryService := service.NewAddressService(addressRepository)
 	service.NewTemplateService(*templateRepository)
+	s3Service := service.NewServiceS3(s3Repository, os.Getenv("S3_BUCKET_NAME"), os.Getenv("S3_ACESS_KEY_ID"), os.Getenv("S3_REGION"))
 
 	resolvers := &resolvers.Resolver{
 		UserService:        userService,
@@ -85,6 +86,7 @@ func main() {
 		AuthUserService:    loginService,
 		AddressService:     addressRepositoryService,
 		EmailService:       emailService,
+		S3Service:          s3Service,
 	}
 
 	c := graph.Config{
