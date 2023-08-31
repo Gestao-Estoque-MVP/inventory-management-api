@@ -44,6 +44,8 @@ func (s EmailService) SendEmail(details *EmailDetails, typesSend string) error {
 		return s.sendOneEmail(s.details.To, s.details.TemplateID)
 	case "multi":
 		return s.sendMultiEmail(s.details.To, s.details.TemplateID)
+	case "contact":
+		return s.contact(s.details.To, s.details.TemplateID)
 	default:
 		return &gqlerror.Error{
 			Message: "Don't know how to send %v " + typesSend,
@@ -142,6 +144,53 @@ func (s *EmailService) sendMultiEmail(to []string, templateID string) error {
 		find, _ := s.user.GetUsersByEmail()
 		for _, e := range find {
 			user, err := s.user.GetUserByEmail(*e)
+			if err != nil {
+				log.Printf("Error getting user by email %v", err)
+				continue
+			}
+
+			data := struct {
+				Name string
+			}{
+				Name: user.Name,
+			}
+			buf := new(bytes.Buffer)
+			if err = t.Execute(buf, data); err != nil {
+				log.Printf("Error executing template: %s", err)
+				break
+			}
+
+			subject := ""
+			if len(s.details.Subject) > 0 {
+				subject = s.details.Subject
+			}
+
+			email.SendEmailAsync([]string{*e}, subject, buf.String())
+		}
+	}(tmp)
+
+	return nil
+}
+
+func (con *EmailService) contact(to []string, templateID string) error {
+	path, err := con.getTemplateObject(templateID)
+	if err != nil {
+		return &gqlerror.Error{
+			Message: "Error getting template object " + err.Error(),
+		}
+	}
+
+	defer os.Remove(path)
+
+	tmp, err := template.ParseFiles(path)
+	if err != nil {
+		return err
+	}
+
+	go func(t *template.Template) {
+		find, _ := con.user.GetContacts()
+		for _, e := range find {
+			user, err := con.user.GetUserByEmail(*e)
 			if err != nil {
 				log.Printf("Error getting user by email %v", err)
 				continue
