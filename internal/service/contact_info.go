@@ -40,10 +40,10 @@ func (s *ContactInfoService) CreateContactInfo(info *database.ContactInfo) (*dat
 		detail := &EmailDetails{
 			To:         []string{email},
 			Subject:    "Pré-Cadastro no SwiftStock",
-			TemplateID: "947cd590-5b82-4e1c-a7db-c80f6534168b",
+			TemplateID: "9de3e4bb-2c5d-4cfe-9b74-801e42d18769",
 		}
 
-		err = s.email.SendEmail(detail, "one")
+		err = s.email.SendEmail(detail, "contact")
 	}(create.Email)
 
 	return create, nil

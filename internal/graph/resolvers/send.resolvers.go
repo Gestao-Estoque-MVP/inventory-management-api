@@ -15,10 +15,14 @@ import (
 
 // SendEmail is the resolver for the sendEmail field.
 func (r *mutationResolver) SendEmail(ctx context.Context, input model.Send) (*model.Message, error) {
+	var to []string
+	if input.To != nil {
+		to = []string{*input.To}
+	}
 	details := service.EmailDetails{
 		Subject:    *input.Subject,
 		TemplateID: input.TemplateID,
-		To:         []string{*input.To},
+		To:         to,
 	}
 
 	err := r.Resolver.EmailService.SendEmail(&details, input.TypeSend)

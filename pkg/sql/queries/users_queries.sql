@@ -72,7 +72,7 @@ RETURNING *;
 SELECT email
 FROM users;
 -- name: GetUsersContact :many
-SELECT *
+SELECT email
 FROM contact_info;
 -- name: GetUserContactEmail :one
 SELECT email, name

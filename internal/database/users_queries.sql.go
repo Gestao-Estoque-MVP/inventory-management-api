@@ -268,29 +268,23 @@ func (q *Queries) GetUserRegisterToken(ctx context.Context, registerToken pgtype
 }
 
 const getUsersContact = `-- name: GetUsersContact :many
-SELECT id, name, email, phone, created_at
+SELECT email
 FROM contact_info
 `
 
-func (q *Queries) GetUsersContact(ctx context.Context) ([]ContactInfo, error) {
+func (q *Queries) GetUsersContact(ctx context.Context) ([]string, error) {
 	rows, err := q.db.Query(ctx, getUsersContact)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []ContactInfo
+	var items []string
 	for rows.Next() {
-		var i ContactInfo
-		if err := rows.Scan(
-			&i.ID,
-			&i.Name,
-			&i.Email,
-			&i.Phone,
-			&i.CreatedAt,
-		); err != nil {
+		var email string
+		if err := rows.Scan(&email); err != nil {
 			return nil, err
 		}
-		items = append(items, i)
+		items = append(items, email)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

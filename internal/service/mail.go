@@ -235,11 +235,11 @@ func (con *EmailService) contacts(to []string, templateID string) error {
 	go func(t *template.Template) {
 		find, err := con.user.GetContacts()
 		if err != nil {
-			log.Printf("Error getting contacts", err)
+			log.Printf("Error getting contacts %v", err)
 			return
 		}
 		for _, e := range find {
-			user, err := con.user.GetContact(e.Email)
+			user, err := con.user.GetContact(*e)
 			if err != nil {
 				log.Printf("Error getting user by email %v", err)
 				continue
@@ -261,7 +261,7 @@ func (con *EmailService) contacts(to []string, templateID string) error {
 				subject = con.details.Subject
 			}
 
-			email.SendEmailAsync([]string{e.Name}, subject, buf.String())
+			email.SendEmailAsync([]string{*e}, subject, buf.String())
 		}
 	}(tmp)
 
