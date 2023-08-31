@@ -74,7 +74,7 @@ FROM users;
 -- name: GetUsersContact :many
 SELECT *
 FROM contact_info;
--- name: GetUsersContact :many
-SELECT email
+-- name: GetUserContactEmail :one
+SELECT email, name
 FROM contact_info
 WHERE email = $1;

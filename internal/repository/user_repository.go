@@ -22,6 +22,7 @@ type IUserRepository interface {
 	VerifyToken(token string) (*database.GetTokenPreRegisterRow, error)
 	GetUsersByEmail() ([]*string, error)
 	GetContacts() ([]*database.CreateContactInfoParams, error)
+	GetContact(email string) (*database.GetUserContactEmailRow, error)
 }
 
 type UserRepository struct {
@@ -202,4 +203,13 @@ func (i *UserRepository) GetContacts() ([]*database.CreateContactInfoParams, err
 	}
 
 	return contact, nil
+}
+
+func (i *UserRepository) GetContact(email string) (*database.GetUserContactEmailRow, error) {
+	list, err := i.DB.GetUserContactEmail(context.Background(), email)
+	if err != nil {
+		return nil, err
+	}
+
+	return &list, nil
 }

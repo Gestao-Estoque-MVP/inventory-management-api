@@ -44,6 +44,8 @@ func (s EmailService) SendEmail(details *EmailDetails, typesSend string) error {
 		return s.sendOneEmail(s.details.To, s.details.TemplateID)
 	case "multi":
 		return s.sendMultiEmail(s.details.To, s.details.TemplateID)
+	case "contacts":
+		return s.contacts(s.details.To, s.details.TemplateID)
 	case "contact":
 		return s.contact(s.details.To, s.details.TemplateID)
 	default:
@@ -174,6 +176,49 @@ func (s *EmailService) sendMultiEmail(to []string, templateID string) error {
 
 func (con *EmailService) contact(to []string, templateID string) error {
 	path, err := con.getTemplateObject(templateID)
+
+	if err != nil {
+		log.Printf("Error getting template object")
+		return &gqlerror.Error{
+			Message: "Error getting template object " + err.Error(),
+		}
+	}
+
+	tmp, err := template.ParseFiles(path)
+	defer os.Remove(path)
+
+	if err != nil {
+		log.Printf("Error parsing")
+		return err
+	}
+	find, err := con.user.GetContact(to[0])
+	if err != nil {
+		return &gqlerror.Error{
+			Message: "Error getting user " + err.Error(),
+		}
+	}
+	data := struct {
+		Name string
+	}{
+		Name: find.Name,
+	}
+
+	buf := new(bytes.Buffer)
+
+	if err = tmp.Execute(buf, data); err != nil {
+		return err
+	}
+
+	if len(con.details.Subject) > 0 {
+		subject = con.details.Subject
+	}
+
+	email.SendEmailAsync([]string{to[0]}, subject, buf.String())
+	return nil
+}
+
+func (con *EmailService) contacts(to []string, templateID string) error {
+	path, err := con.getTemplateObject(templateID)
 	if err != nil {
 		return &gqlerror.Error{
 			Message: "Error getting template object " + err.Error(),
@@ -188,9 +233,13 @@ func (con *EmailService) contact(to []string, templateID string) error {
 	}
 
 	go func(t *template.Template) {
-		find, _ := con.user.GetContacts()
+		find, err := con.user.GetContacts()
+		if err != nil {
+			log.Printf("Error getting contacts", err)
+			return
+		}
 		for _, e := range find {
-			user, err := con.user.GetUserByEmail(*e)
+			user, err := con.user.GetContact(e.Email)
 			if err != nil {
 				log.Printf("Error getting user by email %v", err)
 				continue
@@ -208,11 +257,11 @@ func (con *EmailService) contact(to []string, templateID string) error {
 			}
 
 			subject := ""
-			if len(s.details.Subject) > 0 {
-				subject = s.details.Subject
+			if len(con.details.Subject) > 0 {
+				subject = con.details.Subject
 			}
 
-			email.SendEmailAsync([]string{*e}, subject, buf.String())
+			email.SendEmailAsync([]string{e.Name}, subject, buf.String())
 		}
 	}(tmp)
 
