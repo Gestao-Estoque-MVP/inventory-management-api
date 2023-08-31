@@ -56,32 +56,45 @@ func (s EmailService) SendEmail(details *EmailDetails, typesSend string) error {
 }
 
 func (e *EmailService) getTemplateObject(templateID string) (string, error) {
+	dir := "./internal/templates"
+	if _, err := os.Stat(dir); os.IsNotExist(err) {
+		err := os.MkdirAll(dir, 0755)
+		if err != nil {
+			log.Printf("Error creating directory: %v", err)
+			return "", err
+		}
+	}
+
 	find, err := e.template.GetTemplateUrlS3(templateID)
 	if err != nil {
 		log.Printf("Error getting template")
 		return "", err
 	}
 
-	obj, _ := configs3.S3Config().GetObject(context.TODO(), &s3.GetObjectInput{
+	obj, err := configs3.S3Config().GetObject(context.TODO(), &s3.GetObjectInput{
 		Bucket: aws.String(os.Getenv("S3_BUCKET_NAME")),
 		Key:    aws.String(find),
 	})
-
+	if err != nil {
+		log.Printf("Error getting object from S3: %v", err)
+		return "", err
+	}
 	defer obj.Body.Close()
 
-	tmp, _ := os.CreateTemp("./internal/templates", "s3-template-*.html")
-
+	tmp, err := os.CreateTemp(dir, "s3-template-*.html")
+	if err != nil {
+		log.Printf("Error creating temporary file: %v", err)
+		return "", err
+	}
 	defer tmp.Close()
 
 	_, err = io.Copy(tmp, obj.Body)
-
 	if err != nil {
-		log.Printf("Error creating temporary %v", err)
+		log.Printf("Error copying to temporary file: %v", err)
 		return "", err
 	}
 
 	return tmp.Name(), nil
-
 }
 
 func (s *EmailService) sendOneEmail(to []string, templateID string) error {
