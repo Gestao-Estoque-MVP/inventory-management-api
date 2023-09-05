@@ -45,16 +45,16 @@ func (us *UserService) CreatePreUser(user *database.User) (*database.User, error
 		return nil, err
 	}
 
-	detail := &EmailDetails{
-		To:         []string{createUser.Email},
-		Subject:    "Pré-Cadastro no SwiftStock",
-		TemplateID: "947cd590-5b82-4e1c-a7db-c80f6534168b",
-	}
+	// detail := &EmailDetails{
+	// 	To:         []string{createUser.Email},
+	// 	Subject:    "Pré-Cadastro no SwiftStock",
+	// 	TemplateID: "947cd590-5b82-4e1c-a7db-c80f6534168b",
+	// }
 
-	err = us.email.SendEmail(detail, "one")
-	if err != nil {
-		log.Printf("error sending %v "+createUser.Email+":", err)
-	}
+	// err = us.email.SendEmail(detail, "one")
+	// if err != nil {
+	// 	log.Printf("error sending %v "+createUser.Email+":", err)
+	// }
 
 	return createUser, nil
 }
