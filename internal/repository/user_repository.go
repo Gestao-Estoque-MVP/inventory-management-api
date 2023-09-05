@@ -21,6 +21,8 @@ type IUserRepository interface {
 	GetUserRegisterToken(token string) (*database.User, error)
 	VerifyToken(token string) (*database.GetTokenPreRegisterRow, error)
 	GetUsersByEmail() ([]*string, error)
+	GetContacts() ([]*string, error)
+	GetContact(email string) (*database.GetUserContactEmailRow, error)
 }
 
 type UserRepository struct {
@@ -186,4 +188,28 @@ func (i *UserRepository) GetUsersByEmail() ([]*string, error) {
 	}
 
 	return list, nil
+}
+
+func (i *UserRepository) GetContacts() ([]*string, error) {
+	list, err := i.DB.GetUsersContact(context.Background())
+	if err != nil {
+		return nil, err
+	}
+
+	contact := make([]*string, len(list))
+	for i := range list {
+		user := list[i]
+		contact[i] = &user
+	}
+
+	return contact, nil
+}
+
+func (i *UserRepository) GetContact(email string) (*database.GetUserContactEmailRow, error) {
+	list, err := i.DB.GetUserContactEmail(context.Background(), email)
+	if err != nil {
+		return nil, err
+	}
+
+	return &list, nil
 }

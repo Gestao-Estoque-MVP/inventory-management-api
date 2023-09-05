@@ -13,7 +13,16 @@ import (
 )
 
 const completeRegisterUser = `-- name: CompleteRegisterUser :one
-UPDATE users SET phone = $1, document_type = $2, document_number = $3, password = $4, updated_at = $5 WHERE register_token = $6 RETURNING id, name, email
+UPDATE users
+SET phone = $1,
+    document_type = $2,
+    document_number = $3,
+    password = $4,
+    updated_at = $5
+WHERE register_token = $6
+RETURNING id,
+    name,
+    email
 `
 
 type CompleteRegisterUserParams struct {
@@ -46,8 +55,21 @@ func (q *Queries) CompleteRegisterUser(ctx context.Context, arg CompleteRegister
 }
 
 const createPreRegisterUser = `-- name: CreatePreRegisterUser :one
-INSERT INTO users (id, name, email, status, role_id, tenant_id, register_token, token_expires_at, created_at) 
-    VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id, name, email
+INSERT INTO users (
+        id,
+        name,
+        email,
+        status,
+        role_id,
+        tenant_id,
+        register_token,
+        token_expires_at,
+        created_at
+    )
+VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)
+RETURNING id,
+    name,
+    email
 `
 
 type CreatePreRegisterUserParams struct {
@@ -86,8 +108,9 @@ func (q *Queries) CreatePreRegisterUser(ctx context.Context, arg CreatePreRegist
 }
 
 const createTenant = `-- name: CreateTenant :one
-INSERT INTO tenant (id, name) 
-    VALUES ($1, $2) RETURNING id, name
+INSERT INTO tenant (id, name)
+VALUES ($1, $2)
+RETURNING id, name
 `
 
 type CreateTenantParams struct {
@@ -103,7 +126,11 @@ func (q *Queries) CreateTenant(ctx context.Context, arg CreateTenantParams) (Ten
 }
 
 const deleteUser = `-- name: DeleteUser :execresult
-DELETE FROM users WHERE id = $1 RETURNING id, name, email
+DELETE FROM users
+WHERE id = $1
+RETURNING id,
+    name,
+    email
 `
 
 type DeleteUserRow struct {
@@ -117,7 +144,13 @@ func (q *Queries) DeleteUser(ctx context.Context, id string) (pgconn.CommandTag,
 }
 
 const getEmail = `-- name: GetEmail :one
-SELECT id, name, email, password, role_id FROM users WHERE email = $1
+SELECT id,
+    name,
+    email,
+    password,
+    role_id
+FROM users
+WHERE email = $1
 `
 
 type GetEmailRow struct {
@@ -142,7 +175,10 @@ func (q *Queries) GetEmail(ctx context.Context, email string) (GetEmailRow, erro
 }
 
 const getTokenPreRegister = `-- name: GetTokenPreRegister :one
-SELECT register_token, token_expires_at FROM users WHERE register_token = $1
+SELECT register_token,
+    token_expires_at
+FROM users
+WHERE register_token = $1
 `
 
 type GetTokenPreRegisterRow struct {
@@ -158,7 +194,9 @@ func (q *Queries) GetTokenPreRegister(ctx context.Context, registerToken pgtype.
 }
 
 const getUser = `-- name: GetUser :one
-SELECT id, name, email, phone, document_type, document_number, password, status, register_token, token_expires_at, created_at, updated_at, role_id, tenant_id FROM users WHERE id = $1
+SELECT id, name, email, phone, document_type, document_number, password, status, register_token, token_expires_at, created_at, updated_at, role_id, tenant_id
+FROM users
+WHERE id = $1
 `
 
 func (q *Queries) GetUser(ctx context.Context, id string) (User, error) {
@@ -183,8 +221,28 @@ func (q *Queries) GetUser(ctx context.Context, id string) (User, error) {
 	return i, err
 }
 
+const getUserContactEmail = `-- name: GetUserContactEmail :one
+SELECT email, name
+FROM contact_info
+WHERE email = $1
+`
+
+type GetUserContactEmailRow struct {
+	Email string
+	Name  string
+}
+
+func (q *Queries) GetUserContactEmail(ctx context.Context, email string) (GetUserContactEmailRow, error) {
+	row := q.db.QueryRow(ctx, getUserContactEmail, email)
+	var i GetUserContactEmailRow
+	err := row.Scan(&i.Email, &i.Name)
+	return i, err
+}
+
 const getUserRegisterToken = `-- name: GetUserRegisterToken :one
-SELECT id, name, email, phone, document_type, document_number, password, status, register_token, token_expires_at, created_at, updated_at, role_id, tenant_id FROM users WHERE register_token = $1
+SELECT id, name, email, phone, document_type, document_number, password, status, register_token, token_expires_at, created_at, updated_at, role_id, tenant_id
+FROM users
+WHERE register_token = $1
 `
 
 func (q *Queries) GetUserRegisterToken(ctx context.Context, registerToken pgtype.Text) (User, error) {
@@ -209,9 +267,34 @@ func (q *Queries) GetUserRegisterToken(ctx context.Context, registerToken pgtype
 	return i, err
 }
 
-const getUsersWithEmail = `-- name: GetUsersWithEmail :many
+const getUsersContact = `-- name: GetUsersContact :many
+SELECT email
+FROM contact_info
+`
 
-SELECT email FROM users
+func (q *Queries) GetUsersContact(ctx context.Context) ([]string, error) {
+	rows, err := q.db.Query(ctx, getUsersContact)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []string
+	for rows.Next() {
+		var email string
+		if err := rows.Scan(&email); err != nil {
+			return nil, err
+		}
+		items = append(items, email)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getUsersWithEmail = `-- name: GetUsersWithEmail :many
+SELECT email
+FROM users
 `
 
 func (q *Queries) GetUsersWithEmail(ctx context.Context) ([]string, error) {
@@ -235,7 +318,9 @@ func (q *Queries) GetUsersWithEmail(ctx context.Context) ([]string, error) {
 }
 
 const listUsers = `-- name: ListUsers :many
-SELECT id, name, email, phone, document_type, document_number, password, status, register_token, token_expires_at, created_at, updated_at, role_id, tenant_id FROM users ORDER BY id
+SELECT id, name, email, phone, document_type, document_number, password, status, register_token, token_expires_at, created_at, updated_at, role_id, tenant_id
+FROM users
+ORDER BY id
 `
 
 func (q *Queries) ListUsers(ctx context.Context) ([]User, error) {
@@ -274,7 +359,13 @@ func (q *Queries) ListUsers(ctx context.Context) ([]User, error) {
 }
 
 const updateUser = `-- name: UpdateUser :exec
-UPDATE users SET name = $1, email = $2, phone = $3, document_type = $4, document_number = $5 WHERE id = $6
+UPDATE users
+SET name = $1,
+    email = $2,
+    phone = $3,
+    document_type = $4,
+    document_number = $5
+WHERE id = $6
 `
 
 type UpdateUserParams struct {

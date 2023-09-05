@@ -72,7 +72,7 @@ func main() {
 	emailService := service.NewServiceEmail(s3Repository, *userRepository)
 	userService := service.NewServiceUser(userRepository, rcba, emailService)
 	contactRepository := repository.NewRepositoryContactInfo(queries)
-	contactService := service.NewContactInfoService(contactRepository)
+	contactService := service.NewContactInfoService(contactRepository, emailService)
 	loginService := service.NewAuthUser(*userRepository, *rcba)
 	addressRepository := repository.NewAddressRepository(queries)
 	addressRepositoryService := service.NewAddressService(addressRepository)
