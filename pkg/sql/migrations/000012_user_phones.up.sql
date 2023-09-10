@@ -1,7 +1,7 @@
 CREATE TYPE type_number as  enum('home', 'mobile', 'work', 'other');
 
 CREATE TABLE user_phones(
-    id serial PRIMARY KEY,
+    id CHAR(36) PRIMARY KEY,
     user_id CHAR(36) NOT NULL,
     type type_number NOT NULL,
     number VARCHAR(20) NOT NULL,

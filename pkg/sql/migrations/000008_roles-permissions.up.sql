@@ -1,5 +1,5 @@
 CREATE TABLE  roles_permissions (
-    id SERIAL NOT NULL,
+    id CHAR(36) PRIMARY KEY,
     role_id VARCHAR(255) NOT NULL,
     permission_id VARCHAR(255) NOT NULL,
     PRIMARY KEY (id, role_id, permission_id),

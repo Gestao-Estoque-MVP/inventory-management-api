@@ -1,7 +1,7 @@
 CREATE TYPE tenant_type AS ENUM ('supplier', 'customer', 'super_admin');
 
 CREATE TABLE tenant (
-  id VARCHAR(255) PRIMARY KEY,
+  id CHAR(36) PRIMARY KEY,
   name VARCHAR(255),
   tax_code VARCHAR(255),
   type tenant_type
