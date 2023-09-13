@@ -1,4 +1,4 @@
-CREATE TYPE type_number as  enum('home', 'mobile', 'work', 'other');
+CREATE TYPE type_number AS ENUM('home', 'mobile', 'work', 'other');
 
 CREATE TABLE user_phones(
     id CHAR(36) PRIMARY KEY,
@@ -8,7 +8,5 @@ CREATE TABLE user_phones(
     is_primary BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMP NOT NULL,
     updated_at TIMESTAMP,
+    UNIQUE(user_id, type)
 );
-
-
-alter table users add COLUMN user_phones_id serial REFERENCES user_phones(id);

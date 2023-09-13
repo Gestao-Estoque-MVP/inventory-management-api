@@ -13,6 +13,7 @@ import (
 type IUserRepository interface {
 	CreatePreUser(*database.User) (*database.User, error)
 	CreateCompleteUser(token string, user *database.User) (*database.CompleteRegisterUserRow, error)
+	CreateUserPhones(*database.UserPhone) (*database.UserPhone, error)
 	UpdateUser(id string, user *database.UpdateUserParams) error
 	DeleteUser(id string) (bool, error)
 	GetUser(id string) (*database.User, error)
@@ -46,6 +47,7 @@ func (i *UserRepository) CreatePreUser(user *database.User) (*database.User, err
 		Status:         user.Status,
 		RoleID:         user.RoleID,
 		CreatedAt:      user.CreatedAt,
+		UserPhonesID:   user.UserPhonesID,
 	})
 
 	if err != nil {
@@ -68,7 +70,6 @@ func (i *UserRepository) CreateCompleteUser(token string, user *database.User) (
 	}
 
 	updateUser, err := i.DB.CompleteRegisterUser(context.Background(), database.CompleteRegisterUserParams{
-		Phone:          user.Phone,
 		DocumentType:   user.DocumentType,
 		DocumentNumber: user.DocumentNumber,
 		Password:       pgtype.Text{String: string(bytes), Valid: true},
@@ -91,7 +92,6 @@ func (i *UserRepository) UpdateUser(id string, user *database.UpdateUserParams) 
 		ID:             id,
 		Name:           user.Name,
 		Email:          user.Email,
-		Phone:          user.Phone,
 		DocumentType:   user.DocumentType,
 		DocumentNumber: user.DocumentNumber,
 	})

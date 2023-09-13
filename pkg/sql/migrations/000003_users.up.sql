@@ -5,7 +5,6 @@ CREATE TABLE users
  id CHAR(36) PRIMARY KEY,  
  name VARCHAR(255) NOT NULL,    
  email VARCHAR(100) NOT NULL,
- phone VARCHAR(20) UNIQUE,    
  document_type VARCHAR(50),   
  document_number VARCHAR(50),
  password CHAR(64),

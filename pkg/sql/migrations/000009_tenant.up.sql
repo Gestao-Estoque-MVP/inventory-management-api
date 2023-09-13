@@ -4,7 +4,9 @@ CREATE TABLE tenant (
   id CHAR(36) PRIMARY KEY,
   name VARCHAR(255),
   tax_code VARCHAR(255),
-  type tenant_type
+  type tenant_type,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 ALTER TABLE users 

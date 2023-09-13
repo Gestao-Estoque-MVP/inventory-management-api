@@ -5,3 +5,6 @@ CREATE TABLE image (
     created_at TIMESTAMP NOT NULL,
     updated_at TIMESTAMP
 );
+
+ALTER TABLE users 
+    ADD COLUMN image_id VARCHAR NOT NULL REFERENCES image(id);
