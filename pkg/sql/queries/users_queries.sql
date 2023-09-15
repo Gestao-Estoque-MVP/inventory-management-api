@@ -16,10 +16,11 @@ INSERT INTO user_phones (
     id, 
     type, 
     number, 
-    is_primary, 
+    is_primary,
+    user_id, 
     created_at,
     updated_at
-) VALUES($1, $2, $3, $4,$5,$6) RETURNING id, number, type;
+) VALUES($1, $2, $3, $4,$5,$6,$7) RETURNING id, number, type;
 
 -- name: CompleteRegisterUser :one
 UPDATE users

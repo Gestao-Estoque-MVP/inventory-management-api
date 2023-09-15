@@ -138,7 +138,7 @@ type UpdateAddressParams struct {
 	State      pgtype.Text
 	PostalCode pgtype.Text
 	Country    pgtype.Text
-	ID         int32
+	ID         string
 }
 
 func (q *Queries) UpdateAddress(ctx context.Context, arg UpdateAddressParams) (Address, error) {

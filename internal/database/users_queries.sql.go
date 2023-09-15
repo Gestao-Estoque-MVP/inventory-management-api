@@ -147,10 +147,11 @@ INSERT INTO user_phones (
     id, 
     type, 
     number, 
-    is_primary, 
+    is_primary,
+    user_id, 
     created_at,
     updated_at
-) VALUES($1, $2, $3, $4,$5,$6) RETURNING id, number, type
+) VALUES($1, $2, $3, $4,$5,$6,$7) RETURNING id, number, type
 `
 
 type CreateUserPhonesParams struct {
@@ -158,6 +159,7 @@ type CreateUserPhonesParams struct {
 	Type      TypeNumber
 	Number    string
 	IsPrimary bool
+	UserID    string
 	CreatedAt pgtype.Timestamp
 	UpdatedAt pgtype.Timestamp
 }
@@ -174,6 +176,7 @@ func (q *Queries) CreateUserPhones(ctx context.Context, arg CreateUserPhonesPara
 		arg.Type,
 		arg.Number,
 		arg.IsPrimary,
+		arg.UserID,
 		arg.CreatedAt,
 		arg.UpdatedAt,
 	)

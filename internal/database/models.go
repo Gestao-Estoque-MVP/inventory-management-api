@@ -142,7 +142,7 @@ func (ns NullUserStatus) Value() (driver.Value, error) {
 }
 
 type Address struct {
-	ID         int32
+	ID         string
 	UserID     string
 	Address    pgtype.Text
 	Street     pgtype.Text
@@ -184,7 +184,7 @@ type Role struct {
 }
 
 type RolesPermission struct {
-	ID           int32
+	ID           string
 	RoleID       string
 	PermissionID string
 }
@@ -235,7 +235,7 @@ type UserPhone struct {
 }
 
 type UsersPermission struct {
-	ID           int32
+	ID           string
 	UserID       pgtype.Text
 	PermissionID pgtype.Text
 }

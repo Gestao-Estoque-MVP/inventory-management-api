@@ -13,7 +13,7 @@ import (
 type IUserRepository interface {
 	CreatePreUser(*database.User) (*database.User, error)
 	CreateCompleteUser(token string, user *database.User) (*database.CompleteRegisterUserRow, error)
-	CreateUserPhones(*database.UserPhone) (*database.UserPhone, error)
+	CreateUserPhones(*database.UserPhone) (*database.CreateUserPhonesRow, error)
 	UpdateUser(id string, user *database.UpdateUserParams) error
 	DeleteUser(id string) (bool, error)
 	GetUser(id string) (*database.User, error)
@@ -47,7 +47,6 @@ func (i *UserRepository) CreatePreUser(user *database.User) (*database.User, err
 		Status:         user.Status,
 		RoleID:         user.RoleID,
 		CreatedAt:      user.CreatedAt,
-		UserPhonesID:   user.UserPhonesID,
 	})
 
 	if err != nil {
@@ -63,6 +62,23 @@ func (i *UserRepository) CreatePreUser(user *database.User) (*database.User, err
 	return user, nil
 }
 
+func (i *UserRepository) CreateUserPhones(user *database.UserPhone) (*database.CreateUserPhonesRow, error) {
+	create, err := i.DB.CreateUserPhones(context.Background(), database.CreateUserPhonesParams{
+		ID:        user.ID,
+		UserID:    user.UserID,
+		Type:      user.Type,
+		Number:    user.Number,
+		IsPrimary: user.IsPrimary,
+		CreatedAt: user.CreatedAt,
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &create, nil
+}
+
 func (i *UserRepository) CreateCompleteUser(token string, user *database.User) (*database.CompleteRegisterUserRow, error) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(user.Password.String), bcrypt.DefaultCost)
 	if err != nil {
@@ -74,6 +90,8 @@ func (i *UserRepository) CreateCompleteUser(token string, user *database.User) (
 		DocumentNumber: user.DocumentNumber,
 		Password:       pgtype.Text{String: string(bytes), Valid: true},
 		RegisterToken:  pgtype.Text{String: token, Valid: true},
+		Status:         user.Status,
+		ImageID:        user.ImageID,
 		UpdatedAt:      pgtype.Timestamp{Time: time.Now(), Valid: true},
 	})
 
