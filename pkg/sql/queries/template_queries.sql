@@ -5,5 +5,5 @@ INSERT INTO template_email (id, name, url, description, created_at, updated_at)
 -- name: GetTemplateS3 :one
 SELECT url FROM template_email WHERE id = $1;
 
--- name: GetTemplate :one
-SELECT * FROM template_email WHERE id = $1;
+-- name: GetImageS3 :one
+SELECT url FROM image WHERE id = $1;

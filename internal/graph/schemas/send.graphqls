@@ -1,4 +1,5 @@
 scalar Upload
+scalar UUID
 
 input Send {
     to: String
@@ -16,4 +17,8 @@ input NewTemplate {
 extend type Mutation {
     sendEmail(input: Send!): Message! @auth @hasRole(role: "admin")
     uploadTemplate(input: NewTemplate!): Message! @auth @hasRole(role: "admin")
+}
+
+extend type Query {
+    getTemplate(id: UUID!): String!
 }

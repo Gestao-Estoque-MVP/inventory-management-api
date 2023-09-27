@@ -11,15 +11,17 @@ import (
 )
 
 type IUserRepository interface {
-	CreatePreUser(*database.User) (*database.User, error)
-	CreateCompleteUser(token string, user *database.User) (*database.CompleteRegisterUserRow, error)
+	CreatePreUser(user *database.CreatePreRegisterUserParams, roleId [][16]byte) (*pgtype.UUID, error)
+	CreateCompleteUser(token string, user *database.CompleteRegisterUserParams) (*database.CompleteRegisterUserRow, error)
+	CreateCompanyUser(user *database.User, roleId [][16]byte) (*database.CreateCompanyUsersRow, error)
 	CreateUserPhones(*database.UserPhone) (*database.CreateUserPhonesRow, error)
-	UpdateUser(id string, user *database.UpdateUserParams) error
-	DeleteUser(id string) (bool, error)
-	GetUser(id string) (*database.User, error)
+	CreateTenant(tenant *database.Tenant) (*database.Tenant, error)
+	UpdateUser(id [16]byte, user *database.UpdateUserParams) error
+	DeleteUser(id [16]byte) (bool, error)
+	GetUser(id [16]byte) (*database.GetUserRow, error)
 	GetUsers() ([]*database.User, error)
 	GetUserByEmail(email string) (*database.GetEmailRow, error)
-	GetUserRegisterToken(token string) (*database.User, error)
+	GetUserRegisterToken(token string) (*database.GetUserRegisterTokenRow, error)
 	VerifyToken(token string) (*database.GetTokenPreRegisterRow, error)
 	GetUsersByEmail() ([]*string, error)
 	GetContacts() ([]*string, error)
@@ -36,7 +38,23 @@ func NewRepositoryUser(db *database.Queries) *UserRepository {
 	}
 }
 
-func (i *UserRepository) CreatePreUser(user *database.User) (*database.User, error) {
+func (r *UserRepository) CreateTenant(tenant *database.Tenant) (*database.Tenant, error) {
+	create, err := r.DB.CreateTenant(context.Background(), database.CreateTenantParams{
+		ID:        tenant.ID,
+		Name:      tenant.Name,
+		TaxCode:   tenant.TaxCode,
+		Type:      tenant.Type,
+		CreatedAt: tenant.CreatedAt,
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &create, nil
+}
+
+func (i *UserRepository) CreatePreUser(user *database.CreatePreRegisterUserParams, roleId [][16]byte) (*pgtype.UUID, error) {
 	create, err := i.DB.CreatePreRegisterUser(context.Background(), database.CreatePreRegisterUserParams{
 		ID:             user.ID,
 		Name:           user.Name,
@@ -45,21 +63,34 @@ func (i *UserRepository) CreatePreUser(user *database.User) (*database.User, err
 		RegisterToken:  user.RegisterToken,
 		TokenExpiresAt: user.TokenExpiresAt,
 		Status:         user.Status,
-		RoleID:         user.RoleID,
 		CreatedAt:      user.CreatedAt,
+		ID_2:           user.ID_2,
+		Type:           user.Type,
+		Number:         user.Number,
+		IsPrimary:      user.IsPrimary,
+		CreatedAt_2:    user.CreatedAt_2,
 	})
 
 	if err != nil {
 		return nil, err
 	}
 
-	user = &database.User{
-		ID:    create.ID,
-		Name:  create.Name,
-		Email: create.Email,
+	for j := range roleId {
+		_, err := i.DB.CreateUsersRoles(context.Background(), database.CreateUsersRolesParams{
+			UserID: pgtype.UUID{Bytes: create.Bytes, Valid: true},
+			RoleID: pgtype.UUID{Bytes: roleId[j], Valid: true},
+		})
+		if err != nil {
+			log.Printf("Error created user role: %v", err)
+			continue
+		}
 	}
 
-	return user, nil
+	if err != nil {
+		return nil, err
+	}
+
+	return &create, nil
 }
 
 func (i *UserRepository) CreateUserPhones(user *database.UserPhone) (*database.CreateUserPhonesRow, error) {
@@ -79,7 +110,7 @@ func (i *UserRepository) CreateUserPhones(user *database.UserPhone) (*database.C
 	return &create, nil
 }
 
-func (i *UserRepository) CreateCompleteUser(token string, user *database.User) (*database.CompleteRegisterUserRow, error) {
+func (i *UserRepository) CreateCompleteUser(token string, user *database.CompleteRegisterUserParams) (*database.CompleteRegisterUserRow, error) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(user.Password.String), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, err
@@ -91,8 +122,11 @@ func (i *UserRepository) CreateCompleteUser(token string, user *database.User) (
 		Password:       pgtype.Text{String: string(bytes), Valid: true},
 		RegisterToken:  pgtype.Text{String: token, Valid: true},
 		Status:         user.Status,
-		ImageID:        user.ImageID,
 		UpdatedAt:      pgtype.Timestamp{Time: time.Now(), Valid: true},
+		ID:             user.ID,
+		Url:            user.Url,
+		Description:    user.Description,
+		CreatedAt:      pgtype.Timestamp{Time: time.Now().Local(), Valid: true},
 	})
 
 	if err != nil {
@@ -104,10 +138,42 @@ func (i *UserRepository) CreateCompleteUser(token string, user *database.User) (
 	}, nil
 }
 
-func (i *UserRepository) UpdateUser(id string, user *database.UpdateUserParams) error {
+func (i *UserRepository) CreateCompanyUser(user *database.User, roleId [][16]byte) (*database.CreateCompanyUsersRow, error) {
+	create, err := i.DB.CreateCompanyUsers(context.Background(), database.CreateCompanyUsersParams{
+		ID:             user.ID,
+		Name:           user.Name,
+		Email:          user.Email,
+		Status:         user.Status,
+		RegisterToken:  user.RegisterToken,
+		TokenExpiresAt: user.TokenExpiresAt,
+		CreatedAt:      user.CreatedAt,
+		TenantID:       user.TenantID,
+	})
+
+	go func() {
+		for j := range roleId {
+			_, err := i.DB.CreateUsersRoles(context.Background(), database.CreateUsersRolesParams{
+				UserID: create.ID,
+				RoleID: pgtype.UUID{Bytes: roleId[j], Valid: true},
+			})
+			if err != nil {
+				log.Printf("Error created user role: %v", err)
+				continue
+			}
+		}
+	}()
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &create, nil
+}
+
+func (i *UserRepository) UpdateUser(id [16]byte, user *database.UpdateUserParams) error {
 
 	err := i.DB.UpdateUser(context.Background(), database.UpdateUserParams{
-		ID:             id,
+		ID:             pgtype.UUID{Bytes: id, Valid: true},
 		Name:           user.Name,
 		Email:          user.Email,
 		DocumentType:   user.DocumentType,
@@ -121,8 +187,8 @@ func (i *UserRepository) UpdateUser(id string, user *database.UpdateUserParams) 
 	return err
 }
 
-func (i *UserRepository) DeleteUser(id string) (bool, error) {
-	_, err := i.DB.DeleteUser(context.Background(), id)
+func (i *UserRepository) DeleteUser(id [16]byte) (bool, error) {
+	_, err := i.DB.DeleteUser(context.Background(), pgtype.UUID{Bytes: id, Valid: true})
 
 	if err != nil {
 		return false, err
@@ -131,8 +197,10 @@ func (i *UserRepository) DeleteUser(id string) (bool, error) {
 	return true, nil
 }
 
-func (i *UserRepository) GetUser(id string) (*database.User, error) {
-	get, err := i.DB.GetUser(context.Background(), id)
+func (i *UserRepository) GetUser(id [16]byte) (*database.GetUserRow, error) {
+	get, err := i.DB.GetUser(context.Background(), pgtype.UUID{Bytes: id, Valid: true})
+
+	log.Printf("Erro querying user", get)
 
 	if err != nil {
 		return nil, err
@@ -168,7 +236,7 @@ func (i *UserRepository) GetUserByEmail(email string) (*database.GetEmailRow, er
 	return &get, nil
 }
 
-func (i *UserRepository) GetUserRegisterToken(token string) (*database.User, error) {
+func (i *UserRepository) GetUserRegisterToken(token string) (*database.GetUserRegisterTokenRow, error) {
 	get, err := i.DB.GetUserRegisterToken(context.Background(), pgtype.Text{String: token, Valid: true})
 
 	if err != nil {

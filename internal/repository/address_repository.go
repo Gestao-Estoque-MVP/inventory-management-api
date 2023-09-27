@@ -5,13 +5,14 @@ import (
 
 	"github.com/diogoX451/inventory-management-api/internal/database"
 	"github.com/jackc/pgconn"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type IAddressRepository interface {
 	CreateAddress(address *database.Address) (*database.Address, error)
 	UpdateAddress(*database.Address) (*database.Address, error)
-	DeleteAddress(userID string) (*pgconn.CommandTag, error)
-	GetAddressByID(userID string) (*database.Address, error)
+	DeleteAddress(userID [16]byte) (*pgconn.CommandTag, error)
+	GetAddressByID(userID [16]byte) (*database.Address, error)
 	GetAddress() ([]*database.Address, error)
 }
 
@@ -64,9 +65,8 @@ func (a *IAddress) UpdateAddress(address *database.Address) (*database.Address, 
 	return &update, nil
 }
 
-func (a *IAddress) DeleteAddress(userID string) (bool, error) {
-	_, err := a.DB.DeleteAddress(context.Background(), userID) // renamed to avoid using Go reserved word
-
+func (a *IAddress) DeleteAddress(userID [16]byte) (bool, error) {
+	_, err := a.DB.DeleteAddress(context.Background(), pgtype.UUID{Bytes: userID, Valid: true})
 	if err != nil {
 		return false, err
 	}
@@ -74,8 +74,8 @@ func (a *IAddress) DeleteAddress(userID string) (bool, error) {
 	return true, nil
 }
 
-func (a *IAddress) GetAddressByID(userID string) (*database.Address, error) {
-	getID, err := a.DB.GetAddressByID(context.Background(), userID)
+func (a *IAddress) GetAddressByID(userID [16]byte) (*database.Address, error) {
+	getID, err := a.DB.GetAddressByID(context.Background(), pgtype.UUID{Bytes: userID, Valid: true})
 
 	if err != nil {
 		return nil, err

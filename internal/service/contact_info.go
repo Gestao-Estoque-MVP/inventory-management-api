@@ -6,8 +6,8 @@ import (
 
 	"github.com/diogoX451/inventory-management-api/internal/database"
 	"github.com/diogoX451/inventory-management-api/internal/repository"
+	"github.com/gofrs/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
-	"nullprogram.com/x/uuid"
 )
 
 type ContactInfoService struct {
@@ -21,8 +21,9 @@ func NewContactInfoService(contactInfoRepository *repository.ContactInfoReposito
 
 func (s *ContactInfoService) CreateContactInfo(info *database.ContactInfo) (*database.ContactInfo, error) {
 
+	id, _ := uuid.NewV4()
 	params := &database.ContactInfo{
-		ID:        uuid.NewGen().NewV4().String(),
+		ID:        pgtype.UUID{Bytes: id, Valid: true},
 		Name:      info.Name,
 		Email:     info.Email,
 		Phone:     info.Phone,
@@ -40,7 +41,7 @@ func (s *ContactInfoService) CreateContactInfo(info *database.ContactInfo) (*dat
 		detail := &EmailDetails{
 			To:         []string{email},
 			Subject:    "Pré-Cadastro no SwiftStock",
-			TemplateID: "9de3e4bb-2c5d-4cfe-9b74-801e42d18769",
+			TemplateID: uuid.FromStringOrNil("9de3e4bb-2c5d-4cfe-9b74-801e42d18769"),
 		}
 
 		err = s.email.SendEmail(detail, "contact")

@@ -1,15 +1,28 @@
 -- name: CreatePreRegisterUser :one
-INSERT INTO users (
+WITH inserted_user AS (
+    INSERT INTO users (
+        id, 
+        name, 
+        email, 
+        status, 
+        register_token, 
+        token_expires_at, 
+        created_at, 
+        tenant_id
+    ) 
+    VALUES($1, $2, $3, $4, $5, $6, $7, $8) 
+    RETURNING id
+) INSERT INTO user_phones (
     id, 
-    name, 
-    email, 
-    status, 
-    register_token, 
-    token_expires_at, 
-    created_at, 
-    role_id, 
-    tenant_id
-) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id, name, email;
+    type, 
+    number, 
+    is_primary,
+    user_id, 
+    created_at,
+    updated_at
+) 
+VALUES ($9, $10, $11, $12,(SELECT id FROM inserted_user), $13, $14)
+RETURNING (SELECT id FROM inserted_user) AS id;
 
 -- name: CreateUserPhones :one
 INSERT INTO user_phones (
@@ -23,17 +36,39 @@ INSERT INTO user_phones (
 ) VALUES($1, $2, $3, $4,$5,$6,$7) RETURNING id, number, type;
 
 -- name: CompleteRegisterUser :one
+WITH inserted_image AS (
+    INSERT INTO image (
+        id,
+        url,
+        description,
+        created_at
+    ) 
+    VALUES($7, $8, $9, $10)
+    RETURNING id AS image_id
+)
 UPDATE users
-SET document_type = $1,
+SET 
+    document_type = $1,
     document_number = $2,
     password = $3,
     status = $4,
-    image_id = $5,
-    updated_at = $6
-WHERE register_token = $7
-RETURNING id,
-    name,
-    email;
+    image_id = (SELECT image_id FROM inserted_image),
+    updated_at = $5
+WHERE register_token = $6
+RETURNING id, name, email;
+
+
+-- name: CreateCompanyUsers :one
+INSERT INTO users (
+    id, 
+    name, 
+    email, 
+    status, 
+    register_token, 
+    token_expires_at, 
+    created_at, 
+    tenant_id
+) VALUES($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id, name, email;
 
 -- name: DeleteUser :execresult
 DELETE FROM users
@@ -43,20 +78,21 @@ RETURNING id,
     email;
 
 -- name: GetUser :one
-SELECT *
+SELECT users.*, sqlc.embed(address)
 FROM users
-WHERE id = $1;
+LEFT JOIN address ON address.user_id = users.id
+WHERE users.id = $1;
+
 -- name: GetEmail :one
 SELECT id,
     name,
     email,
-    password,
-    role_id
+    password
 FROM users
 WHERE email = $1;
 
 -- name: GetUserRegisterToken :one
-SELECT *
+SELECT id, name, register_token
 FROM users
 WHERE register_token = $1;
 

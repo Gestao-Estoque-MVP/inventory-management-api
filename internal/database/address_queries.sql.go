@@ -18,7 +18,7 @@ INSERT INTO address (user_id, address, number, street, city, state, postal_code,
 `
 
 type CreateAddressParams struct {
-	UserID     string
+	UserID     pgtype.UUID
 	Address    pgtype.Text
 	Number     pgtype.Text
 	Street     pgtype.Text
@@ -62,7 +62,7 @@ const deleteAddress = `-- name: DeleteAddress :execresult
 DELETE FROM address WHERE user_id = $1
 `
 
-func (q *Queries) DeleteAddress(ctx context.Context, userID string) (pgconn.CommandTag, error) {
+func (q *Queries) DeleteAddress(ctx context.Context, userID pgtype.UUID) (pgconn.CommandTag, error) {
 	return q.db.Exec(ctx, deleteAddress, userID)
 }
 
@@ -70,7 +70,7 @@ const getAddressByID = `-- name: GetAddressByID :one
 SELECT id, user_id, address, street, city, state, postal_code, country, number, created_at, updated_at FROM address WHERE user_id = $1
 `
 
-func (q *Queries) GetAddressByID(ctx context.Context, userID string) (Address, error) {
+func (q *Queries) GetAddressByID(ctx context.Context, userID pgtype.UUID) (Address, error) {
 	row := q.db.QueryRow(ctx, getAddressByID, userID)
 	var i Address
 	err := row.Scan(
@@ -130,7 +130,7 @@ UPDATE address SET user_id = $1, address = $2, number = $3, street = $4, city = 
 `
 
 type UpdateAddressParams struct {
-	UserID     string
+	UserID     pgtype.UUID
 	Address    pgtype.Text
 	Number     pgtype.Text
 	Street     pgtype.Text
@@ -138,7 +138,7 @@ type UpdateAddressParams struct {
 	State      pgtype.Text
 	PostalCode pgtype.Text
 	Country    pgtype.Text
-	ID         string
+	ID         pgtype.UUID
 }
 
 func (q *Queries) UpdateAddress(ctx context.Context, arg UpdateAddressParams) (Address, error) {

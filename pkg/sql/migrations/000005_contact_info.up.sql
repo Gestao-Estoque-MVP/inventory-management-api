@@ -1,6 +1,6 @@
 CREATE TABLE contact_info 
 ( 
- id VARCHAR(255) PRIMARY KEY,  
+ id UUID PRIMARY KEY,  
  name VARCHAR(255) NOT NULL,
  email VARCHAR(255) NOT NULL,
  phone VARCHAR(255),

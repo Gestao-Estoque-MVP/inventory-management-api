@@ -17,7 +17,7 @@ INSERT INTO template_email (id, name, url, description, created_at, updated_at)
 `
 
 type CreateTemplateParams struct {
-	ID          string
+	ID          pgtype.UUID
 	Name        string
 	Url         string
 	Description string
@@ -26,7 +26,7 @@ type CreateTemplateParams struct {
 }
 
 type CreateTemplateRow struct {
-	ID   string
+	ID   pgtype.UUID
 	Name string
 }
 
@@ -44,29 +44,22 @@ func (q *Queries) CreateTemplate(ctx context.Context, arg CreateTemplateParams) 
 	return i, err
 }
 
-const getTemplate = `-- name: GetTemplate :one
-SELECT id, name, url, description, created_at, updated_at FROM template_email WHERE id = $1
+const getImageS3 = `-- name: GetImageS3 :one
+SELECT url FROM image WHERE id = $1
 `
 
-func (q *Queries) GetTemplate(ctx context.Context, id string) (TemplateEmail, error) {
-	row := q.db.QueryRow(ctx, getTemplate, id)
-	var i TemplateEmail
-	err := row.Scan(
-		&i.ID,
-		&i.Name,
-		&i.Url,
-		&i.Description,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-	)
-	return i, err
+func (q *Queries) GetImageS3(ctx context.Context, id pgtype.UUID) (string, error) {
+	row := q.db.QueryRow(ctx, getImageS3, id)
+	var url string
+	err := row.Scan(&url)
+	return url, err
 }
 
 const getTemplateS3 = `-- name: GetTemplateS3 :one
 SELECT url FROM template_email WHERE id = $1
 `
 
-func (q *Queries) GetTemplateS3(ctx context.Context, id string) (string, error) {
+func (q *Queries) GetTemplateS3(ctx context.Context, id pgtype.UUID) (string, error) {
 	row := q.db.QueryRow(ctx, getTemplateS3, id)
 	var url string
 	err := row.Scan(&url)

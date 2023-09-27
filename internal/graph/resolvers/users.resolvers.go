@@ -10,6 +10,7 @@ import (
 
 	"github.com/diogoX451/inventory-management-api/internal/database"
 	"github.com/diogoX451/inventory-management-api/internal/graph/model"
+	"github.com/diogoX451/inventory-management-api/pkg/convert"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
@@ -54,7 +55,7 @@ func (r *mutationResolver) CreateContactInfo(ctx context.Context, input model.Ne
 	}
 
 	response := &model.ContactInfo{
-		ID:    create.ID,
+		ID:    convert.UUIDToString(create.ID),
 		Name:  create.Name,
 		Email: create.Email,
 		Phone: create.Phone.String,
@@ -64,23 +65,18 @@ func (r *mutationResolver) CreateContactInfo(ctx context.Context, input model.Ne
 }
 
 // CreatePreUser is the resolver for the createPreUser field.
-func (r *mutationResolver) CreatePreUser(ctx context.Context, input model.NewPreUser) (*model.PreUser, error) {
-	tenant, err := r.Resolver.RBCAService.CreateTenant(input.Name)
-
-	if err != nil {
-		return nil, &gqlerror.Error{
-			Message: "Erro em Criar o vinculo do Usario",
-		}
+func (r *mutationResolver) CreatePreUser(ctx context.Context, input model.NewPreUser) (*model.Message, error) {
+	user := database.CreatePreRegisterUserParams{
+		Name:      pgtype.Text{String: input.Name, Valid: true},
+		Email:     input.Email,
+		TenantID:  input.TenantID,
+		Number:    input.UserPhone.Number,
+		Type:      database.TypeNumber(input.UserPhone.Type),
+		IsPrimary: *input.UserPhone.IsPrimary,
 	}
 
-	user := database.User{
-		Name:     input.Name,
-		Email:    input.Email,
-		Status:   database.UserStatus(input.Status),
-		TenantID: tenant.ID,
-	}
-
-	created, err := r.Resolver.UserService.CreatePreUser(&user)
+	roleId, _ := convert.ConvertUUIDs(input.RoleID)
+	_, err := r.Resolver.UserService.CreatePreUser(&user, roleId)
 
 	if err != nil {
 		return nil, &gqlerror.Error{
@@ -88,55 +84,105 @@ func (r *mutationResolver) CreatePreUser(ctx context.Context, input model.NewPre
 		}
 	}
 
-	response := &model.PreUser{
-		ID:    created.ID,
-		Email: created.Email,
-	}
-
-	return response, nil
+	return &model.Message{
+		Message: "Criado com Sucesso",
+	}, nil
 }
 
 // CreateCompleteUser is the resolver for the createCompleteUser field.
-func (r *mutationResolver) CreateCompleteUser(ctx context.Context, input model.NewUserComplete) (*model.User, error) {
-	user := database.User{
-		Phone:          pgtype.Text{String: input.Phone, Valid: true},
+func (r *mutationResolver) CreateCompleteUser(ctx context.Context, input model.NewUserComplete) (*model.Message, error) {
+	user := database.CompleteRegisterUserParams{
 		Password:       pgtype.Text{String: input.Password, Valid: true},
 		DocumentType:   pgtype.Text{String: input.DocumentType, Valid: true},
 		DocumentNumber: pgtype.Text{String: input.DocumentNumber, Valid: true},
 	}
 
-	create, err := r.Resolver.UserService.CompleteRegisterUser(input.RegisterToken, &user)
+	_, err := r.Resolver.UserService.CompleteRegisterUser(input.RegisterToken, &user, input.Image.File.File)
 
 	if err != nil {
 		return nil, err
 	}
 
-	response := &model.User{
-		ID:    create.ID,
-		Email: create.Email,
+	return &model.Message{
+		Message: "Registrado com Sucesso",
+	}, err
+}
+
+// // CreateCompanyUser is the resolver for the createCompanyUser field.
+func (r *mutationResolver) CreateCompanyUser(ctx context.Context, input model.NewPreUser) (*model.Message, error) {
+	user := database.CreatePreRegisterUserParams{
+		Name:     pgtype.Text{String: input.Name, Valid: true},
+		Email:    input.Email,
+		TenantID: input.TenantID,
 	}
 
-	return response, err
+	roleId, _ := convert.ConvertUUIDs(input.RoleID)
+
+	_, err := r.Resolver.UserService.CreatePreUser(&user, roleId)
+
+	if err != nil {
+		return nil, &gqlerror.Error{
+			Message: "Erro em criar o usuario",
+		}
+	}
+
+	return &model.Message{
+		Message: "Criado com Sucesso",
+	}, nil
+}
+
+// CreateTenant is the resolver for the createTenant field.
+func (r *mutationResolver) CreateTenant(ctx context.Context, input model.NewTenant) (*model.Tenant, error) {
+	types := map[string]bool{
+		string(database.TenantTypeCustomer):   true,
+		string(database.TenantTypeSupplier):   true,
+		string(database.TenantTypeSuperAdmin): true,
+	}
+
+	if _, isValid := types[input.Type]; !isValid {
+		return nil, &gqlerror.Error{
+			Message: "Invalid type tenant",
+		}
+	}
+
+	params := &database.Tenant{
+		Name:    pgtype.Text{String: input.Name, Valid: true},
+		TaxCode: pgtype.Text{String: input.TaxCode, Valid: true},
+		Type: database.NullTenantType{
+			TenantType: database.TenantType(input.Type),
+			Valid:      true,
+		},
+	}
+
+	create, err := r.Resolver.UserService.CreateTenant(params)
+
+	if err != nil {
+		return nil, &gqlerror.Error{
+			Message: "Error creating tenant",
+		}
+	}
+
+	return &model.Tenant{
+		ID: convert.UUIDToString(create.ID),
+	}, nil
 }
 
 // UpdateUser is the resolver for the updateUser field.
 func (r *mutationResolver) UpdateUser(ctx context.Context, id string, input model.NewUser) (*model.Message, error) {
-	user := database.UpdateUserParams{
-		ID:             id,
-		Name:           input.Name,
-		Email:          input.Email,
-		Phone:          pgtype.Text{String: input.Phone, Valid: true},
-		DocumentNumber: pgtype.Text{String: input.DocumentNumber, Valid: true},
-		DocumentType:   pgtype.Text{String: input.DocumentType, Valid: true},
-	}
+	// user := database.UpdateUserParams{
+	// 	Name:           pgtype.Text{String: input.Name, Valid: true},
+	// 	Email:          input.Email,
+	// 	DocumentNumber: pgtype.Text{String: input.DocumentNumber, Valid: true},
+	// 	DocumentType:   pgtype.Text{String: input.DocumentType, Valid: true},
+	// }
 
-	err := r.Resolver.UserService.UpdateUser(id, &user)
+	// err := r.Resolver.UserService.UpdateUser(convert.UUIDToString(id), &user)
 
-	if err != nil {
-		return nil, &gqlerror.Error{
-			Message: "Error updating user",
-		}
-	}
+	// if err != nil {
+	// 	return nil, &gqlerror.Error{
+	// 		Message: "Error updating user",
+	// 	}
+	// }
 
 	return &model.Message{
 		Message: "Atualizado com sucesso",
@@ -146,7 +192,6 @@ func (r *mutationResolver) UpdateUser(ctx context.Context, id string, input mode
 // CreateAddress is the resolver for the createAddress field.
 func (r *mutationResolver) CreateAddress(ctx context.Context, input model.NewAddress) (*model.Message, error) {
 	address := database.Address{
-		UserID:     input.UserID,
 		Address:    pgtype.Text{String: input.Address, Valid: true},
 		Street:     pgtype.Text{String: *input.Street, Valid: true},
 		City:       pgtype.Text{String: input.City, Valid: true},
@@ -180,32 +225,28 @@ func (r *mutationResolver) VerifyToken(ctx context.Context, input model.VerifyTo
 
 // User is the resolver for the user field.
 func (r *queryResolver) User(ctx context.Context, id string) (*model.User, error) {
-	find, err := r.Resolver.UserService.GetUser(id)
+	find, err := r.Resolver.UserService.GetUser([16]byte{})
 
 	if err != nil {
 		return nil, err
 	}
 
-	consult, _ := r.Resolver.AddressService.GetAddressByID(find.ID)
-
-	response := &model.User{
-		ID:             find.ID,
-		Name:           find.Name,
-		Email:          find.Email,
-		Phone:          find.Phone.String,
-		DocumentNumber: find.DocumentNumber.String,
+	return &model.User{
+		ID:             convert.UUIDToString(find.ID),
+		Name:           &find.Name.String,
+		Email:          &find.Email,
+		DocumentNumber: &find.DocumentNumber.String,
 		Address: &model.Address{
-			Address:    consult.Address.String,
-			Street:     consult.Street.String,
-			Number:     consult.Number.String,
-			City:       consult.City.String,
-			State:      consult.State.String,
-			Country:    consult.Country.String,
-			PostalCode: consult.PostalCode.String,
+			ID:         convert.UUIDToString(find.Address.ID),
+			City:       &find.Address.City.String,
+			Address:    &find.Address.Address.String,
+			Street:     &find.Address.Street.String,
+			Number:     &find.Address.Number.String,
+			State:      &find.Address.State.String,
+			Country:    &find.Address.Country.String,
+			PostalCode: &find.Address.PostalCode.String,
 		},
-	}
-
-	return response, nil
+	}, nil
 }
 
 // Users is the resolver for the users field.
@@ -218,27 +259,25 @@ func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
 
 	var users []*model.User
 	for _, user := range getUser {
-		consult, err := r.Resolver.AddressService.GetAddressByID(user.ID)
+		consult, err := r.Resolver.AddressService.GetAddressByID(user.ID.Bytes)
 
 		if err != nil {
 			continue
 		}
 
 		listUser := &model.User{
-			ID:             user.ID,
-			Name:           user.Name,
-			Email:          user.Email,
-			Phone:          user.Phone.String,
-			DocumentNumber: user.DocumentNumber.String,
+			ID:             convert.UUIDToString(user.ID),
+			Name:           &user.Name.String,
+			Email:          &user.Email,
+			DocumentNumber: &user.DocumentNumber.String,
 			Address: &model.Address{
-				ID:         int(consult.ID),
-				Address:    consult.Address.String,
-				Street:     consult.Street.String,
-				Number:     consult.Number.String,
-				City:       consult.City.String,
-				State:      consult.State.String,
-				Country:    consult.Country.String,
-				PostalCode: consult.PostalCode.String,
+				Address:    &consult.Address.String,
+				Street:     &consult.Street.String,
+				Number:     &consult.Number.String,
+				City:       &consult.City.String,
+				State:      &consult.State.String,
+				Country:    &consult.Country.String,
+				PostalCode: &consult.PostalCode.String,
 			},
 		}
 

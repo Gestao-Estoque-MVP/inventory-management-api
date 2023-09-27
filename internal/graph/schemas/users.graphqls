@@ -4,11 +4,19 @@ type Login {
 
 type User {
   id: ID!
+  name: String
+  email: String
+  phone: String
+  document_number: String
+  address: Address
+  user_phone: [UserPhone]
+  role: [Roles]
+}
+type Tenant {
+  id: String!
   name: String!
-  email: String!
-  phone: String!
-  document_number: String!
-  address: Address!
+  tax_code: String!
+  type: String!
 }
 
 type PreUser {
@@ -17,18 +25,40 @@ type PreUser {
   email: String!
 }
 
+type UserPhone {
+  number: String!
+  type: String!
+  is_primary: Boolean
+  user: User!
+
+}
+
+input NewTenant {
+  name: String!
+  tax_code: String!
+  type: String!
+}
+
+input NewUserPhone {
+  number: String!
+  type: String!
+  is_primary: Boolean
+}
+
 input NewPreUser {
   name: String!
   email: String!
-  status: String!
+  tenantId: String!
+  user_phone: NewUserPhone!
+  roleId: [String!]
 }
 
 input NewUserComplete {
-  phone: String!
   password: String!
   document_type: String!
   document_number: String!
   RegisterToken: String!
+  image: NewImage
 }
 
 input NewUser {
@@ -51,15 +81,15 @@ type ContactInfo {
 }
 
 type Address {
-  id: Int!
-  address: String!
-  street: String!
-  number: String!
-  city: String!
-  state: String!
-  country: String!
-  postalCode: String!
-  userId: String!
+  id: String!
+  address: String
+  street: String
+  number: String
+  city: String
+  state: String
+  country: String
+  postalCode: String
+  userId: String
 }
 
 input NewContactInfo {
@@ -88,14 +118,16 @@ input NewLogin {
 extend type Mutation {
   login(input: NewLogin!): Login! @goField(forceResolver: true)
   createContactInfo(input: NewContactInfo!): ContactInfo!
-  createPreUser(input: NewPreUser!): PreUser! @auth @hasRole(role: admin)
-  createCompleteUser(input: NewUserComplete!): User!
+  createPreUser(input: NewPreUser!): Message! 
+  createCompleteUser(input: NewUserComplete!): Message!
+  createCompanyUser(input: NewPreUser!): Message! @auth @hasRole(role: users)
+  createTenant(input: NewTenant!): Tenant! 
   updateUser(id: ID!, input: NewUser!): Message! @auth
   createAddress(input: NewAddress!): Message!
   verifyToken(input: VerifyToken!): Boolean!
 }
 
 extend type Query {
-  user(id: ID!): User! @goField(forceResolver: true) @auth 
+  user(id: ID!): User! @goField(forceResolver: true)  
   users: [User!]! @goField(forceResolver: true) @auth @hasRole(role: admin)
 }

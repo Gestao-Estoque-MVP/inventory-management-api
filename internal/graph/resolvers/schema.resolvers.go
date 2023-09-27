@@ -10,6 +10,7 @@ import (
 	"github.com/diogoX451/inventory-management-api/internal/database"
 	"github.com/diogoX451/inventory-management-api/internal/graph"
 	"github.com/diogoX451/inventory-management-api/internal/graph/model"
+	"github.com/diogoX451/inventory-management-api/pkg/convert"
 )
 
 // CreateRole is the resolver for the createRole field.
@@ -26,7 +27,7 @@ func (r *mutationResolver) CreateRole(ctx context.Context, input model.NewRole) 
 	}
 
 	response := &model.Roles{
-		ID:          created.ID,
+		ID:          convert.UUIDToString(created.ID),
 		Name:        created.Name,
 		Description: created.Description,
 	}
@@ -48,7 +49,7 @@ func (r *mutationResolver) CreatePermission(ctx context.Context, input model.New
 	}
 
 	return &model.Permissions{
-		ID:          created.ID,
+		ID:          convert.UUIDToString(created.ID),
 		Name:        created.Name,
 		Description: created.Description,
 	}, nil

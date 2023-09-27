@@ -13,17 +13,26 @@ import (
 )
 
 const completeRegisterUser = `-- name: CompleteRegisterUser :one
+WITH inserted_image AS (
+    INSERT INTO image (
+        id,
+        url,
+        description,
+        created_at
+    ) 
+    VALUES($7, $8, $9, $10)
+    RETURNING id AS image_id
+)
 UPDATE users
-SET document_type = $1,
+SET 
+    document_type = $1,
     document_number = $2,
     password = $3,
     status = $4,
-    image_id = $5,
-    updated_at = $6
-WHERE register_token = $7
-RETURNING id,
-    name,
-    email
+    image_id = (SELECT image_id FROM inserted_image),
+    updated_at = $5
+WHERE register_token = $6
+RETURNING id, name, email
 `
 
 type CompleteRegisterUserParams struct {
@@ -31,14 +40,17 @@ type CompleteRegisterUserParams struct {
 	DocumentNumber pgtype.Text
 	Password       pgtype.Text
 	Status         UserStatus
-	ImageID        string
 	UpdatedAt      pgtype.Timestamp
 	RegisterToken  pgtype.Text
+	ID             pgtype.UUID
+	Url            string
+	Description    pgtype.Text
+	CreatedAt      pgtype.Timestamp
 }
 
 type CompleteRegisterUserRow struct {
-	ID    string
-	Name  string
+	ID    pgtype.UUID
+	Name  pgtype.Text
 	Email string
 }
 
@@ -48,16 +60,19 @@ func (q *Queries) CompleteRegisterUser(ctx context.Context, arg CompleteRegister
 		arg.DocumentNumber,
 		arg.Password,
 		arg.Status,
-		arg.ImageID,
 		arg.UpdatedAt,
 		arg.RegisterToken,
+		arg.ID,
+		arg.Url,
+		arg.Description,
+		arg.CreatedAt,
 	)
 	var i CompleteRegisterUserRow
 	err := row.Scan(&i.ID, &i.Name, &i.Email)
 	return i, err
 }
 
-const createPreRegisterUser = `-- name: CreatePreRegisterUser :one
+const createCompanyUsers = `-- name: CreateCompanyUsers :one
 INSERT INTO users (
     id, 
     name, 
@@ -66,30 +81,88 @@ INSERT INTO users (
     register_token, 
     token_expires_at, 
     created_at, 
-    role_id, 
     tenant_id
-) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id, name, email
+) VALUES($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id, name, email
 `
 
-type CreatePreRegisterUserParams struct {
-	ID             string
-	Name           string
+type CreateCompanyUsersParams struct {
+	ID             pgtype.UUID
+	Name           pgtype.Text
 	Email          string
 	Status         UserStatus
 	RegisterToken  pgtype.Text
 	TokenExpiresAt pgtype.Timestamp
 	CreatedAt      pgtype.Timestamp
-	RoleID         pgtype.Text
 	TenantID       string
 }
 
-type CreatePreRegisterUserRow struct {
-	ID    string
-	Name  string
+type CreateCompanyUsersRow struct {
+	ID    pgtype.UUID
+	Name  pgtype.Text
 	Email string
 }
 
-func (q *Queries) CreatePreRegisterUser(ctx context.Context, arg CreatePreRegisterUserParams) (CreatePreRegisterUserRow, error) {
+func (q *Queries) CreateCompanyUsers(ctx context.Context, arg CreateCompanyUsersParams) (CreateCompanyUsersRow, error) {
+	row := q.db.QueryRow(ctx, createCompanyUsers,
+		arg.ID,
+		arg.Name,
+		arg.Email,
+		arg.Status,
+		arg.RegisterToken,
+		arg.TokenExpiresAt,
+		arg.CreatedAt,
+		arg.TenantID,
+	)
+	var i CreateCompanyUsersRow
+	err := row.Scan(&i.ID, &i.Name, &i.Email)
+	return i, err
+}
+
+const createPreRegisterUser = `-- name: CreatePreRegisterUser :one
+WITH inserted_user AS (
+    INSERT INTO users (
+        id, 
+        name, 
+        email, 
+        status, 
+        register_token, 
+        token_expires_at, 
+        created_at, 
+        tenant_id
+    ) 
+    VALUES($1, $2, $3, $4, $5, $6, $7, $8) 
+    RETURNING id
+) INSERT INTO user_phones (
+    id, 
+    type, 
+    number, 
+    is_primary,
+    user_id, 
+    created_at,
+    updated_at
+) 
+VALUES ($9, $10, $11, $12,(SELECT id FROM inserted_user), $13, $14)
+RETURNING (SELECT id FROM inserted_user) AS id
+`
+
+type CreatePreRegisterUserParams struct {
+	ID             pgtype.UUID
+	Name           pgtype.Text
+	Email          string
+	Status         UserStatus
+	RegisterToken  pgtype.Text
+	TokenExpiresAt pgtype.Timestamp
+	CreatedAt      pgtype.Timestamp
+	TenantID       string
+	ID_2           pgtype.UUID
+	Type           TypeNumber
+	Number         string
+	IsPrimary      bool
+	CreatedAt_2    pgtype.Timestamp
+	UpdatedAt      pgtype.Timestamp
+}
+
+func (q *Queries) CreatePreRegisterUser(ctx context.Context, arg CreatePreRegisterUserParams) (pgtype.UUID, error) {
 	row := q.db.QueryRow(ctx, createPreRegisterUser,
 		arg.ID,
 		arg.Name,
@@ -98,12 +171,17 @@ func (q *Queries) CreatePreRegisterUser(ctx context.Context, arg CreatePreRegist
 		arg.RegisterToken,
 		arg.TokenExpiresAt,
 		arg.CreatedAt,
-		arg.RoleID,
 		arg.TenantID,
+		arg.ID_2,
+		arg.Type,
+		arg.Number,
+		arg.IsPrimary,
+		arg.CreatedAt_2,
+		arg.UpdatedAt,
 	)
-	var i CreatePreRegisterUserRow
-	err := row.Scan(&i.ID, &i.Name, &i.Email)
-	return i, err
+	var id pgtype.UUID
+	err := row.Scan(&id)
+	return id, err
 }
 
 const createTenant = `-- name: CreateTenant :one
@@ -113,7 +191,7 @@ RETURNING id, name, tax_code, type, created_at, updated_at
 `
 
 type CreateTenantParams struct {
-	ID        string
+	ID        pgtype.UUID
 	Name      pgtype.Text
 	TaxCode   pgtype.Text
 	Type      NullTenantType
@@ -155,17 +233,17 @@ INSERT INTO user_phones (
 `
 
 type CreateUserPhonesParams struct {
-	ID        string
+	ID        pgtype.UUID
 	Type      TypeNumber
 	Number    string
 	IsPrimary bool
-	UserID    string
+	UserID    pgtype.UUID
 	CreatedAt pgtype.Timestamp
 	UpdatedAt pgtype.Timestamp
 }
 
 type CreateUserPhonesRow struct {
-	ID     string
+	ID     pgtype.UUID
 	Number string
 	Type   TypeNumber
 }
@@ -194,12 +272,12 @@ RETURNING id,
 `
 
 type DeleteUserRow struct {
-	ID    string
-	Name  string
+	ID    pgtype.UUID
+	Name  pgtype.Text
 	Email string
 }
 
-func (q *Queries) DeleteUser(ctx context.Context, id string) (pgconn.CommandTag, error) {
+func (q *Queries) DeleteUser(ctx context.Context, id pgtype.UUID) (pgconn.CommandTag, error) {
 	return q.db.Exec(ctx, deleteUser, id)
 }
 
@@ -207,18 +285,16 @@ const getEmail = `-- name: GetEmail :one
 SELECT id,
     name,
     email,
-    password,
-    role_id
+    password
 FROM users
 WHERE email = $1
 `
 
 type GetEmailRow struct {
-	ID       string
-	Name     string
+	ID       pgtype.UUID
+	Name     pgtype.Text
 	Email    string
 	Password pgtype.Text
-	RoleID   pgtype.Text
 }
 
 func (q *Queries) GetEmail(ctx context.Context, email string) (GetEmailRow, error) {
@@ -229,7 +305,6 @@ func (q *Queries) GetEmail(ctx context.Context, email string) (GetEmailRow, erro
 		&i.Name,
 		&i.Email,
 		&i.Password,
-		&i.RoleID,
 	)
 	return i, err
 }
@@ -254,14 +329,32 @@ func (q *Queries) GetTokenPreRegister(ctx context.Context, registerToken pgtype.
 }
 
 const getUser = `-- name: GetUser :one
-SELECT id, name, email, document_type, document_number, password, status, register_token, token_expires_at, created_at, updated_at, role_id, tenant_id, image_id
+SELECT users.id, users.name, users.email, users.document_type, users.document_number, users.password, users.status, users.register_token, users.token_expires_at, users.created_at, users.updated_at, users.tenant_id, users.image_id, address.id, address.user_id, address.address, address.street, address.city, address.state, address.postal_code, address.country, address.number, address.created_at, address.updated_at
 FROM users
-WHERE id = $1
+LEFT JOIN address ON address.user_id = users.id
+WHERE users.id = $1
 `
 
-func (q *Queries) GetUser(ctx context.Context, id string) (User, error) {
+type GetUserRow struct {
+	ID             pgtype.UUID
+	Name           pgtype.Text
+	Email          string
+	DocumentType   pgtype.Text
+	DocumentNumber pgtype.Text
+	Password       pgtype.Text
+	Status         UserStatus
+	RegisterToken  pgtype.Text
+	TokenExpiresAt pgtype.Timestamp
+	CreatedAt      pgtype.Timestamp
+	UpdatedAt      pgtype.Timestamp
+	TenantID       string
+	ImageID        string
+	Address        Address
+}
+
+func (q *Queries) GetUser(ctx context.Context, id pgtype.UUID) (GetUserRow, error) {
 	row := q.db.QueryRow(ctx, getUser, id)
-	var i User
+	var i GetUserRow
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
@@ -274,9 +367,19 @@ func (q *Queries) GetUser(ctx context.Context, id string) (User, error) {
 		&i.TokenExpiresAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
-		&i.RoleID,
 		&i.TenantID,
 		&i.ImageID,
+		&i.Address.ID,
+		&i.Address.UserID,
+		&i.Address.Address,
+		&i.Address.Street,
+		&i.Address.City,
+		&i.Address.State,
+		&i.Address.PostalCode,
+		&i.Address.Country,
+		&i.Address.Number,
+		&i.Address.CreatedAt,
+		&i.Address.UpdatedAt,
 	)
 	return i, err
 }
@@ -300,30 +403,21 @@ func (q *Queries) GetUserContactEmail(ctx context.Context, email string) (GetUse
 }
 
 const getUserRegisterToken = `-- name: GetUserRegisterToken :one
-SELECT id, name, email, document_type, document_number, password, status, register_token, token_expires_at, created_at, updated_at, role_id, tenant_id, image_id
+SELECT id, name, register_token
 FROM users
 WHERE register_token = $1
 `
 
-func (q *Queries) GetUserRegisterToken(ctx context.Context, registerToken pgtype.Text) (User, error) {
+type GetUserRegisterTokenRow struct {
+	ID            pgtype.UUID
+	Name          pgtype.Text
+	RegisterToken pgtype.Text
+}
+
+func (q *Queries) GetUserRegisterToken(ctx context.Context, registerToken pgtype.Text) (GetUserRegisterTokenRow, error) {
 	row := q.db.QueryRow(ctx, getUserRegisterToken, registerToken)
-	var i User
-	err := row.Scan(
-		&i.ID,
-		&i.Name,
-		&i.Email,
-		&i.DocumentType,
-		&i.DocumentNumber,
-		&i.Password,
-		&i.Status,
-		&i.RegisterToken,
-		&i.TokenExpiresAt,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-		&i.RoleID,
-		&i.TenantID,
-		&i.ImageID,
-	)
+	var i GetUserRegisterTokenRow
+	err := row.Scan(&i.ID, &i.Name, &i.RegisterToken)
 	return i, err
 }
 
@@ -378,7 +472,7 @@ func (q *Queries) GetUsersWithEmail(ctx context.Context) ([]string, error) {
 }
 
 const listUsers = `-- name: ListUsers :many
-SELECT id, name, email, document_type, document_number, password, status, register_token, token_expires_at, created_at, updated_at, role_id, tenant_id, image_id
+SELECT id, name, email, document_type, document_number, password, status, register_token, token_expires_at, created_at, updated_at, tenant_id, image_id
 FROM users
 ORDER BY id
 `
@@ -404,7 +498,6 @@ func (q *Queries) ListUsers(ctx context.Context) ([]User, error) {
 			&i.TokenExpiresAt,
 			&i.CreatedAt,
 			&i.UpdatedAt,
-			&i.RoleID,
 			&i.TenantID,
 			&i.ImageID,
 		); err != nil {
@@ -428,11 +521,11 @@ WHERE id = $5
 `
 
 type UpdateUserParams struct {
-	Name           string
+	Name           pgtype.Text
 	Email          string
 	DocumentType   pgtype.Text
 	DocumentNumber pgtype.Text
-	ID             string
+	ID             pgtype.UUID
 }
 
 func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) error {

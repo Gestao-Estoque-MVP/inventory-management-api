@@ -17,7 +17,7 @@ INSERT INTO contact_info (id, name, email, phone, created_at)
 `
 
 type CreateContactInfoParams struct {
-	ID        string
+	ID        pgtype.UUID
 	Name      string
 	Email     string
 	Phone     pgtype.Text
@@ -49,7 +49,7 @@ INSERT INTO permissions (id, name, description)
 `
 
 type CreatePermissionsParams struct {
-	ID          string
+	ID          pgtype.UUID
 	Name        string
 	Description string
 }
@@ -67,7 +67,7 @@ INSERT INTO roles (id, name, description)
 `
 
 type CreateRoleParams struct {
-	ID          string
+	ID          pgtype.UUID
 	Name        string
 	Description string
 }
@@ -113,6 +113,24 @@ func (q *Queries) CreateUsersPermissions(ctx context.Context, arg CreateUsersPer
 	return i, err
 }
 
+const createUsersRoles = `-- name: CreateUsersRoles :one
+
+INSERT INTO users_roles (user_id, role_id) 
+    VALUES ($1, $2) RETURNING id, user_id, role_id
+`
+
+type CreateUsersRolesParams struct {
+	UserID pgtype.UUID
+	RoleID pgtype.UUID
+}
+
+func (q *Queries) CreateUsersRoles(ctx context.Context, arg CreateUsersRolesParams) (UsersRole, error) {
+	row := q.db.QueryRow(ctx, createUsersRoles, arg.UserID, arg.RoleID)
+	var i UsersRole
+	err := row.Scan(&i.ID, &i.UserID, &i.RoleID)
+	return i, err
+}
+
 const getRole = `-- name: GetRole :one
 SELECT id, name, description FROM roles WHERE name = $1
 `
@@ -128,10 +146,30 @@ const getRoleByID = `-- name: GetRoleByID :one
 SELECT id, name, description from roles WHERE id = $1
 `
 
-func (q *Queries) GetRoleByID(ctx context.Context, id string) (Role, error) {
+func (q *Queries) GetRoleByID(ctx context.Context, id pgtype.UUID) (Role, error) {
 	row := q.db.QueryRow(ctx, getRoleByID, id)
 	var i Role
 	err := row.Scan(&i.ID, &i.Name, &i.Description)
+	return i, err
+}
+
+const getRoleUser = `-- name: GetRoleUser :one
+SELECT r.id, r.name
+FROM users u
+JOIN users_roles ur ON u.id = ur.user_id
+JOIN roles r ON ur.role_id = r.id
+WHERE u.id = $1
+`
+
+type GetRoleUserRow struct {
+	ID   pgtype.UUID
+	Name string
+}
+
+func (q *Queries) GetRoleUser(ctx context.Context, id pgtype.UUID) (GetRoleUserRow, error) {
+	row := q.db.QueryRow(ctx, getRoleUser, id)
+	var i GetRoleUserRow
+	err := row.Scan(&i.ID, &i.Name)
 	return i, err
 }
 
@@ -153,12 +191,12 @@ WHERE
 `
 
 type GetRolesPermissionsRow struct {
-	UserID         string
+	UserID         pgtype.UUID
 	RoleName       string
 	PermissionName string
 }
 
-func (q *Queries) GetRolesPermissions(ctx context.Context, id string) ([]GetRolesPermissionsRow, error) {
+func (q *Queries) GetRolesPermissions(ctx context.Context, id pgtype.UUID) ([]GetRolesPermissionsRow, error) {
 	rows, err := q.db.Query(ctx, getRolesPermissions, id)
 	if err != nil {
 		return nil, err
@@ -193,11 +231,11 @@ WHERE
 `
 
 type GetUsersPermissionsRow struct {
-	UserID         string
+	UserID         pgtype.UUID
 	PermissionName string
 }
 
-func (q *Queries) GetUsersPermissions(ctx context.Context, id string) ([]GetUsersPermissionsRow, error) {
+func (q *Queries) GetUsersPermissions(ctx context.Context, id pgtype.UUID) ([]GetUsersPermissionsRow, error) {
 	rows, err := q.db.Query(ctx, getUsersPermissions, id)
 	if err != nil {
 		return nil, err

@@ -1,6 +1,6 @@
 CREATE TABLE address (
-  id CHAR(36) PRIMARY KEY,
-  user_id CHAR(36) UNIQUE NOT NULL,
+  id UUID NULL ,
+  user_id UUID UNIQUE  NULL,
   address VARCHAR(255),
   street VARCHAR(255),
   city VARCHAR(100),

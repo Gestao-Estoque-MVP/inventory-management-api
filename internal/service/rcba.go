@@ -5,8 +5,8 @@ import (
 
 	"github.com/diogoX451/inventory-management-api/internal/database"
 	"github.com/diogoX451/inventory-management-api/internal/repository"
+	"github.com/gofrs/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
-	"nullprogram.com/x/uuid"
 )
 
 type RCBAService struct {
@@ -18,8 +18,9 @@ func NewRCBAService(rcba repository.IRBCA) *RCBAService {
 }
 
 func (r *RCBAService) CreateRoles(role *database.Role) (*database.Role, error) {
+	id, _ := uuid.NewV4()
 	create, err := r.rcba.CreateRoles(&database.Role{
-		ID:          uuid.NewGen().NewV4().String(),
+		ID:          pgtype.UUID{Bytes: id, Valid: true},
 		Name:        role.Name,
 		Description: role.Description,
 	})
@@ -32,7 +33,7 @@ func (r *RCBAService) CreateRoles(role *database.Role) (*database.Role, error) {
 	return create, nil
 }
 
-func (r *RCBAService) GetRolesPermissions(role string) ([]*database.GetRolesPermissionsRow, error) {
+func (r *RCBAService) GetRolesPermissions(role [16]byte) ([]*database.GetRolesPermissionsRow, error) {
 	permissions, err := r.rcba.GetRolesPermissions(role)
 
 	if err != nil {
@@ -44,8 +45,9 @@ func (r *RCBAService) GetRolesPermissions(role string) ([]*database.GetRolesPerm
 }
 
 func (r *RCBAService) CreatePermissions(permission *database.Permission) (*database.Permission, error) {
+	id, _ := uuid.NewV4()
 	create, err := r.rcba.CreatePermissions(&database.Permission{
-		ID:          uuid.NewGen().NewV4().String(),
+		ID:          pgtype.UUID{Bytes: id, Valid: true},
 		Name:        permission.Name,
 		Description: permission.Description,
 	})
@@ -72,7 +74,7 @@ func (r *RCBAService) CreateRolesPermissions(assignment *database.RolesPermissio
 	return create, nil
 }
 
-func (r *RCBAService) GetUsersPermissions(user string) ([]*database.GetUsersPermissionsRow, error) {
+func (r *RCBAService) GetUsersPermissions(user [16]byte) ([]*database.GetUsersPermissionsRow, error) {
 	permissions, err := r.rcba.GetUsersPermissions(user)
 
 	if err != nil {
@@ -93,10 +95,14 @@ func (r *RCBAService) GetRole(name string) (*database.Role, error) {
 	return get, nil
 }
 
-func (r *RCBAService) CreateTenant(tenant string) (*database.Tenant, error) {
+func (r *RCBAService) CreateTenant(tenant database.Tenant) (*database.Tenant, error) {
+	id, _ := uuid.NewV4()
 	create, err := r.rcba.CreateTenant(&database.Tenant{
-		ID:   uuid.NewGen().NewV4().String(),
-		Name: pgtype.Text{String: tenant, Valid: true},
+		ID:        pgtype.UUID{Bytes: id, Valid: true},
+		Name:      tenant.Name,
+		TaxCode:   tenant.TaxCode,
+		Type:      tenant.Type,
+		CreatedAt: tenant.CreatedAt,
 	})
 
 	if err != nil {
@@ -106,11 +112,22 @@ func (r *RCBAService) CreateTenant(tenant string) (*database.Tenant, error) {
 	return create, nil
 }
 
-func (r *RCBAService) GetRoleByID(id string) (*database.Role, error) {
+func (r *RCBAService) GetRoleByID(id [16]byte) (*database.Role, error) {
 	get, err := r.rcba.GetRoleByID(id)
 
 	if err != nil {
 		log.Printf("Erro ao Trazer os dados role by ID %v", err)
+		return nil, err
+	}
+
+	return get, nil
+}
+
+func (r *RCBAService) GetRoleUser(id [16]byte) (*database.GetRoleUserRow, error) {
+	get, err := r.rcba.GetRoleUser(id)
+
+	if err != nil {
+		log.Printf("Error getting role user %s: %v", id, err)
 		return nil, err
 	}
 

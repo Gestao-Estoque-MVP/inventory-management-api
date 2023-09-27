@@ -10,6 +10,8 @@ import (
 	"github.com/diogoX451/inventory-management-api/internal/database"
 	"github.com/diogoX451/inventory-management-api/internal/graph/model"
 	"github.com/diogoX451/inventory-management-api/internal/service"
+	"github.com/diogoX451/inventory-management-api/pkg/convert"
+	"github.com/gofrs/uuid"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
@@ -21,7 +23,7 @@ func (r *mutationResolver) SendEmail(ctx context.Context, input model.Send) (*mo
 	}
 	details := service.EmailDetails{
 		Subject:    *input.Subject,
-		TemplateID: input.TemplateID,
+		TemplateID: uuid.FromStringOrNil(input.TemplateID),
 		To:         to,
 	}
 
@@ -54,4 +56,17 @@ func (r *mutationResolver) UploadTemplate(ctx context.Context, input model.NewTe
 	return &model.Message{
 		Message: "Criado com Sucesso",
 	}, nil
+}
+
+// GetTemplate is the resolver for the getTemplate field.
+func (r *queryResolver) GetTemplate(ctx context.Context, id string) (string, error) {
+
+	uuid, _ := convert.StringToPgUUID(id)
+
+	get, err := r.Resolver.ImageService.GetTemplate(uuid)
+	if err != nil {
+		return "", err
+	}
+
+	return *get, nil
 }

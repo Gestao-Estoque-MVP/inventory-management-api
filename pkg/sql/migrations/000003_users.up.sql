@@ -2,8 +2,8 @@ CREATE TYPE user_status AS ENUM ('pre-users', 'active', 'inative');
 
 CREATE TABLE users 
 ( 
- id CHAR(36) PRIMARY KEY,  
- name VARCHAR(255) NOT NULL,    
+ id UUID PRIMARY KEY,  
+ name VARCHAR(255) NULL,    
  email VARCHAR(100) NOT NULL,
  document_type VARCHAR(50),   
  document_number VARCHAR(50),

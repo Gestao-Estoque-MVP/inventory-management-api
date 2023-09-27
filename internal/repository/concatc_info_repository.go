@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"log"
 
 	"github.com/diogoX451/inventory-management-api/internal/database"
 )
@@ -28,6 +29,8 @@ func (repo *ContactInfoRepository) CreateContactInfo(info *database.ContactInfo)
 		Phone:     info.Phone,
 		CreatedAt: info.CreatedAt,
 	})
+
+	log.Println(create, err)
 
 	if err != nil {
 		return nil, err

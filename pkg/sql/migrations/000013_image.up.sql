@@ -1,5 +1,5 @@
 CREATE TABLE image (
-    id CHAR(36) PRIMARY KEY,
+    id UUID PRIMARY KEY,
     description VARCHAR(255),
     url VARCHAR(255) NOT NULL,
     created_at TIMESTAMP NOT NULL,

@@ -142,8 +142,8 @@ func (ns NullUserStatus) Value() (driver.Value, error) {
 }
 
 type Address struct {
-	ID         string
-	UserID     string
+	ID         pgtype.UUID
+	UserID     pgtype.UUID
 	Address    pgtype.Text
 	Street     pgtype.Text
 	City       pgtype.Text
@@ -156,7 +156,7 @@ type Address struct {
 }
 
 type ContactInfo struct {
-	ID        string
+	ID        pgtype.UUID
 	Name      string
 	Email     string
 	Phone     pgtype.Text
@@ -164,7 +164,7 @@ type ContactInfo struct {
 }
 
 type Image struct {
-	ID          string
+	ID          pgtype.UUID
 	Description pgtype.Text
 	Url         string
 	CreatedAt   pgtype.Timestamp
@@ -172,25 +172,25 @@ type Image struct {
 }
 
 type Permission struct {
-	ID          string
+	ID          pgtype.UUID
 	Name        string
 	Description string
 }
 
 type Role struct {
-	ID          string
+	ID          pgtype.UUID
 	Name        string
 	Description string
 }
 
 type RolesPermission struct {
-	ID           string
+	ID           pgtype.UUID
 	RoleID       string
 	PermissionID string
 }
 
 type TemplateEmail struct {
-	ID          string
+	ID          pgtype.UUID
 	Name        string
 	Url         string
 	Description string
@@ -199,7 +199,7 @@ type TemplateEmail struct {
 }
 
 type Tenant struct {
-	ID        string
+	ID        pgtype.UUID
 	Name      pgtype.Text
 	TaxCode   pgtype.Text
 	Type      NullTenantType
@@ -208,8 +208,8 @@ type Tenant struct {
 }
 
 type User struct {
-	ID             string
-	Name           string
+	ID             pgtype.UUID
+	Name           pgtype.Text
 	Email          string
 	DocumentType   pgtype.Text
 	DocumentNumber pgtype.Text
@@ -219,14 +219,13 @@ type User struct {
 	TokenExpiresAt pgtype.Timestamp
 	CreatedAt      pgtype.Timestamp
 	UpdatedAt      pgtype.Timestamp
-	RoleID         pgtype.Text
 	TenantID       string
 	ImageID        string
 }
 
 type UserPhone struct {
-	ID        string
-	UserID    string
+	ID        pgtype.UUID
+	UserID    pgtype.UUID
 	Type      TypeNumber
 	Number    string
 	IsPrimary bool
@@ -235,7 +234,13 @@ type UserPhone struct {
 }
 
 type UsersPermission struct {
-	ID           string
+	ID           pgtype.UUID
 	UserID       pgtype.Text
 	PermissionID pgtype.Text
+}
+
+type UsersRole struct {
+	ID     int32
+	UserID pgtype.UUID
+	RoleID pgtype.UUID
 }
