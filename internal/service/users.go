@@ -114,7 +114,7 @@ func (us *UserService) CompleteRegisterUser(registerToken string, user *database
 		us.CreateImageUser(&database.CreateImageUserParams{
 			ID:          pgtype.UUID{Bytes: id, Valid: true},
 			Description: verifyUser.Name,
-			Url:         upload,
+			Url:         pgtype.Text{String: upload, Valid: true},
 			CreatedAt:   pgtype.Timestamp{Time: time.Now().Add(1 * time.Hour).Local(), Valid: true},
 			ID_2:        verifyUser.ID,
 		})

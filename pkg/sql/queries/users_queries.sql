@@ -48,20 +48,22 @@ RETURNING id, name, email;
 
 -- name: CreateImageUser :one
 WITH inserted_image AS (
-    INSERT INTO image (
-        id, 
-        description, 
-        url, 
-        created_at, 
-        updated_at
-    ) 
-    VALUES($1, $2, $3, $4, $5) 
-    RETURNING id AS image_id
+    INSERT INTO image (id, description, url, created_at) 
+    VALUES($1, $2, $3, $4) 
+    RETURNING id
 )
 UPDATE users 
-SET image_id = (SELECT image_id FROM inserted_image)
-WHERE users.id = $6
+SET image_id = (SELECT id FROM inserted_image)
+WHERE users.id = $5
 RETURNING id;
+
+-- name: UpdateImageUser :one
+UPDATE image
+SET 
+    url = $1,
+    updated_at = $2
+WHERE image.id IN (SELECT image_id FROM users WHERE users.id = $3)
+RETURNING image.id;
 
 -- name: CreateCompanyUsers :one
 INSERT INTO users (

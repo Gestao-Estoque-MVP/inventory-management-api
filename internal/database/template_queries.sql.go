@@ -48,11 +48,30 @@ const getImageS3 = `-- name: GetImageS3 :one
 SELECT url FROM image WHERE id = $1
 `
 
-func (q *Queries) GetImageS3(ctx context.Context, id pgtype.UUID) (string, error) {
+func (q *Queries) GetImageS3(ctx context.Context, id pgtype.UUID) (pgtype.Text, error) {
 	row := q.db.QueryRow(ctx, getImageS3, id)
-	var url string
+	var url pgtype.Text
 	err := row.Scan(&url)
 	return url, err
+}
+
+const getImageUser = `-- name: GetImageUser :one
+SELECT u.name, i.url
+FROM users AS u
+LEFT JOIN image AS i ON u.image_id = i.id
+WHERE u.id = $1
+`
+
+type GetImageUserRow struct {
+	Name pgtype.Text
+	Url  pgtype.Text
+}
+
+func (q *Queries) GetImageUser(ctx context.Context, id pgtype.UUID) (GetImageUserRow, error) {
+	row := q.db.QueryRow(ctx, getImageUser, id)
+	var i GetImageUserRow
+	err := row.Scan(&i.Name, &i.Url)
+	return i, err
 }
 
 const getTemplateS3 = `-- name: GetTemplateS3 :one

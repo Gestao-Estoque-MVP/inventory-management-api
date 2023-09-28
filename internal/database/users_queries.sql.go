@@ -101,28 +101,21 @@ func (q *Queries) CreateCompanyUsers(ctx context.Context, arg CreateCompanyUsers
 
 const createImageUser = `-- name: CreateImageUser :one
 WITH inserted_image AS (
-    INSERT INTO image (
-        id, 
-        description, 
-        url, 
-        created_at, 
-        updated_at
-    ) 
-    VALUES($1, $2, $3, $4, $5) 
-    RETURNING id AS image_id
+    INSERT INTO image (id, description, url, created_at) 
+    VALUES($1, $2, $3, $4) 
+    RETURNING id
 )
 UPDATE users 
-SET image_id = (SELECT image_id FROM inserted_image)
-WHERE users.id = $6
+SET image_id = (SELECT id FROM inserted_image)
+WHERE users.id = $5
 RETURNING id
 `
 
 type CreateImageUserParams struct {
 	ID          pgtype.UUID
 	Description pgtype.Text
-	Url         string
+	Url         pgtype.Text
 	CreatedAt   pgtype.Timestamp
-	UpdatedAt   pgtype.Timestamp
 	ID_2        pgtype.UUID
 }
 
@@ -132,7 +125,6 @@ func (q *Queries) CreateImageUser(ctx context.Context, arg CreateImageUserParams
 		arg.Description,
 		arg.Url,
 		arg.CreatedAt,
-		arg.UpdatedAt,
 		arg.ID_2,
 	)
 	var id pgtype.UUID
@@ -547,6 +539,28 @@ func (q *Queries) ListUsers(ctx context.Context) ([]User, error) {
 		return nil, err
 	}
 	return items, nil
+}
+
+const updateImageUser = `-- name: UpdateImageUser :one
+UPDATE image
+SET 
+    url = $1,
+    updated_at = $2
+WHERE image.id IN (SELECT image_id FROM users WHERE users.id = $3)
+RETURNING image.id
+`
+
+type UpdateImageUserParams struct {
+	Url       pgtype.Text
+	UpdatedAt pgtype.Timestamp
+	ID        pgtype.UUID
+}
+
+func (q *Queries) UpdateImageUser(ctx context.Context, arg UpdateImageUserParams) (pgtype.UUID, error) {
+	row := q.db.QueryRow(ctx, updateImageUser, arg.Url, arg.UpdatedAt, arg.ID)
+	var id pgtype.UUID
+	err := row.Scan(&id)
+	return id, err
 }
 
 const updateUser = `-- name: UpdateUser :exec

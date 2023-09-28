@@ -37,6 +37,7 @@ func (a *IAddress) CreateAddress(address *database.Address) (*database.Address, 
 		PostalCode: address.PostalCode,
 		Country:    address.Country,
 		CreatedAt:  address.CreatedAt,
+		ID:         address.ID,
 	})
 
 	if err != nil {

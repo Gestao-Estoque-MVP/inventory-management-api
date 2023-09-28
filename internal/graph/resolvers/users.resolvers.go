@@ -71,7 +71,7 @@ func (r *mutationResolver) CreatePreUser(ctx context.Context, input model.NewPre
 	user := database.CreatePreRegisterUserParams{
 		Name:      pgtype.Text{String: input.Name, Valid: true},
 		Email:     input.Email,
-		TenantID:  pgtype.UUID{Bytes: convert.StringToByte16(input.TenantID), Valid: true},
+		TenantID:  convert.StringToPgUUID(input.TenantID),
 		Number:    input.UserPhone.Number,
 		Type:      database.TypeNumber(input.UserPhone.Type),
 		IsPrimary: *input.UserPhone.IsPrimary,
@@ -203,9 +203,10 @@ func (r *mutationResolver) CreateAddress(ctx context.Context, input model.NewAdd
 		Street:     pgtype.Text{String: *input.Street, Valid: true},
 		City:       pgtype.Text{String: input.City, Valid: true},
 		State:      pgtype.Text{String: input.State, Valid: true},
-		PostalCode: pgtype.Text{String: input.PostalCode},
+		PostalCode: pgtype.Text{String: input.PostalCode, Valid: true},
 		Country:    pgtype.Text{String: input.Country, Valid: true},
 		Number:     pgtype.Text{String: *input.Number, Valid: true},
+		UserID:     convert.StringToPgUUID(input.UserID),
 	}
 
 	_, err := r.Resolver.AddressService.CreateAddress(&address)

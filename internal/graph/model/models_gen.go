@@ -164,6 +164,10 @@ type Tenant struct {
 	Type    string `json:"type"`
 }
 
+type UpdateImageUser struct {
+	File graphql.Upload `json:"file"`
+}
+
 type User struct {
 	ID             string       `json:"id"`
 	Name           *string      `json:"name,omitempty"`

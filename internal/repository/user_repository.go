@@ -56,6 +56,7 @@ func (r *UserRepository) CreateTenant(tenant *database.Tenant) (*database.Tenant
 }
 
 func (i *UserRepository) CreatePreUser(user *database.CreatePreRegisterUserParams, roleId [][16]byte) (*pgtype.UUID, error) {
+	log.Printf("Creating user %", user.TenantID)
 	create, err := i.DB.CreatePreRegisterUser(context.Background(), database.CreatePreRegisterUserParams{
 		ID:             user.ID,
 		Name:           user.Name,

@@ -5,6 +5,7 @@ import (
 
 	"github.com/diogoX451/inventory-management-api/internal/database"
 	"github.com/diogoX451/inventory-management-api/internal/repository"
+	"github.com/gofrs/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -17,7 +18,9 @@ func NewAddressService(addressRepo *repository.IAddress) *AddressService {
 }
 
 func (s *AddressService) CreateAddress(address *database.Address) (*database.Address, error) {
+	id, _ := uuid.NewV4()
 	create, err := s.addressRepo.CreateAddress(&database.Address{
+		ID:         pgtype.UUID{Bytes: id, Valid: true},
 		UserID:     address.UserID,
 		Address:    address.Address,
 		Street:     address.Street,

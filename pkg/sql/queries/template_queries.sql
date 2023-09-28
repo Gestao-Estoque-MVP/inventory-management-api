@@ -7,3 +7,9 @@ SELECT url FROM template_email WHERE id = $1;
 
 -- name: GetImageS3 :one
 SELECT url FROM image WHERE id = $1;
+
+-- name: GetImageUser :one
+SELECT u.name, i.url
+FROM users AS u
+LEFT JOIN image AS i ON u.image_id = i.id
+WHERE u.id = $1;

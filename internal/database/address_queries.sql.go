@@ -13,11 +13,12 @@ import (
 )
 
 const createAddress = `-- name: CreateAddress :one
-INSERT INTO address (user_id, address, number, street, city, state, postal_code, country, created_at) 
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id, user_id, address, street, city, state, postal_code, country, number, created_at, updated_at
+INSERT INTO address (id, user_id, address, number, street, city, state, postal_code, country, created_at) 
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING id, user_id, address, street, city, state, postal_code, country, number, created_at, updated_at
 `
 
 type CreateAddressParams struct {
+	ID         pgtype.UUID
 	UserID     pgtype.UUID
 	Address    pgtype.Text
 	Number     pgtype.Text
@@ -31,6 +32,7 @@ type CreateAddressParams struct {
 
 func (q *Queries) CreateAddress(ctx context.Context, arg CreateAddressParams) (Address, error) {
 	row := q.db.QueryRow(ctx, createAddress,
+		arg.ID,
 		arg.UserID,
 		arg.Address,
 		arg.Number,

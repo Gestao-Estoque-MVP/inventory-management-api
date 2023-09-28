@@ -8,6 +8,7 @@ import (
 	"context"
 
 	"github.com/diogoX451/inventory-management-api/internal/database"
+	"github.com/diogoX451/inventory-management-api/internal/graph/middleware"
 	"github.com/diogoX451/inventory-management-api/internal/graph/model"
 	"github.com/diogoX451/inventory-management-api/internal/service"
 	"github.com/diogoX451/inventory-management-api/pkg/convert"
@@ -58,12 +59,17 @@ func (r *mutationResolver) UploadTemplate(ctx context.Context, input model.NewTe
 	}, nil
 }
 
-// GetTemplate is the resolver for the getTemplate field.
-func (r *queryResolver) GetTemplate(ctx context.Context, id string) (string, error) {
-	get, err := r.Resolver.ImageService.GetTemplate(convert.StringToPgUUID(id))
+// UpdateImage is the resolver for the updateImage field.
+func (r *mutationResolver) UpdateImage(ctx context.Context, input model.UpdateImageUser) (*model.Message, error) {
+	userID := middleware.CtxValue(ctx)
+
+	_, err := r.Resolver.ImageService.UpdateImageUser(convert.StringToPgUUID(userID.ID), input.File.File)
+
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	return *get, nil
+	return &model.Message{
+		Message: "Atualizado com sucesso",
+	}, nil
 }
