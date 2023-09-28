@@ -11,6 +11,7 @@ type User {
   address: Address
   user_phone: [UserPhone]
   role: [Roles]
+  image: Image
 }
 type Tenant {
   id: String!
@@ -128,6 +129,6 @@ extend type Mutation {
 }
 
 extend type Query {
-  user(id: ID!): User! @goField(forceResolver: true)  
+  user: User! @auth @goField(forceResolver: true)  
   users: [User!]! @goField(forceResolver: true) @auth @hasRole(role: admin)
 }

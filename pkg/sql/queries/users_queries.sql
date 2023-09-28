@@ -78,9 +78,11 @@ RETURNING id,
     email;
 
 -- name: GetUser :one
-SELECT users.*, sqlc.embed(address)
+SELECT users.*, sqlc.embed(address), sqlc.embed(image), sqlc.embed(user_phones)
 FROM users
 LEFT JOIN address ON address.user_id = users.id
+LEFT JOIN image ON image.id = users.image_id
+LEFT JOIN user_phones ON user_phones.user_id = users.id
 WHERE users.id = $1;
 
 -- name: GetEmail :one

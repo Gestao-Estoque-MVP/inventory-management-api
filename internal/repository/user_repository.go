@@ -18,7 +18,7 @@ type IUserRepository interface {
 	CreateTenant(tenant *database.Tenant) (*database.Tenant, error)
 	UpdateUser(id [16]byte, user *database.UpdateUserParams) error
 	DeleteUser(id [16]byte) (bool, error)
-	GetUser(id [16]byte) (*database.GetUserRow, error)
+	GetUser(id pgtype.UUID) (*database.GetUserRow, error)
 	GetUsers() ([]*database.User, error)
 	GetUserByEmail(email string) (*database.GetEmailRow, error)
 	GetUserRegisterToken(token string) (*database.GetUserRegisterTokenRow, error)
@@ -197,10 +197,8 @@ func (i *UserRepository) DeleteUser(id [16]byte) (bool, error) {
 	return true, nil
 }
 
-func (i *UserRepository) GetUser(id [16]byte) (*database.GetUserRow, error) {
-	get, err := i.DB.GetUser(context.Background(), pgtype.UUID{Bytes: id, Valid: true})
-
-	log.Printf("Erro querying user", get)
+func (i *UserRepository) GetUser(id pgtype.UUID) (*database.GetUserRow, error) {
+	get, err := i.DB.GetUser(context.Background(), id)
 
 	if err != nil {
 		return nil, err

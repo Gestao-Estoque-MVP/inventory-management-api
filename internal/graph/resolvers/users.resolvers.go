@@ -9,6 +9,7 @@ import (
 	"fmt"
 
 	"github.com/diogoX451/inventory-management-api/internal/database"
+	"github.com/diogoX451/inventory-management-api/internal/graph/middleware"
 	"github.com/diogoX451/inventory-management-api/internal/graph/model"
 	"github.com/diogoX451/inventory-management-api/pkg/convert"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -224,8 +225,10 @@ func (r *mutationResolver) VerifyToken(ctx context.Context, input model.VerifyTo
 }
 
 // User is the resolver for the user field.
-func (r *queryResolver) User(ctx context.Context, id string) (*model.User, error) {
-	find, err := r.Resolver.UserService.GetUser([16]byte{})
+func (r *queryResolver) User(ctx context.Context) (*model.User, error) {
+	id := middleware.CtxValue(ctx)
+
+	find, err := r.Resolver.UserService.GetUser(convert.StringToPgUUID(id.ID))
 
 	if err != nil {
 		return nil, err
@@ -245,6 +248,18 @@ func (r *queryResolver) User(ctx context.Context, id string) (*model.User, error
 			State:      &find.Address.State.String,
 			Country:    &find.Address.Country.String,
 			PostalCode: &find.Address.PostalCode.String,
+		},
+		UserPhone: []*model.UserPhone{
+			{
+				Number:    find.UserPhone.Number,
+				Type:      string(find.UserPhone.Type),
+				IsPrimary: &find.UserPhone.IsPrimary,
+			},
+		},
+		Image: &model.Image{
+			ID:          convert.UUIDToString(find.Image.ID),
+			URL:         find.Image.Url,
+			Description: find.Image.Description.String,
 		},
 	}, nil
 }

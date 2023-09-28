@@ -10,3 +10,8 @@ CREATE TABLE user_phones(
     updated_at TIMESTAMP,
     UNIQUE(user_id, type)
 );
+
+ALTER TABLE user_phones
+ADD FOREIGN KEY (user_id) REFERENCES users(id)
+ON DELETE CASCADE; 
+

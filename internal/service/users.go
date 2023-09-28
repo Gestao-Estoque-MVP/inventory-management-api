@@ -94,9 +94,11 @@ func (us *UserService) CompleteRegisterUser(registerToken string, user *database
 		return nil, fmt.Errorf("no user found with register token %s", registerToken)
 	}
 	var result string = ""
+
 	if image != nil {
 		result, _ = us.s3Service.UploadImageS3(image, verifyUser.Name.String)
 	}
+
 	id, _ := uuid.NewV4()
 	user.Status = database.UserStatusActive
 	user.Url = result
@@ -151,14 +153,20 @@ func (us *UserService) GetUsers() ([]*database.User, error) {
 	return list, nil
 }
 
-func (us UserService) GetUser(id [16]byte) (*database.GetUserRow, error) {
+func (us UserService) GetUser(id pgtype.UUID) (*database.GetUserRow, error) {
 	get, err := us.userRepo.GetUser(id)
-
-	log.Printf("[DEBUG] Checking", get, err)
 	if err != nil {
-		log.Printf("Erro ao trazer usuário  %v\n", get)
+		log.Printf("Erro ao trazer usuário: %v\n", err)
 		return nil, err
 	}
+
+	url, err := us.s3Service.GetUrlS3(get.Image.Url)
+	if err != nil {
+		log.Printf("Erro ao obter URL do S3: %v\n", err)
+		return nil, err
+	}
+
+	get.Image.Url = url
 
 	return get, nil
 }

@@ -60,10 +60,7 @@ func (r *mutationResolver) UploadTemplate(ctx context.Context, input model.NewTe
 
 // GetTemplate is the resolver for the getTemplate field.
 func (r *queryResolver) GetTemplate(ctx context.Context, id string) (string, error) {
-
-	uuid, _ := convert.StringToPgUUID(id)
-
-	get, err := r.Resolver.ImageService.GetTemplate(uuid)
+	get, err := r.Resolver.ImageService.GetTemplate(convert.StringToPgUUID(id))
 	if err != nil {
 		return "", err
 	}

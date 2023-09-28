@@ -173,6 +173,7 @@ type User struct {
 	Address        *Address     `json:"address,omitempty"`
 	UserPhone      []*UserPhone `json:"user_phone,omitempty"`
 	Role           []*Roles     `json:"role,omitempty"`
+	Image          *Image       `json:"image,omitempty"`
 }
 
 type UserPhone struct {

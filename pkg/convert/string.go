@@ -39,10 +39,10 @@ func StringToByte16(s string) [16]byte {
 	return b
 }
 
-func StringToPgUUID(s string) (pgtype.UUID, error) {
+func StringToPgUUID(s string) pgtype.UUID {
 	var uuid pgtype.UUID
 	if err := uuid.Scan(s); err != nil {
-		return uuid, err
+		return uuid
 	}
-	return uuid, nil
+	return uuid
 }
