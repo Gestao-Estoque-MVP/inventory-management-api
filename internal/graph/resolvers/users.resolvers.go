@@ -7,6 +7,7 @@ package resolvers
 import (
 	"context"
 	"fmt"
+	"io"
 
 	"github.com/diogoX451/inventory-management-api/internal/database"
 	"github.com/diogoX451/inventory-management-api/internal/graph/middleware"
@@ -70,7 +71,7 @@ func (r *mutationResolver) CreatePreUser(ctx context.Context, input model.NewPre
 	user := database.CreatePreRegisterUserParams{
 		Name:      pgtype.Text{String: input.Name, Valid: true},
 		Email:     input.Email,
-		TenantID:  input.TenantID,
+		TenantID:  pgtype.UUID{Bytes: convert.StringToByte16(input.TenantID), Valid: true},
 		Number:    input.UserPhone.Number,
 		Type:      database.TypeNumber(input.UserPhone.Type),
 		IsPrimary: *input.UserPhone.IsPrimary,
@@ -98,7 +99,12 @@ func (r *mutationResolver) CreateCompleteUser(ctx context.Context, input model.N
 		DocumentNumber: pgtype.Text{String: input.DocumentNumber, Valid: true},
 	}
 
-	_, err := r.Resolver.UserService.CompleteRegisterUser(input.RegisterToken, &user, input.Image.File.File)
+	var reader io.Reader
+	if input.Image != nil {
+		reader = input.Image.File.File
+	}
+
+	_, err := r.Resolver.UserService.CompleteRegisterUser(input.RegisterToken, &user, reader)
 
 	if err != nil {
 		return nil, err
@@ -114,7 +120,7 @@ func (r *mutationResolver) CreateCompanyUser(ctx context.Context, input model.Ne
 	user := database.CreatePreRegisterUserParams{
 		Name:     pgtype.Text{String: input.Name, Valid: true},
 		Email:    input.Email,
-		TenantID: input.TenantID,
+		TenantID: pgtype.UUID{Bytes: convert.StringToByte16(input.TenantID), Valid: true},
 	}
 
 	roleId, _ := convert.ConvertUUIDs(input.RoleID)
@@ -258,7 +264,7 @@ func (r *queryResolver) User(ctx context.Context) (*model.User, error) {
 		},
 		Image: &model.Image{
 			ID:          convert.UUIDToString(find.Image.ID),
-			URL:         find.Image.Url,
+			URL:         find.Image.Url.String,
 			Description: find.Image.Description.String,
 		},
 	}, nil

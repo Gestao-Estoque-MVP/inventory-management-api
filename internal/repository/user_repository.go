@@ -16,6 +16,7 @@ type IUserRepository interface {
 	CreateCompanyUser(user *database.User, roleId [][16]byte) (*database.CreateCompanyUsersRow, error)
 	CreateUserPhones(*database.UserPhone) (*database.CreateUserPhonesRow, error)
 	CreateTenant(tenant *database.Tenant) (*database.Tenant, error)
+	CreateImageUser(image *database.CreateImageUserParams) (*pgtype.UUID, error)
 	UpdateUser(id [16]byte, user *database.UpdateUserParams) error
 	DeleteUser(id [16]byte) (bool, error)
 	GetUser(id pgtype.UUID) (*database.GetUserRow, error)
@@ -123,10 +124,6 @@ func (i *UserRepository) CreateCompleteUser(token string, user *database.Complet
 		RegisterToken:  pgtype.Text{String: token, Valid: true},
 		Status:         user.Status,
 		UpdatedAt:      pgtype.Timestamp{Time: time.Now(), Valid: true},
-		ID:             user.ID,
-		Url:            user.Url,
-		Description:    user.Description,
-		CreatedAt:      pgtype.Timestamp{Time: time.Now().Local(), Valid: true},
 	})
 
 	if err != nil {
@@ -136,6 +133,22 @@ func (i *UserRepository) CreateCompleteUser(token string, user *database.Complet
 	return &database.CompleteRegisterUserRow{
 		Name: updateUser.Name,
 	}, nil
+}
+
+func (i *UserRepository) CreateImageUser(image *database.CreateImageUserParams) (*pgtype.UUID, error) {
+	create, err := i.DB.CreateImageUser(context.Background(), database.CreateImageUserParams{
+		ID:          image.ID,
+		Url:         image.Url,
+		Description: image.Description,
+		CreatedAt:   image.CreatedAt,
+		ID_2:        image.ID_2,
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &create, nil
 }
 
 func (i *UserRepository) CreateCompanyUser(user *database.User, roleId [][16]byte) (*database.CreateCompanyUsersRow, error) {

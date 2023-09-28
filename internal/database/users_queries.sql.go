@@ -13,23 +13,12 @@ import (
 )
 
 const completeRegisterUser = `-- name: CompleteRegisterUser :one
-WITH inserted_image AS (
-    INSERT INTO image (
-        id,
-        url,
-        description,
-        created_at
-    ) 
-    VALUES($7, $8, $9, $10)
-    RETURNING id AS image_id
-)
 UPDATE users
 SET 
     document_type = $1,
     document_number = $2,
     password = $3,
     status = $4,
-    image_id = (SELECT image_id FROM inserted_image),
     updated_at = $5
 WHERE register_token = $6
 RETURNING id, name, email
@@ -42,10 +31,6 @@ type CompleteRegisterUserParams struct {
 	Status         UserStatus
 	UpdatedAt      pgtype.Timestamp
 	RegisterToken  pgtype.Text
-	ID             pgtype.UUID
-	Url            string
-	Description    pgtype.Text
-	CreatedAt      pgtype.Timestamp
 }
 
 type CompleteRegisterUserRow struct {
@@ -62,10 +47,6 @@ func (q *Queries) CompleteRegisterUser(ctx context.Context, arg CompleteRegister
 		arg.Status,
 		arg.UpdatedAt,
 		arg.RegisterToken,
-		arg.ID,
-		arg.Url,
-		arg.Description,
-		arg.CreatedAt,
 	)
 	var i CompleteRegisterUserRow
 	err := row.Scan(&i.ID, &i.Name, &i.Email)
@@ -93,7 +74,7 @@ type CreateCompanyUsersParams struct {
 	RegisterToken  pgtype.Text
 	TokenExpiresAt pgtype.Timestamp
 	CreatedAt      pgtype.Timestamp
-	TenantID       string
+	TenantID       pgtype.UUID
 }
 
 type CreateCompanyUsersRow struct {
@@ -116,6 +97,47 @@ func (q *Queries) CreateCompanyUsers(ctx context.Context, arg CreateCompanyUsers
 	var i CreateCompanyUsersRow
 	err := row.Scan(&i.ID, &i.Name, &i.Email)
 	return i, err
+}
+
+const createImageUser = `-- name: CreateImageUser :one
+WITH inserted_image AS (
+    INSERT INTO image (
+        id, 
+        description, 
+        url, 
+        created_at, 
+        updated_at
+    ) 
+    VALUES($1, $2, $3, $4, $5) 
+    RETURNING id AS image_id
+)
+UPDATE users 
+SET image_id = (SELECT image_id FROM inserted_image)
+WHERE users.id = $6
+RETURNING id
+`
+
+type CreateImageUserParams struct {
+	ID          pgtype.UUID
+	Description pgtype.Text
+	Url         string
+	CreatedAt   pgtype.Timestamp
+	UpdatedAt   pgtype.Timestamp
+	ID_2        pgtype.UUID
+}
+
+func (q *Queries) CreateImageUser(ctx context.Context, arg CreateImageUserParams) (pgtype.UUID, error) {
+	row := q.db.QueryRow(ctx, createImageUser,
+		arg.ID,
+		arg.Description,
+		arg.Url,
+		arg.CreatedAt,
+		arg.UpdatedAt,
+		arg.ID_2,
+	)
+	var id pgtype.UUID
+	err := row.Scan(&id)
+	return id, err
 }
 
 const createPreRegisterUser = `-- name: CreatePreRegisterUser :one
@@ -153,7 +175,7 @@ type CreatePreRegisterUserParams struct {
 	RegisterToken  pgtype.Text
 	TokenExpiresAt pgtype.Timestamp
 	CreatedAt      pgtype.Timestamp
-	TenantID       string
+	TenantID       pgtype.UUID
 	ID_2           pgtype.UUID
 	Type           TypeNumber
 	Number         string
@@ -349,8 +371,8 @@ type GetUserRow struct {
 	TokenExpiresAt pgtype.Timestamp
 	CreatedAt      pgtype.Timestamp
 	UpdatedAt      pgtype.Timestamp
-	TenantID       string
-	ImageID        string
+	TenantID       pgtype.UUID
+	ImageID        pgtype.UUID
 	Address        Address
 	Image          Image
 	UserPhone      UserPhone

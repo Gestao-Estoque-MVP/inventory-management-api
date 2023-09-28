@@ -10,5 +10,5 @@ CREATE TABLE tenant (
 );
 
 ALTER TABLE users 
-    ADD COLUMN tenant_id VARCHAR NOT NULL REFERENCES tenant(id);
+    ADD COLUMN tenant_id UUID NOT NULL REFERENCES tenant(id);
 

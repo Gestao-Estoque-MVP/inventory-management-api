@@ -166,7 +166,7 @@ type ContactInfo struct {
 type Image struct {
 	ID          pgtype.UUID
 	Description pgtype.Text
-	Url         string
+	Url         pgtype.Text
 	CreatedAt   pgtype.Timestamp
 	UpdatedAt   pgtype.Timestamp
 }
@@ -185,8 +185,8 @@ type Role struct {
 
 type RolesPermission struct {
 	ID           pgtype.UUID
-	RoleID       string
-	PermissionID string
+	RoleID       pgtype.UUID
+	PermissionID pgtype.UUID
 }
 
 type TemplateEmail struct {
@@ -219,8 +219,8 @@ type User struct {
 	TokenExpiresAt pgtype.Timestamp
 	CreatedAt      pgtype.Timestamp
 	UpdatedAt      pgtype.Timestamp
-	TenantID       string
-	ImageID        string
+	TenantID       pgtype.UUID
+	ImageID        pgtype.UUID
 }
 
 type UserPhone struct {
@@ -235,8 +235,8 @@ type UserPhone struct {
 
 type UsersPermission struct {
 	ID           pgtype.UUID
-	UserID       pgtype.Text
-	PermissionID pgtype.Text
+	UserID       pgtype.UUID
+	PermissionID pgtype.UUID
 }
 
 type UsersRole struct {

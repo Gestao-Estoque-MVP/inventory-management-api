@@ -85,8 +85,8 @@ INSERT INTO roles_permissions (role_id, permission_id)
 `
 
 type CreateRolePermissionsParams struct {
-	RoleID       string
-	PermissionID string
+	RoleID       pgtype.UUID
+	PermissionID pgtype.UUID
 }
 
 func (q *Queries) CreateRolePermissions(ctx context.Context, arg CreateRolePermissionsParams) (RolesPermission, error) {
@@ -102,8 +102,8 @@ INSERT INTO users_permissions (user_id, permission_id)
 `
 
 type CreateUsersPermissionsParams struct {
-	UserID       pgtype.Text
-	PermissionID pgtype.Text
+	UserID       pgtype.UUID
+	PermissionID pgtype.UUID
 }
 
 func (q *Queries) CreateUsersPermissions(ctx context.Context, arg CreateUsersPermissionsParams) (UsersPermission, error) {

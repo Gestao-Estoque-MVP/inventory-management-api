@@ -36,27 +36,32 @@ INSERT INTO user_phones (
 ) VALUES($1, $2, $3, $4,$5,$6,$7) RETURNING id, number, type;
 
 -- name: CompleteRegisterUser :one
-WITH inserted_image AS (
-    INSERT INTO image (
-        id,
-        url,
-        description,
-        created_at
-    ) 
-    VALUES($7, $8, $9, $10)
-    RETURNING id AS image_id
-)
 UPDATE users
 SET 
     document_type = $1,
     document_number = $2,
     password = $3,
     status = $4,
-    image_id = (SELECT image_id FROM inserted_image),
     updated_at = $5
 WHERE register_token = $6
 RETURNING id, name, email;
 
+-- name: CreateImageUser :one
+WITH inserted_image AS (
+    INSERT INTO image (
+        id, 
+        description, 
+        url, 
+        created_at, 
+        updated_at
+    ) 
+    VALUES($1, $2, $3, $4, $5) 
+    RETURNING id AS image_id
+)
+UPDATE users 
+SET image_id = (SELECT image_id FROM inserted_image)
+WHERE users.id = $6
+RETURNING id;
 
 -- name: CreateCompanyUsers :one
 INSERT INTO users (

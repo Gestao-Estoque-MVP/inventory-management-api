@@ -9,6 +9,7 @@ import (
 	"github.com/diogoX451/inventory-management-api/internal/database"
 	"github.com/diogoX451/inventory-management-api/internal/repository"
 	token "github.com/diogoX451/inventory-management-api/pkg/Token"
+	"github.com/diogoX451/inventory-management-api/pkg/convert"
 	"github.com/gofrs/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
@@ -85,6 +86,16 @@ func (us *UserService) CreatePreUser(user *database.CreatePreRegisterUserParams,
 	return createUser, nil
 }
 
+func (us *UserService) CreateImageUser(image *database.CreateImageUserParams) (*pgtype.UUID, error) {
+	create, err := us.userRepo.CreateImageUser(image)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return create, nil
+}
+
 func (us *UserService) CompleteRegisterUser(registerToken string, user *database.CompleteRegisterUserParams, image io.Reader) (*database.CompleteRegisterUserRow, error) {
 
 	verifyUser, err := us.userRepo.GetUserRegisterToken(registerToken)
@@ -95,14 +106,21 @@ func (us *UserService) CompleteRegisterUser(registerToken string, user *database
 	}
 
 	if image != nil {
-		user.Url, _ = us.s3Service.UploadImageS3(image, verifyUser.Name.String)
+		id, _ := uuid.NewV4()
+		upload, err := us.s3Service.UploadImageS3(image, convert.UUIDToString(verifyUser.ID))
+		if err != nil {
+			return nil, err
+		}
+		us.CreateImageUser(&database.CreateImageUserParams{
+			ID:          pgtype.UUID{Bytes: id, Valid: true},
+			Description: verifyUser.Name,
+			Url:         upload,
+			CreatedAt:   pgtype.Timestamp{Time: time.Now().Add(1 * time.Hour).Local(), Valid: true},
+			ID_2:        verifyUser.ID,
+		})
 	}
 
-	id, _ := uuid.NewV4()
 	user.Status = database.UserStatusActive
-	user.Description = verifyUser.Name
-	user.ID = pgtype.UUID{Bytes: id, Valid: true}
-
 	updateUser, err := us.userRepo.CreateCompleteUser(verifyUser.RegisterToken.String, user)
 
 	if err != nil {
@@ -153,18 +171,20 @@ func (us *UserService) GetUsers() ([]*database.User, error) {
 
 func (us UserService) GetUser(id pgtype.UUID) (*database.GetUserRow, error) {
 	get, err := us.userRepo.GetUser(id)
+
 	if err != nil {
 		log.Printf("Erro ao trazer usuário: %v\n", err)
 		return nil, err
 	}
 
-	url, err := us.s3Service.GetUrlS3(get.Image.Url)
-	if err != nil {
-		log.Printf("Erro ao obter URL do S3: %v\n", err)
-		return nil, err
+	if get.Image.Url.String != "" {
+		url, err := us.s3Service.GetUrlS3(get.Image.Url.String)
+		if err != nil {
+			log.Printf("Erro ao obter URL do S3: %v\n", err)
+			return nil, err
+		}
+		get.Image.Url = pgtype.Text{String: url, Valid: true}
 	}
-
-	get.Image.Url = url
 
 	return get, nil
 }

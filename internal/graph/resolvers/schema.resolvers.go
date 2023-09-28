@@ -11,6 +11,7 @@ import (
 	"github.com/diogoX451/inventory-management-api/internal/graph"
 	"github.com/diogoX451/inventory-management-api/internal/graph/model"
 	"github.com/diogoX451/inventory-management-api/pkg/convert"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 // CreateRole is the resolver for the createRole field.
@@ -58,8 +59,8 @@ func (r *mutationResolver) CreatePermission(ctx context.Context, input model.New
 // CreateRolePermission is the resolver for the createRolePermission field.
 func (r *mutationResolver) CreateRolePermission(ctx context.Context, input model.NewRolePermission) (*model.RolePermissions, error) {
 	assign := database.RolesPermission{
-		RoleID:       input.RoleID,
-		PermissionID: input.PermissionID,
+		RoleID:       pgtype.UUID{Bytes: convert.StringToByte16(input.RoleID), Valid: true},
+		PermissionID: pgtype.UUID{Bytes: convert.StringToByte16(input.PermissionID), Valid: true},
 	}
 
 	created, err := r.Resolver.RBCAService.CreateRolesPermissions(&assign)
@@ -69,8 +70,8 @@ func (r *mutationResolver) CreateRolePermission(ctx context.Context, input model
 	}
 
 	return &model.RolePermissions{
-		RoleID:       created.RoleID,
-		PermissionID: created.PermissionID,
+		RoleID:       convert.UUIDToString(created.RoleID),
+		PermissionID: convert.UUIDToString(created.PermissionID),
 	}, nil
 }
 
