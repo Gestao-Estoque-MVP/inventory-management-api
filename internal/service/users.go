@@ -93,15 +93,13 @@ func (us *UserService) CompleteRegisterUser(registerToken string, user *database
 		log.Printf("Erro ao buscar usuário: %v\n", err)
 		return nil, fmt.Errorf("no user found with register token %s", registerToken)
 	}
-	var result string = ""
 
 	if image != nil {
-		result, _ = us.s3Service.UploadImageS3(image, verifyUser.Name.String)
+		user.Url, _ = us.s3Service.UploadImageS3(image, verifyUser.Name.String)
 	}
 
 	id, _ := uuid.NewV4()
 	user.Status = database.UserStatusActive
-	user.Url = result
 	user.Description = verifyUser.Name
 	user.ID = pgtype.UUID{Bytes: id, Valid: true}
 
@@ -118,7 +116,7 @@ func (us *UserService) CompleteRegisterUser(registerToken string, user *database
 func (us *UserService) CreateCompanyUser(user *database.User, roleId [][16]byte) (*database.CreateCompanyUsersRow, error) {
 	token, _ := token.GeneratedToken()
 	user.RegisterToken = pgtype.Text{String: token, Valid: true}
-	user.TokenExpiresAt = pgtype.Timestamp{Time: time.Now().Add(1 * time.Hour), Valid: true}
+	user.TokenExpiresAt = pgtype.Timestamp{Time: time.Now().Add(1 * time.Hour).Local(), Valid: true}
 	user.Status = database.UserStatusActive
 
 	create, err := us.userRepo.CreateCompanyUser(user, roleId)
