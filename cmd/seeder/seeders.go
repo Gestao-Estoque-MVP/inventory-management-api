@@ -1,13 +1,17 @@
-package sql
+package main
 
 import (
 	"context"
+	"log"
+	"os"
 	"time"
 
 	"github.com/diogoX451/inventory-management-api/internal/database"
 	token "github.com/diogoX451/inventory-management-api/pkg/Token"
 	"github.com/gofrs/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/joho/godotenv"
 )
 
 func getUUID() pgtype.UUID {
@@ -160,9 +164,9 @@ func Seed(db *database.Queries) error {
 		}
 	}
 
-	for _, cu := range users {
-		tk, _ := token.GeneratedToken()
+	tk, _ := token.GeneratedToken()
 
+	for _, cu := range users {
 		_, err := db.CreatePreRegisterUser(context.Background(), database.CreatePreRegisterUserParams{
 			ID:            cu.ID,
 			Name:          cu.Name,
@@ -173,7 +177,7 @@ func Seed(db *database.Queries) error {
 			Number:        "62999722708",
 			IsPrimary:     true,
 			CreatedAt_2:   pgtype.Timestamp{Time: time.Now().Local(), Valid: true},
-			RegisterToken: pgtype.Text{String: "", Valid: true},
+			RegisterToken: pgtype.Text{String: tk, Valid: true},
 			TenantID:      cu.TenantID,
 			CreatedAt:     cu.CreatedAt,
 		})
@@ -199,7 +203,7 @@ func Seed(db *database.Queries) error {
 	for _, ur := range usersRoles {
 		_, err := db.CreateUsersRoles(context.Background(), database.CreateUsersRolesParams{
 			ID:     ur.ID,
-			UserID: ur.ID,
+			UserID: ur.UserID,
 			RoleID: ur.RoleID,
 		})
 
@@ -209,4 +213,28 @@ func Seed(db *database.Queries) error {
 	}
 
 	return nil
+}
+
+func init() {
+
+	if err := godotenv.Load(); err != nil {
+		panic("No .env variable")
+	}
+
+}
+
+func main() {
+	db, err := pgxpool.New(context.Background(), os.Getenv("DB_URL"))
+	if err != nil {
+		log.Fatalf("Erro ao abrir a conexão com o banco de dados: %v\n", err)
+	}
+
+	defer func() {
+		db.Close()
+	}()
+	queries := database.New(db)
+	err = Seed(queries)
+	if err != nil {
+		log.Printf("Error creating database", err)
+	}
 }
