@@ -15,6 +15,7 @@ import (
 	"github.com/diogoX451/inventory-management-api/internal/graph/resolvers"
 	"github.com/diogoX451/inventory-management-api/internal/repository"
 	"github.com/diogoX451/inventory-management-api/internal/service"
+	"github.com/diogoX451/inventory-management-api/pkg/sql"
 	"github.com/gorilla/mux"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
@@ -60,7 +61,10 @@ func main() {
 	}
 
 	queries := database.New(db)
-
+	err = sql.Seed(queries)
+	if err != nil {
+		log.Fatalf("Erro : %v\n", err)
+	}
 	s3Repository := repository.NewS3Repository(queries)
 	image := repository.NewImageRepository(queries)
 	s3Service := service.NewServiceS3(s3Repository, os.Getenv("S3_BUCKET_NAME"), os.Getenv("S3_ACESS_KEY_ID"), os.Getenv("S3_REGION"))

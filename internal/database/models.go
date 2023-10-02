@@ -240,7 +240,7 @@ type UsersPermission struct {
 }
 
 type UsersRole struct {
-	ID     int32
+	ID     pgtype.UUID
 	UserID pgtype.UUID
 	RoleID pgtype.UUID
 }

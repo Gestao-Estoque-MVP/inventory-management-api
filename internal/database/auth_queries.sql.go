@@ -80,17 +80,18 @@ func (q *Queries) CreateRole(ctx context.Context, arg CreateRoleParams) (Role, e
 }
 
 const createRolePermissions = `-- name: CreateRolePermissions :one
-INSERT INTO roles_permissions (role_id, permission_id) 
-    VALUES ($1, $2) RETURNING id, role_id, permission_id
+INSERT INTO roles_permissions (id, role_id, permission_id) 
+    VALUES ($1, $2, $3) RETURNING id, role_id, permission_id
 `
 
 type CreateRolePermissionsParams struct {
+	ID           pgtype.UUID
 	RoleID       pgtype.UUID
 	PermissionID pgtype.UUID
 }
 
 func (q *Queries) CreateRolePermissions(ctx context.Context, arg CreateRolePermissionsParams) (RolesPermission, error) {
-	row := q.db.QueryRow(ctx, createRolePermissions, arg.RoleID, arg.PermissionID)
+	row := q.db.QueryRow(ctx, createRolePermissions, arg.ID, arg.RoleID, arg.PermissionID)
 	var i RolesPermission
 	err := row.Scan(&i.ID, &i.RoleID, &i.PermissionID)
 	return i, err
@@ -115,17 +116,18 @@ func (q *Queries) CreateUsersPermissions(ctx context.Context, arg CreateUsersPer
 
 const createUsersRoles = `-- name: CreateUsersRoles :one
 
-INSERT INTO users_roles (user_id, role_id) 
-    VALUES ($1, $2) RETURNING id, user_id, role_id
+INSERT INTO users_roles (id, user_id, role_id) 
+    VALUES ($1, $2, $3) RETURNING id, user_id, role_id
 `
 
 type CreateUsersRolesParams struct {
+	ID     pgtype.UUID
 	UserID pgtype.UUID
 	RoleID pgtype.UUID
 }
 
 func (q *Queries) CreateUsersRoles(ctx context.Context, arg CreateUsersRolesParams) (UsersRole, error) {
-	row := q.db.QueryRow(ctx, createUsersRoles, arg.UserID, arg.RoleID)
+	row := q.db.QueryRow(ctx, createUsersRoles, arg.ID, arg.UserID, arg.RoleID)
 	var i UsersRole
 	err := row.Scan(&i.ID, &i.UserID, &i.RoleID)
 	return i, err

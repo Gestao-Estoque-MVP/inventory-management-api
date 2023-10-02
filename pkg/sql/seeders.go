@@ -1,4 +1,4 @@
-package main
+package sql
 
 import (
 	"context"
@@ -48,26 +48,32 @@ var permissions = []database.Permission{
 
 var rolePermissions = []database.RolesPermission{
 	{
+		ID:           getUUID(),
 		RoleID:       roles[0].ID,
 		PermissionID: permissions[0].ID,
 	},
 	{
+		ID:           getUUID(),
 		RoleID:       roles[1].ID,
 		PermissionID: permissions[1].ID,
 	},
 	{
+		ID:           getUUID(),
 		RoleID:       roles[0].ID,
 		PermissionID: permissions[1].ID,
 	},
 	{
+		ID:           getUUID(),
 		RoleID:       roles[0].ID,
 		PermissionID: permissions[2].ID,
 	},
 	{
+		ID:           getUUID(),
 		RoleID:       roles[1].ID,
 		PermissionID: permissions[0].ID,
 	},
 	{
+		ID:           getUUID(),
 		RoleID:       roles[1].ID,
 		PermissionID: permissions[2].ID,
 	},
@@ -93,7 +99,15 @@ var users = []database.User{
 		Password:       pgtype.Text{String: token.HashPassword("123456"), Valid: true},
 		Status:         database.UserStatusActive,
 		TenantID:       company[0].ID,
-		CreatedAt:      pgtype.Timestamp{Time: time.Now().Local()},
+		CreatedAt:      pgtype.Timestamp{Time: time.Now().Local(), Valid: true},
+	},
+}
+
+var usersRoles = []database.UsersRole{
+	{
+		ID:     getUUID(),
+		UserID: users[0].ID,
+		RoleID: roles[1].ID,
 	},
 }
 
@@ -124,6 +138,7 @@ func Seed(db *database.Queries) error {
 
 	for _, rp := range rolePermissions {
 		_, err := db.CreateRolePermissions(context.Background(), database.CreateRolePermissionsParams{
+			ID:           rp.ID,
 			RoleID:       rp.RoleID,
 			PermissionID: rp.PermissionID,
 		})
@@ -146,17 +161,52 @@ func Seed(db *database.Queries) error {
 	}
 
 	for _, cu := range users {
-		create, err := db.CreatePreRegisterUser(context.Background(), database.CreatePreRegisterUserParams{
-			ID:        cu.ID,
-			Name:      cu.Name,
-			Email:     cu.Email,
-			Status:    cu.Status,
-			TenantID:  cu.TenantID,
-			CreatedAt: cu.CreatedAt,
+		tk, _ := token.GeneratedToken()
+
+		_, err := db.CreatePreRegisterUser(context.Background(), database.CreatePreRegisterUserParams{
+			ID:            cu.ID,
+			Name:          cu.Name,
+			Email:         cu.Email,
+			Status:        cu.Status,
+			ID_2:          getUUID(),
+			Type:          database.TypeNumberHome,
+			Number:        "62999722708",
+			IsPrimary:     true,
+			CreatedAt_2:   pgtype.Timestamp{Time: time.Now().Local(), Valid: true},
+			RegisterToken: pgtype.Text{String: "", Valid: true},
+			TenantID:      cu.TenantID,
+			CreatedAt:     cu.CreatedAt,
 		})
-	
+
+		if err != nil {
+			return err
+		}
+
+		_, err = db.CompleteRegisterUser(context.Background(), database.CompleteRegisterUserParams{
+			DocumentType:   cu.DocumentType,
+			DocumentNumber: cu.DocumentNumber,
+			Password:       cu.Password,
+			Status:         database.UserStatusActive,
+			RegisterToken:  pgtype.Text{String: tk, Valid: true},
+		})
+
+		if err != nil {
+			return err
+		}
+
+	}
+
+	for _, ur := range usersRoles {
+		_, err := db.CreateUsersRoles(context.Background(), database.CreateUsersRolesParams{
+			ID:     ur.ID,
+			UserID: ur.ID,
+			RoleID: ur.RoleID,
+		})
+
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
-
 }

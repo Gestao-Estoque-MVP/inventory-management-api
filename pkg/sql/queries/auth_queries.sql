@@ -19,13 +19,13 @@ INSERT INTO roles (id, name, description)
     VALUES ($1, $2, $3) RETURNING *;
 
 -- name: CreateRolePermissions :one
-INSERT INTO roles_permissions (role_id, permission_id) 
-    VALUES ($1, $2) RETURNING *;
+INSERT INTO roles_permissions (id, role_id, permission_id) 
+    VALUES ($1, $2, $3) RETURNING *;
 
 -- name: CreateUsersRoles :one
 
-INSERT INTO users_roles (user_id, role_id) 
-    VALUES ($1, $2) RETURNING *;
+INSERT INTO users_roles (id, user_id, role_id) 
+    VALUES ($1, $2, $3) RETURNING *;
 
 -- name: GetRolesPermissions :many
 SELECT
