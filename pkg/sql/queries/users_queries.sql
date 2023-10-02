@@ -141,3 +141,8 @@ FROM contact_info;
 SELECT email, name
 FROM contact_info
 WHERE email = $1;
+
+-- name: GetTenant :one
+
+SELECT * FROM tenant 
+WHERE id = (SELECT tenant_id FROM users WHERE users.id = $1);

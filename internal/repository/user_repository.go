@@ -11,7 +11,7 @@ import (
 )
 
 type IUserRepository interface {
-	CreatePreUser(user *database.CreatePreRegisterUserParams, roleId [][16]byte) (*pgtype.UUID, error)
+	CreatePreUser(user *database.CreatePreRegisterUserParams, roleId [16]byte) (*pgtype.UUID, error)
 	CreateCompleteUser(token string, user *database.CompleteRegisterUserParams) (*database.CompleteRegisterUserRow, error)
 	CreateCompanyUser(user *database.User, roleId [][16]byte) (*database.CreateCompanyUsersRow, error)
 	CreateUserPhones(*database.UserPhone) (*database.CreateUserPhonesRow, error)
@@ -55,8 +55,7 @@ func (r *UserRepository) CreateTenant(tenant *database.Tenant) (*database.Tenant
 	return &create, nil
 }
 
-func (i *UserRepository) CreatePreUser(user *database.CreatePreRegisterUserParams, roleId [][16]byte) (*pgtype.UUID, error) {
-	log.Printf("Creating user %", user.TenantID)
+func (i *UserRepository) CreatePreUser(user *database.CreatePreRegisterUserParams, roleId [16]byte) (*pgtype.UUID, error) {
 	create, err := i.DB.CreatePreRegisterUser(context.Background(), database.CreatePreRegisterUserParams{
 		ID:             user.ID,
 		Name:           user.Name,
@@ -77,15 +76,13 @@ func (i *UserRepository) CreatePreUser(user *database.CreatePreRegisterUserParam
 		return nil, err
 	}
 
-	for j := range roleId {
-		_, err := i.DB.CreateUsersRoles(context.Background(), database.CreateUsersRolesParams{
-			UserID: pgtype.UUID{Bytes: create.Bytes, Valid: true},
-			RoleID: pgtype.UUID{Bytes: roleId[j], Valid: true},
-		})
-		if err != nil {
-			log.Printf("Error created user role: %v", err)
-			continue
-		}
+	_, err = i.DB.CreateUsersRoles(context.Background(), database.CreateUsersRolesParams{
+		UserID: pgtype.UUID{Bytes: create.Bytes, Valid: true},
+		RoleID: pgtype.UUID{Bytes: roleId, Valid: true},
+	})
+
+	if err != nil {
+		return nil, err
 	}
 
 	if err != nil {
@@ -310,4 +307,14 @@ func (i *UserRepository) GetContact(email string) (*database.GetUserContactEmail
 	}
 
 	return &list, nil
+}
+
+func (i *UserRepository) GetTenant(id pgtype.UUID) (*database.Tenant, error) {
+	get, err := i.DB.GetTenant(context.Background(), id)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &get, nil
 }

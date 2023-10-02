@@ -5,6 +5,7 @@ CREATE TABLE tenant (
   name VARCHAR(255),
   tax_code VARCHAR(255),
   type tenant_type,
+  UNIQUE(name, tax_code),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );

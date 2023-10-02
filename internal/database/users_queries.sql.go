@@ -323,6 +323,26 @@ func (q *Queries) GetEmail(ctx context.Context, email string) (GetEmailRow, erro
 	return i, err
 }
 
+const getTenant = `-- name: GetTenant :one
+
+SELECT id, name, tax_code, type, created_at, updated_at FROM tenant 
+WHERE id = (SELECT tenant_id FROM users WHERE users.id = $1)
+`
+
+func (q *Queries) GetTenant(ctx context.Context, id pgtype.UUID) (Tenant, error) {
+	row := q.db.QueryRow(ctx, getTenant, id)
+	var i Tenant
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.TaxCode,
+		&i.Type,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const getTokenPreRegister = `-- name: GetTokenPreRegister :one
 SELECT register_token,
     token_expires_at

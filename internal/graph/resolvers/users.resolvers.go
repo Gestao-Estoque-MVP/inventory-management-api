@@ -77,8 +77,7 @@ func (r *mutationResolver) CreatePreUser(ctx context.Context, input model.NewPre
 		IsPrimary: *input.UserPhone.IsPrimary,
 	}
 
-	roleId, _ := convert.ConvertUUIDs(input.RoleID)
-	_, err := r.Resolver.UserService.CreatePreUser(&user, roleId)
+	_, err := r.Resolver.UserService.CreatePreUser(&user)
 
 	if err != nil {
 		return nil, &gqlerror.Error{
@@ -123,9 +122,7 @@ func (r *mutationResolver) CreateCompanyUser(ctx context.Context, input model.Ne
 		TenantID: pgtype.UUID{Bytes: convert.StringToByte16(input.TenantID), Valid: true},
 	}
 
-	roleId, _ := convert.ConvertUUIDs(input.RoleID)
-
-	_, err := r.Resolver.UserService.CreatePreUser(&user, roleId)
+	_, err := r.Resolver.UserService.CreatePreUser(&user)
 
 	if err != nil {
 		return nil, &gqlerror.Error{
@@ -170,7 +167,10 @@ func (r *mutationResolver) CreateTenant(ctx context.Context, input model.NewTena
 	}
 
 	return &model.Tenant{
-		ID: convert.UUIDToString(create.ID),
+		ID:      convert.UUIDToString(create.ID),
+		Name:    create.Name.String,
+		TaxCode: create.TaxCode.String,
+		Type:    string(create.Type.TenantType),
 	}, nil
 }
 

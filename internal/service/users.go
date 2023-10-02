@@ -38,17 +38,18 @@ func (s *UserService) CreateTenant(tenant *database.Tenant) (*database.Tenant, e
 	create, err := s.userRepo.CreateTenant(params)
 
 	if err != nil {
-		log.Printf("Error creating tenant: %v", err)
 		return nil, err
 	}
 
 	return create, err
 }
 
-func (us *UserService) CreatePreUser(user *database.CreatePreRegisterUserParams, roleId [][16]byte) (*pgtype.UUID, error) {
+func (us *UserService) CreatePreUser(user *database.CreatePreRegisterUserParams) (*pgtype.UUID, error) {
 	token, _ := token.GeneratedToken()
 	id, _ := uuid.NewV4()
 	phoneId, _ := uuid.NewV4()
+	role, _ := us.role.GetRole("users")
+
 	params := &database.CreatePreRegisterUserParams{
 		ID:             pgtype.UUID{Bytes: id, Valid: true},
 		Name:           user.Name,
@@ -65,7 +66,7 @@ func (us *UserService) CreatePreUser(user *database.CreatePreRegisterUserParams,
 		CreatedAt_2:    pgtype.Timestamp{Time: time.Now().Local(), Valid: true},
 	}
 
-	createUser, err := us.userRepo.CreatePreUser(params, roleId)
+	createUser, err := us.userRepo.CreatePreUser(params, role.ID.Bytes)
 
 	if err != nil {
 		log.Printf("Erro ao criar usuário: %v\n", err)
