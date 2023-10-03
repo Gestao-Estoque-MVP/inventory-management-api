@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/diogoX451/inventory-management-api/internal/database"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type IRBCA interface {
@@ -13,9 +14,10 @@ type IRBCA interface {
 	CreateRolesPermissions(*database.RolesPermission) (*database.RolesPermission, error)
 	CreateUsersPermissions(*database.UsersPermission) (*database.UsersPermission, error)
 	CreateTenant(*database.Tenant) (*database.Tenant, error)
-	GetRolesPermissions(role string) ([]*database.GetRolesPermissionsRow, error)
-	GetUsersPermissions(user string) ([]*database.GetUsersPermissionsRow, error)
-	GetRoleByID(id string) (*database.Role, error)
+	GetRolesPermissions(role [16]byte) ([]*database.GetRolesPermissionsRow, error)
+	GetUsersPermissions(user [16]byte) ([]*database.GetUsersPermissionsRow, error)
+	GetRoleByID(id [16]byte) (*database.Role, error)
+	GetRoleUser(id [16]byte) (*database.GetRoleUserRow, error)
 }
 
 type RBCARepository struct {
@@ -92,8 +94,8 @@ func (r *RBCARepository) CreateUsersPermissions(usersPermissions *database.Users
 	return &create, nil
 }
 
-func (r *RBCARepository) GetRolesPermissions(role string) ([]*database.GetRolesPermissionsRow, error) {
-	getRole, err := r.DB.GetRolesPermissions(context.Background(), role)
+func (r *RBCARepository) GetRolesPermissions(role [16]byte) ([]*database.GetRolesPermissionsRow, error) {
+	getRole, err := r.DB.GetRolesPermissions(context.Background(), pgtype.UUID{Bytes: role, Valid: true})
 
 	if err != nil {
 		return nil, err
@@ -107,8 +109,8 @@ func (r *RBCARepository) GetRolesPermissions(role string) ([]*database.GetRolesP
 	return pointers, nil
 }
 
-func (r *RBCARepository) GetUsersPermissions(user string) ([]*database.GetUsersPermissionsRow, error) {
-	getUser, err := r.DB.GetUsersPermissions(context.Background(), user)
+func (r *RBCARepository) GetUsersPermissions(user [16]byte) ([]*database.GetUsersPermissionsRow, error) {
+	getUser, err := r.DB.GetUsersPermissions(context.Background(), pgtype.UUID{Bytes: user, Valid: true})
 
 	if err != nil {
 		return nil, err
@@ -124,8 +126,11 @@ func (r *RBCARepository) GetUsersPermissions(user string) ([]*database.GetUsersP
 
 func (r *RBCARepository) CreateTenant(tenant *database.Tenant) (*database.Tenant, error) {
 	create, err := r.DB.CreateTenant(context.Background(), database.CreateTenantParams{
-		ID:   tenant.ID,
-		Name: tenant.Name,
+		ID:        tenant.ID,
+		Name:      tenant.Name,
+		TaxCode:   tenant.TaxCode,
+		Type:      tenant.Type,
+		CreatedAt: tenant.CreatedAt,
 	})
 
 	if err != nil {
@@ -135,8 +140,18 @@ func (r *RBCARepository) CreateTenant(tenant *database.Tenant) (*database.Tenant
 	return &create, nil
 }
 
-func (r *RBCARepository) GetRoleByID(id string) (*database.Role, error) {
-	get, err := r.DB.GetRoleByID(context.Background(), id)
+func (r *RBCARepository) GetRoleByID(id [16]byte) (*database.Role, error) {
+	get, err := r.DB.GetRoleByID(context.Background(), pgtype.UUID{Bytes: id, Valid: true})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &get, nil
+}
+
+func (r *RBCARepository) GetRoleUser(id [16]byte) (*database.GetRoleUserRow, error) {
+	get, err := r.DB.GetRoleUser(context.Background(), pgtype.UUID{Bytes: id, Valid: true})
 
 	if err != nil {
 		return nil, err

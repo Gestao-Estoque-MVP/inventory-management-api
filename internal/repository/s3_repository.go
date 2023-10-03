@@ -10,7 +10,7 @@ import (
 
 type S3Repository interface {
 	UploadTemplateS3(template database.TemplateEmail) (*database.CreateTemplateRow, error)
-	GetTemplateUrlS3(id string) (string, error)
+	GetTemplateUrlS3(id [16]byte) (string, error)
 }
 
 type IS3 struct {
@@ -40,8 +40,8 @@ func (s *IS3) UploadTemplateS3(template database.TemplateEmail) (*database.Creat
 	return &create, err
 }
 
-func (s *IS3) GetTemplateUrlS3(id string) (string, error) {
-	get, err := s.DB.GetTemplateS3(context.Background(), id)
+func (s *IS3) GetTemplateUrlS3(id [16]byte) (string, error) {
+	get, err := s.DB.GetTemplateS3(context.Background(), pgtype.UUID{Bytes: id, Valid: true})
 
 	if err != nil {
 		return "", err

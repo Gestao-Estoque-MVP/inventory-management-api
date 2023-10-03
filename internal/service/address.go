@@ -5,6 +5,7 @@ import (
 
 	"github.com/diogoX451/inventory-management-api/internal/database"
 	"github.com/diogoX451/inventory-management-api/internal/repository"
+	"github.com/gofrs/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -17,7 +18,9 @@ func NewAddressService(addressRepo *repository.IAddress) *AddressService {
 }
 
 func (s *AddressService) CreateAddress(address *database.Address) (*database.Address, error) {
+	id, _ := uuid.NewV4()
 	create, err := s.addressRepo.CreateAddress(&database.Address{
+		ID:         pgtype.UUID{Bytes: id, Valid: true},
 		UserID:     address.UserID,
 		Address:    address.Address,
 		Street:     address.Street,
@@ -56,7 +59,7 @@ func (s *AddressService) UpdateAddress(address *database.Address) (*database.Add
 	return update, nil
 }
 
-func (s *AddressService) DeleteAddress(userID string) (bool, error) {
+func (s *AddressService) DeleteAddress(userID [16]byte) (bool, error) {
 	_, err := s.addressRepo.DeleteAddress(userID)
 
 	if err != nil {
@@ -66,7 +69,7 @@ func (s *AddressService) DeleteAddress(userID string) (bool, error) {
 	return true, nil
 }
 
-func (s *AddressService) GetAddressByID(userID string) (*database.Address, error) {
+func (s *AddressService) GetAddressByID(userID [16]byte) (*database.Address, error) {
 	list, err := s.addressRepo.GetAddressByID(userID)
 
 	if err != nil {

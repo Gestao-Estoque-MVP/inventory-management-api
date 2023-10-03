@@ -1,6 +1,6 @@
 -- name: CreateAddress :one
-INSERT INTO address (user_id, address, number, street, city, state, postal_code, country, created_at) 
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *;
+INSERT INTO address (id, user_id, address, number, street, city, state, postal_code, country, created_at) 
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *;
 
 -- name: DeleteAddress :execresult
 DELETE FROM address WHERE user_id = $1;

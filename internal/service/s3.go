@@ -14,8 +14,9 @@ import (
 	"github.com/diogoX451/inventory-management-api/internal/database"
 	"github.com/diogoX451/inventory-management-api/internal/repository"
 	configs3 "github.com/diogoX451/inventory-management-api/pkg/configS3"
+	"github.com/gofrs/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/vektah/gqlparser/v2/gqlerror"
-	"nullprogram.com/x/uuid"
 )
 
 type S3Service struct {
@@ -51,9 +52,11 @@ func (s *S3Service) UploadTemplateS3(file io.Reader, template database.TemplateE
 			Message: "Error uploading template",
 		}
 	}
+	id, _ := uuid.NewV4()
 
 	create, err := s.S3Repository.UploadTemplateS3(database.TemplateEmail{
-		ID:          uuid.NewGen().NewV4().String(),
+
+		ID:          pgtype.UUID{Bytes: id, Valid: true},
 		Name:        template.Name,
 		Url:         keyPath,
 		Description: template.Description,
@@ -66,33 +69,46 @@ func (s *S3Service) UploadTemplateS3(file io.Reader, template database.TemplateE
 	return create, nil
 }
 
-func (s *S3Service) GetTemplateUrlS3(id string) (*database.TemplateEmail, error) {
-	findTemplate, err := s.S3Repository.GetTemplateUrlS3(id)
+func (s *S3Service) UploadImageS3(file io.Reader, name string) (string, error) {
+	keyPath := filepath.Join("image", name)
+	find := configs3.S3Config()
+	upload := manager.NewUploader(find)
+	_, err := upload.Upload(context.TODO(), &s3.PutObjectInput{
+		Bucket:      &s.Bucket,
+		Key:         aws.String(keyPath),
+		Body:        file,
+		ContentType: aws.String("image/jpeg, image/png"),
+	})
 
 	if err != nil {
-		log.Printf("Error getting template")
-		return nil, err
+		log.Println("Erro ao upload", err)
+		return "", &gqlerror.Error{
+			Message: "Error uploading template",
+		}
 	}
+
+	return keyPath, nil
+}
+
+func (s *S3Service) GetUrlS3(path string) (string, error) {
 
 	presignClient := s3.NewPresignClient(configs3.S3Config())
 
 	consult, err := presignClient.PresignGetObject(context.TODO(), &s3.GetObjectInput{
 		Bucket: aws.String(s.Bucket),
-		Key:    aws.String(findTemplate),
+		Key:    aws.String(path),
 	}, func(po *s3.PresignOptions) {
 		po.Expires = time.Duration(15 * time.Minute)
 	})
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
-	return &database.TemplateEmail{
-		Url: consult.URL,
-	}, nil
+	return consult.URL, nil
 
 }
 
-func (s *S3Service) GetTemplateObject(id string) error {
+func (s *S3Service) GetTemplateObject(id [16]byte) error {
 	find, err := s.S3Repository.GetTemplateUrlS3(id)
 
 	if err != nil {

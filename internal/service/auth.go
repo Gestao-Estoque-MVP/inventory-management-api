@@ -7,6 +7,7 @@ import (
 	"github.com/diogoX451/inventory-management-api/internal/graph/model"
 	"github.com/diogoX451/inventory-management-api/internal/repository"
 	token "github.com/diogoX451/inventory-management-api/pkg/Token"
+	"github.com/diogoX451/inventory-management-api/pkg/convert"
 )
 
 type AuthUser struct {
@@ -29,7 +30,7 @@ func (a *AuthUser) UserLogin(ctx context.Context, email string, password string)
 		return nil, err
 	}
 
-	role, err := a.role.GetRoleByID(getUser.RoleID.String)
+	role, err := a.role.GetRoleUser(getUser.ID.Bytes)
 
 	if err != nil {
 		log.Printf("error em trazer user login: %v", err)
@@ -41,7 +42,7 @@ func (a *AuthUser) UserLogin(ctx context.Context, email string, password string)
 		return nil, err
 	}
 
-	jwtToken, err := JwtGenerate(ctx, getUser.ID, model.Role(role.Name))
+	jwtToken, err := JwtGenerate(ctx, convert.UUIDToString(getUser.ID), model.Role(role.Name))
 
 	if err != nil {
 		log.Printf("Erro em gerar o JWT")

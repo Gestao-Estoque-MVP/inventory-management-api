@@ -16,30 +16,27 @@ import (
 	"github.com/diogoX451/inventory-management-api/internal/repository"
 	"github.com/diogoX451/inventory-management-api/internal/service"
 	"github.com/gorilla/mux"
-	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
 	"github.com/rs/cors"
 )
 
-func init() {
+	func init() {
 
-	if err := godotenv.Load(); err != nil {
-		panic("No .env variable")
+		if err := godotenv.Load(); err != nil {
+			panic("No .env variable")
+		}
+
 	}
 
-}
-
 func main() {
-	db, err := pgx.Connect(context.Background(), os.Getenv("DB_URL"))
+	db, err := pgxpool.New(context.Background(), os.Getenv("DB_URL"))
 	if err != nil {
 		log.Fatalf("Erro ao abrir a conexão com o banco de dados: %v\n", err)
 	}
 
 	defer func() {
-		err := db.Close(context.Background())
-		if err != nil {
-			log.Fatalf("Erro ao fechar a conexão com o banco de dados: %v\n", err)
-		}
+		db.Close()
 	}()
 
 	logFile, err := os.OpenFile("error.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
@@ -64,20 +61,20 @@ func main() {
 
 	queries := database.New(db)
 
+	s3Repository := repository.NewS3Repository(queries)
+	image := repository.NewImageRepository(queries)
+	s3Service := service.NewServiceS3(s3Repository, os.Getenv("S3_BUCKET_NAME"), os.Getenv("S3_ACESS_KEY_ID"), os.Getenv("S3_REGION"))
+	imageService := service.NewImageService(*image, s3Service)
 	rcba := repository.NewRBCARepository(queries)
 	rcbaService := service.NewRCBAService(rcba)
-	s3Repository := repository.NewS3Repository(queries)
-	templateRepository := repository.NewTemplateRepository(queries)
 	userRepository := repository.NewRepositoryUser(queries)
 	emailService := service.NewServiceEmail(s3Repository, *userRepository)
-	userService := service.NewServiceUser(userRepository, rcba, emailService)
+	userService := service.NewServiceUser(userRepository, rcba, emailService, s3Service)
 	contactRepository := repository.NewRepositoryContactInfo(queries)
 	contactService := service.NewContactInfoService(contactRepository, emailService)
 	loginService := service.NewAuthUser(*userRepository, *rcba)
 	addressRepository := repository.NewAddressRepository(queries)
 	addressRepositoryService := service.NewAddressService(addressRepository)
-	service.NewTemplateService(*templateRepository)
-	s3Service := service.NewServiceS3(s3Repository, os.Getenv("S3_BUCKET_NAME"), os.Getenv("S3_ACESS_KEY_ID"), os.Getenv("S3_REGION"))
 
 	resolvers := &resolvers.Resolver{
 		UserService:        userService,
@@ -87,6 +84,7 @@ func main() {
 		AddressService:     addressRepositoryService,
 		EmailService:       emailService,
 		S3Service:          s3Service,
+		ImageService:       imageService,
 	}
 
 	c := graph.Config{

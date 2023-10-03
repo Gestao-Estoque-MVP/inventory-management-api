@@ -20,6 +20,12 @@ type Roles {
   description: String!
 }
 
+type Image {
+  id: ID!
+  url: String!
+  description: String!
+}
+
 type Permissions {
   id: ID!
   name: String!
@@ -37,6 +43,9 @@ type Message {
   message: String!
 }
 
+input NewImage {
+  file: Upload!
+}
 
 input NewRole {
   name: String!
@@ -55,7 +64,7 @@ input NewRolePermission {
 
 
 type Mutation {
-  createRole(input: NewRole!): Roles! @auth @hasRole(role: admin)
+  createRole(input: NewRole!): Roles! 
   createPermission(input: NewPermission!): Permissions! @auth @hasRole(role: admin)
   createRolePermission(input: NewRolePermission!): RolePermissions! @auth @hasRole(role: admin)
 }

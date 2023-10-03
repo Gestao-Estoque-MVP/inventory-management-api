@@ -19,7 +19,7 @@ import (
 type EmailDetails struct {
 	To         []string
 	Subject    string
-	TemplateID string
+	TemplateID [16]byte
 }
 
 type EmailService struct {
@@ -55,8 +55,9 @@ func (s EmailService) SendEmail(details *EmailDetails, typesSend string) error {
 	}
 }
 
-func (e *EmailService) getTemplateObject(templateID string) (string, error) {
+func (e *EmailService) getTemplateObject(templateID [16]byte) (string, error) {
 	dir := "./internal/templates"
+
 	if _, err := os.Stat(dir); os.IsNotExist(err) {
 		err := os.MkdirAll(dir, 0755)
 		if err != nil {
@@ -97,7 +98,7 @@ func (e *EmailService) getTemplateObject(templateID string) (string, error) {
 	return tmp.Name(), nil
 }
 
-func (s *EmailService) sendOneEmail(to []string, templateID string) error {
+func (s *EmailService) sendOneEmail(to []string, templateID [16]byte) error {
 	path, err := s.getTemplateObject(templateID)
 
 	if err != nil {
@@ -124,7 +125,7 @@ func (s *EmailService) sendOneEmail(to []string, templateID string) error {
 	data := struct {
 		Name string
 	}{
-		Name: find.Name,
+		Name: find.Name.String,
 	}
 
 	buf := new(bytes.Buffer)
@@ -140,7 +141,8 @@ func (s *EmailService) sendOneEmail(to []string, templateID string) error {
 	email.SendEmailAsync([]string{to[0]}, subject, buf.String())
 	return nil
 }
-func (s *EmailService) sendMultiEmail(to []string, templateID string) error {
+
+func (s *EmailService) sendMultiEmail(to []string, templateID [16]byte) error {
 	path, err := s.getTemplateObject(templateID)
 	if err != nil {
 		return &gqlerror.Error{
@@ -167,7 +169,7 @@ func (s *EmailService) sendMultiEmail(to []string, templateID string) error {
 			data := struct {
 				Name string
 			}{
-				Name: user.Name,
+				Name: user.Name.String,
 			}
 			buf := new(bytes.Buffer)
 			if err = t.Execute(buf, data); err != nil {
@@ -187,7 +189,7 @@ func (s *EmailService) sendMultiEmail(to []string, templateID string) error {
 	return nil
 }
 
-func (con *EmailService) contact(to []string, templateID string) error {
+func (con *EmailService) contact(to []string, templateID [16]byte) error {
 	path, err := con.getTemplateObject(templateID)
 
 	if err != nil {
@@ -230,7 +232,7 @@ func (con *EmailService) contact(to []string, templateID string) error {
 	return nil
 }
 
-func (con *EmailService) contacts(to []string, templateID string) error {
+func (con *EmailService) contacts(to []string, templateID [16]byte) error {
 	path, err := con.getTemplateObject(templateID)
 	if err != nil {
 		return &gqlerror.Error{

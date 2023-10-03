@@ -1,1 +1,1 @@
-DROP TABLE if EXISTS contact_info;
+DROP DATABASE IF EXISTS contact_info;

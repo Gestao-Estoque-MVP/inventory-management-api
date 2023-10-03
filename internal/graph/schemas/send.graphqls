@@ -1,4 +1,5 @@
 scalar Upload
+scalar UUID
 
 input Send {
     to: String
@@ -13,7 +14,14 @@ input NewTemplate {
   description: String!
 }
 
+input UpdateImageUser {
+    file: Upload!
+}
+
 extend type Mutation {
     sendEmail(input: Send!): Message! @auth @hasRole(role: "admin")
     uploadTemplate(input: NewTemplate!): Message! @auth @hasRole(role: "admin")
+    updateImage(input: UpdateImageUser!): Message! @auth
 }
+
+

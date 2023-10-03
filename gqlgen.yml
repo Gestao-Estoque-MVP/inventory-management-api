@@ -55,7 +55,7 @@ resolver:
 # return_pointers_in_unmarshalinput: false
 
 # Optional: wrap nullable input fields with Omittable
-# nullable_input_omittable: true
+nullable_input_omittable: false
 
 # Optional: set to speed up generation time by not performing a final validation pass.
 # skip_validation: true

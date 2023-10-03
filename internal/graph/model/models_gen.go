@@ -11,15 +11,15 @@ import (
 )
 
 type Address struct {
-	ID         int    `json:"id"`
-	Address    string `json:"address"`
-	Street     string `json:"street"`
-	Number     string `json:"number"`
-	City       string `json:"city"`
-	State      string `json:"state"`
-	Country    string `json:"country"`
-	PostalCode string `json:"postalCode"`
-	UserID     string `json:"userId"`
+	ID         string  `json:"id"`
+	Address    *string `json:"address,omitempty"`
+	Street     *string `json:"street,omitempty"`
+	Number     *string `json:"number,omitempty"`
+	City       *string `json:"city,omitempty"`
+	State      *string `json:"state,omitempty"`
+	Country    *string `json:"country,omitempty"`
+	PostalCode *string `json:"postalCode,omitempty"`
+	UserID     *string `json:"userId,omitempty"`
 }
 
 type ContactInfo struct {
@@ -27,6 +27,12 @@ type ContactInfo struct {
 	Name  string `json:"Name"`
 	Email string `json:"email"`
 	Phone string `json:"phone"`
+}
+
+type Image struct {
+	ID          string `json:"id"`
+	URL         string `json:"url"`
+	Description string `json:"description"`
 }
 
 type Login struct {
@@ -54,6 +60,10 @@ type NewContactInfo struct {
 	Phone string `json:"phone"`
 }
 
+type NewImage struct {
+	File graphql.Upload `json:"file"`
+}
+
 type NewLogin struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
@@ -65,9 +75,11 @@ type NewPermission struct {
 }
 
 type NewPreUser struct {
-	Name   string `json:"name"`
-	Email  string `json:"email"`
-	Status string `json:"status"`
+	Name      string        `json:"name"`
+	Email     string        `json:"email"`
+	TenantID  string        `json:"tenantId"`
+	UserPhone *NewUserPhone `json:"user_phone"`
+	RoleID    []string      `json:"roleId,omitempty"`
 }
 
 type NewRole struct {
@@ -86,6 +98,12 @@ type NewTemplate struct {
 	Description string         `json:"description"`
 }
 
+type NewTenant struct {
+	Name    string `json:"name"`
+	TaxCode string `json:"tax_code"`
+	Type    string `json:"type"`
+}
+
 type NewUser struct {
 	Name           string `json:"name"`
 	Email          string `json:"email"`
@@ -95,11 +113,17 @@ type NewUser struct {
 }
 
 type NewUserComplete struct {
-	Phone          string `json:"phone"`
-	Password       string `json:"password"`
-	DocumentType   string `json:"document_type"`
-	DocumentNumber string `json:"document_number"`
-	RegisterToken  string `json:"RegisterToken"`
+	Password       string    `json:"password"`
+	DocumentType   string    `json:"document_type"`
+	DocumentNumber string    `json:"document_number"`
+	RegisterToken  string    `json:"RegisterToken"`
+	Image          *NewImage `json:"image,omitempty"`
+}
+
+type NewUserPhone struct {
+	Number    string `json:"number"`
+	Type      string `json:"type"`
+	IsPrimary *bool  `json:"is_primary,omitempty"`
 }
 
 type Permissions struct {
@@ -133,13 +157,34 @@ type Send struct {
 	TypeSend   string  `json:"typeSend"`
 }
 
+type Tenant struct {
+	ID      string `json:"id"`
+	Name    string `json:"name"`
+	TaxCode string `json:"tax_code"`
+	Type    string `json:"type"`
+}
+
+type UpdateImageUser struct {
+	File graphql.Upload `json:"file"`
+}
+
 type User struct {
-	ID             string   `json:"id"`
-	Name           string   `json:"name"`
-	Email          string   `json:"email"`
-	Phone          string   `json:"phone"`
-	DocumentNumber string   `json:"document_number"`
-	Address        *Address `json:"address"`
+	ID             string       `json:"id"`
+	Name           *string      `json:"name,omitempty"`
+	Email          *string      `json:"email,omitempty"`
+	Phone          *string      `json:"phone,omitempty"`
+	DocumentNumber *string      `json:"document_number,omitempty"`
+	Address        *Address     `json:"address,omitempty"`
+	UserPhone      []*UserPhone `json:"user_phone,omitempty"`
+	Role           []*Roles     `json:"role,omitempty"`
+	Image          *Image       `json:"image,omitempty"`
+}
+
+type UserPhone struct {
+	Number    string `json:"number"`
+	Type      string `json:"type"`
+	IsPrimary *bool  `json:"is_primary,omitempty"`
+	User      *User  `json:"user"`
 }
 
 type VerifyToken struct {

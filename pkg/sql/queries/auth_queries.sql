@@ -19,8 +19,13 @@ INSERT INTO roles (id, name, description)
     VALUES ($1, $2, $3) RETURNING *;
 
 -- name: CreateRolePermissions :one
-INSERT INTO roles_permissions (role_id, permission_id) 
-    VALUES ($1, $2) RETURNING *;
+INSERT INTO roles_permissions (id, role_id, permission_id) 
+    VALUES ($1, $2, $3) RETURNING *;
+
+-- name: CreateUsersRoles :one
+
+INSERT INTO users_roles (id, user_id, role_id) 
+    VALUES ($1, $2, $3) RETURNING *;
 
 -- name: GetRolesPermissions :many
 SELECT
@@ -54,3 +59,10 @@ INNER JOIN
     permissions AS p ON up.permission_id = p.id
 WHERE
     u.id = $1;
+
+-- name: GetRoleUser :one
+SELECT r.id, r.name
+FROM users u
+JOIN users_roles ur ON u.id = ur.user_id
+JOIN roles r ON ur.role_id = r.id
+WHERE u.id = $1; 
