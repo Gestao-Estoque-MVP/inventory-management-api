@@ -21,13 +21,13 @@ import (
 	"github.com/rs/cors"
 )
 
-	func init() {
+func init() {
 
-		if err := godotenv.Load(); err != nil {
-			panic("No .env variable")
-		}
-
+	if err := godotenv.Load(); err != nil {
+		panic("No .env variable")
 	}
+
+}
 
 func main() {
 	db, err := pgxpool.New(context.Background(), os.Getenv("DB_URL"))
@@ -101,5 +101,5 @@ func main() {
 	router.Handle("/graphql", srv)
 
 	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
-	log.Fatal(http.ListenAndServe(":"+port, router))
+	log.Fatal(http.ListenAndServe(":"+port, router), nil)
 }
