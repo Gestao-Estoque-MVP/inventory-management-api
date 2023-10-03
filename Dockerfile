@@ -8,4 +8,5 @@ RUN GOOS=linux GOARCH=amd64 go build -o api cmd/main.go
 # Etapa de criação da imagem final
 FROM alpine
 COPY --from=builder /app/api /api
+EXPOSE 8080
 ENTRYPOINT [ "/api" ]
