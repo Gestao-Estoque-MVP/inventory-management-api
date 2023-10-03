@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/diogoX451/inventory-management-api/internal/database"
+	"github.com/gofrs/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -37,6 +38,11 @@ func NewRepositoryUser(db *database.Queries) *UserRepository {
 	return &UserRepository{
 		DB: db,
 	}
+}
+
+func getUUID() pgtype.UUID {
+	id, _ := uuid.NewV4()
+	return pgtype.UUID{Bytes: id, Valid: true}
 }
 
 func (r *UserRepository) CreateTenant(tenant *database.Tenant) (*database.Tenant, error) {
@@ -77,6 +83,7 @@ func (i *UserRepository) CreatePreUser(user *database.CreatePreRegisterUserParam
 	}
 
 	_, err = i.DB.CreateUsersRoles(context.Background(), database.CreateUsersRolesParams{
+		ID:     getUUID(),
 		UserID: pgtype.UUID{Bytes: create.Bytes, Valid: true},
 		RoleID: pgtype.UUID{Bytes: roleId, Valid: true},
 	})

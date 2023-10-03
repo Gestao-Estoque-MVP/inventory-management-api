@@ -21,13 +21,13 @@ import (
 	"github.com/rs/cors"
 )
 
-func init() {
+	func init() {
 
-	if err := godotenv.Load(); err != nil {
-		panic("No .env variable")
+		if err := godotenv.Load(); err != nil {
+			panic("No .env variable")
+		}
+
 	}
-
-}
 
 func main() {
 	db, err := pgxpool.New(context.Background(), os.Getenv("DB_URL"))
