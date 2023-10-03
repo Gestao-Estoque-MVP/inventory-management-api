@@ -64,7 +64,7 @@ input NewRolePermission {
 
 
 type Mutation {
-  createRole(input: NewRole!): Roles! 
+  createRole(input: NewRole!): Roles! @auth @hasRole(role: admin)
   createPermission(input: NewPermission!): Permissions! @auth @hasRole(role: admin)
   createRolePermission(input: NewRolePermission!): RolePermissions! @auth @hasRole(role: admin)
 }
