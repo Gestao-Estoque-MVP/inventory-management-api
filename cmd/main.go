@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -101,5 +102,5 @@ func main() {
 	router.Handle("/graphql", srv)
 
 	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
-	log.Fatal(http.ListenAndServe(":"+port, router), nil)
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", port), router))
 }
