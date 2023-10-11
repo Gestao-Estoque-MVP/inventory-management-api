@@ -155,6 +155,14 @@ type Address struct {
 	UpdatedAt  pgtype.Timestamp
 }
 
+type Category struct {
+	ID          pgtype.UUID
+	Name        string
+	Description string
+	CreatedAt   pgtype.Timestamp
+	UpdatedAt   pgtype.Timestamp
+}
+
 type ContactInfo struct {
 	ID        pgtype.UUID
 	Name      string
@@ -175,6 +183,58 @@ type Permission struct {
 	ID          pgtype.UUID
 	Name        string
 	Description string
+}
+
+type Product struct {
+	ID                     pgtype.UUID
+	Name                   string
+	LowStockThreshold      pgtype.Int4
+	ImageID                pgtype.UUID
+	Price                  pgtype.Numeric
+	TenantID               pgtype.UUID
+	Promotion              pgtype.Numeric
+	SafetyStockLevel       pgtype.Int4
+	ReorderPoint           pgtype.Int4
+	MinLot                 pgtype.Int4
+	MaxLot                 pgtype.Int4
+	FsnClassification      pgtype.Text
+	Width                  pgtype.Int4
+	Height                 pgtype.Int4
+	Length                 pgtype.Int4
+	Weight                 pgtype.Int4
+	ProductUnitOfMeasureID pgtype.UUID
+}
+
+type ProductUnitOfMeasure struct {
+	ID          pgtype.UUID
+	Name        string
+	Description string
+	CreatedAt   pgtype.Timestamp
+	UpdatedAt   pgtype.Timestamp
+}
+
+type ProductVariation struct {
+	ID        pgtype.UUID
+	ProductID pgtype.UUID
+	ImageID   pgtype.UUID
+	Price     pgtype.Numeric
+	Promotion pgtype.Numeric
+	CreatedAt pgtype.Timestamp
+	UpdatedAt pgtype.Timestamp
+}
+
+type ProductVariationMapping struct {
+	ID                 pgtype.UUID
+	ProductVariationID pgtype.UUID
+	VariationItemID    pgtype.UUID
+	CreatedAt          pgtype.Timestamp
+	UpdatedAt          pgtype.Timestamp
+}
+
+type ProductsCategory struct {
+	ID         pgtype.UUID
+	ProductID  pgtype.UUID
+	CategoryID pgtype.UUID
 }
 
 type Role struct {
@@ -243,4 +303,20 @@ type UsersRole struct {
 	ID     pgtype.UUID
 	UserID pgtype.UUID
 	RoleID pgtype.UUID
+}
+
+type VariationCategory struct {
+	ID          pgtype.UUID
+	Name        string
+	Description pgtype.Text
+	CreatedAt   pgtype.Timestamp
+	UpdatedAt   pgtype.Timestamp
+}
+
+type VariationItem struct {
+	ID                  pgtype.UUID
+	VariationCategoryID pgtype.UUID
+	Name                string
+	CreatedAt           pgtype.Timestamp
+	UpdatedAt           pgtype.Timestamp
 }
