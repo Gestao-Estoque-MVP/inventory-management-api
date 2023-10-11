@@ -63,5 +63,11 @@ func (s *ProductService) CreateProduct(product database.CreateProductParams) (*p
 		return nil, err
 	}
 
+	go func(productID) {
+		if  {
+			
+		}
+	}(create)
+
 	return create, nil
 }
