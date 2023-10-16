@@ -114,16 +114,3 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 		flusher.Flush()
 	}
 }
-
-func Teste(w http.ResponseWriter, r *http.Request) {
-	userID := mux.Vars(r)["user_id"]
-	if userID == "" {
-		http.Error(w, "User ID not provided!", http.StatusBadRequest)
-		return
-	}
-
-	message := "Hello, " + userID + "!"
-	broker.TargetedNotifier <- Notification{UserID: userID, Message: []byte(message)}
-
-	w.Write([]byte("Message sent to " + userID))
-}
