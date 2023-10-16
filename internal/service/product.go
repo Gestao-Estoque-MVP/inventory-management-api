@@ -155,7 +155,6 @@ func variations(items []model.NewItemsVariations, repo repository.ProductReposit
 
 func createVariations(variations [][]model.NewItemsVariations, repo repository.ProductRepository, productID pgtype.UUID) error {
 
-	variationsIds := make(map[string]pgtype.UUID)
 	for i := 0; i < len(variations); i++ {
 		params := database.CreateProductVariationsParams{
 			ID:        pgtype.UUID{Bytes: uuid.Must(uuid.NewV4()), Valid: true},
@@ -165,13 +164,12 @@ func createVariations(variations [][]model.NewItemsVariations, repo repository.P
 			CreatedAt: pgtype.Timestamp{Time: time.Now().Local(), Valid: true},
 		}
 
-		create, err := repo.CreateProductVariatons(params)
+		_, err := repo.CreateProductVariatons(params)
 
 		if err != nil {
 			return err
 		}
 
-		variationsIds
 	}
 
 	return nil
