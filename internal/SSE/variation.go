@@ -2,39 +2,63 @@ package sse
 
 import (
 	"net/http"
+
+	"github.com/gorilla/mux"
 )
 
 type Broker struct {
-	Notifier       chan []byte
-	NewClients     chan chan []byte
-	ClosingClients chan chan []byte
-	Clients        map[chan []byte]bool
+	Notifier         chan []byte
+	NewClients       chan ClientInfo
+	ClosingClients   chan ClientInfo
+	Clients          map[string]map[chan []byte]bool // Map by userID
+	TargetedNotifier chan Notification
+}
+
+type ClientInfo struct {
+	UserID string
+	Chan   chan []byte
+}
+
+type Notification struct {
+	UserID  string
+	Message []byte
 }
 
 func NewBroker() *Broker {
 	return &Broker{
-		Notifier:       make(chan []byte),
-		NewClients:     make(chan chan []byte),
-		ClosingClients: make(chan chan []byte),
-		Clients:        make(map[chan []byte]bool),
+		Notifier:         make(chan []byte),
+		NewClients:       make(chan ClientInfo),
+		ClosingClients:   make(chan ClientInfo),
+		Clients:          make(map[string]map[chan []byte]bool),
+		TargetedNotifier: make(chan Notification),
 	}
 }
 
 func (b *Broker) Listen() {
 	for {
 		select {
-		case s := <-b.NewClients:
-			b.Clients[s] = true
-		case s := <-b.ClosingClients:
-			delete(b.Clients, s)
-			close(s)
+		case client := <-b.NewClients:
+			if _, ok := b.Clients[client.UserID]; !ok {
+				b.Clients[client.UserID] = make(map[chan []byte]bool)
+			}
+			b.Clients[client.UserID][client.Chan] = true
+		case client := <-b.ClosingClients:
+			if chans, ok := b.Clients[client.UserID]; ok {
+				delete(chans, client.Chan)
+				if len(chans) == 0 {
+					delete(b.Clients, client.UserID)
+				}
+			}
 		case event := <-b.Notifier:
-			for clientMessageChan := range b.Clients {
-				select {
-				case clientMessageChan <- event:
-				default:
-					close(clientMessageChan)
-					delete(b.Clients, clientMessageChan)
+			for _, clientChans := range b.Clients {
+				for clientMessageChan := range clientChans {
+					clientMessageChan <- event
+				}
+			}
+		case notification := <-b.TargetedNotifier:
+			if clientChans, ok := b.Clients[notification.UserID]; ok {
+				for clientMessageChan := range clientChans {
+					clientMessageChan <- notification.Message
 				}
 			}
 		}
@@ -53,10 +77,9 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Connection", "keep-alive")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
-	userID := r.URL.Query().Get("user_id")
-
+	userID := mux.Vars(r)["user_id"]
 	if userID == "" {
-		http.Error(w, "User ID not found!", http.StatusBadRequest)
+		http.Error(w, "User ID not provided!", http.StatusBadRequest)
 		return
 	}
 
@@ -66,18 +89,24 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	closeNotifier, ok := w.(http.CloseNotifier)
+	if !ok {
+		http.Error(w, "Close notification unsupported!", http.StatusInternalServerError)
+		return
+	}
+
 	messageChan := make(chan []byte, 1)
-	broker.NewClients <- messageChan
+	clientInfo := ClientInfo{UserID: userID, Chan: messageChan}
+	broker.NewClients <- clientInfo
 
 	defer func() {
-		broker.ClosingClients <- messageChan
+		broker.ClosingClients <- clientInfo
 	}()
 
-	notify := w.(http.CloseNotifier).CloseNotify()
-
+	notify := closeNotifier.CloseNotify()
 	go func() {
 		<-notify
-		broker.ClosingClients <- messageChan
+		broker.ClosingClients <- clientInfo
 	}()
 
 	for msg := range messageChan {
@@ -87,7 +116,14 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 }
 
 func Teste(w http.ResponseWriter, r *http.Request) {
-	broker.Notifier <- []byte("Hello, world!")
+	userID := mux.Vars(r)["user_id"]
+	if userID == "" {
+		http.Error(w, "User ID not provided!", http.StatusBadRequest)
+		return
+	}
 
-	w.Write([]byte("OK"))
+	message := "Hello, " + userID + "!"
+	broker.TargetedNotifier <- Notification{UserID: userID, Message: []byte(message)}
+
+	w.Write([]byte("Message sent to " + userID))
 }
