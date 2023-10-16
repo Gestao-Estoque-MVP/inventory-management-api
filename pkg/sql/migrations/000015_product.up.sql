@@ -3,9 +3,9 @@ CREATE TABLE product (
   name varchar(255) NOT NULL,
   low_stock_threshold INT ,
   image_id UUID,
-  price DECIMAL(10,2) NOT NULL,
+  price DOUBLE PRECISION NOT NULL,
   tenant_id UUID NOT NULL,
-  promotion DECIMAL(10,2),
+  promotion DOUBLE PRECISION,
   safety_stock_level INT,
   reorder_point INT,
   min_lot INT,
@@ -14,7 +14,11 @@ CREATE TABLE product (
   width INT,
   height INT,
   length INT,
-  weight INT
+  weight INT,
+  is_variation BOOLEAN,
+  is_active BOOLEAN,
+  created_at TIMESTAMP NOT NULL,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 ALTER TABLE product

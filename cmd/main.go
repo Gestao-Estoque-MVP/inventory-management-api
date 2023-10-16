@@ -76,6 +76,8 @@ func main() {
 	loginService := service.NewAuthUser(*userRepository, *rcba)
 	addressRepository := repository.NewAddressRepository(queries)
 	addressRepositoryService := service.NewAddressService(addressRepository)
+	productRepository := repository.NewProductRepository(queries)
+	productService := service.NewProductService(*productRepository)
 
 	resolvers := &resolvers.Resolver{
 		UserService:        userService,
@@ -86,6 +88,7 @@ func main() {
 		EmailService:       emailService,
 		S3Service:          s3Service,
 		ImageService:       imageService,
+		ProductService:     productService,
 	}
 
 	c := graph.Config{
@@ -100,6 +103,8 @@ func main() {
 
 	router.Handle("/", playground.Handler("GraphQL playground", "/graphql"))
 	router.Handle("/graphql", srv)
+
+	router.Get("/sse", )
 
 	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", port), router))

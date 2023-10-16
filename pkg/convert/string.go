@@ -3,6 +3,7 @@ package convert
 import (
 	"database/sql"
 	"fmt"
+	"math/big"
 
 	"github.com/gofrs/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -45,4 +46,12 @@ func StringToPgUUID(s string) pgtype.UUID {
 		return uuid
 	}
 	return uuid
+}
+
+func ConvertFloat64ToNumeric(value float64) pgtype.Numeric {
+	numeric := pgtype.Numeric{}
+	f := new(big.Float).SetFloat64(value)
+	i, _ := f.Int(nil)
+	numeric.Int.Set(i)
+	return numeric
 }

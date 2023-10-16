@@ -1,0 +1,94 @@
+type Product {
+    id: ID!
+    name: String!
+    lowStockThreshold: Int!
+    image: ID
+    price: Float!
+    tenant: Tenant
+    promotion: String!
+    safetyStockLevel: Int!
+    reorderPoint: Int!
+    minLot: Int!
+    maxLot: Int!
+    fsnClassification: String!
+    width: Float!
+    height: Float!
+    length: Float!
+    weight: Float!
+    productUnitOfMeasureId: ID!
+    isVariation: Boolean!
+    isActive: Boolean!
+    createdAt: String!
+    description: String!
+    category: [Category]
+}
+
+type VariationsCategory {
+    id: ID!
+    name: String!
+    description: String!
+    products: [Product]
+}
+
+type ProductUnitOfMeasure {
+    id: ID!
+    name: String!
+    description: String!
+}
+
+input NewVariationsCategoryInput {
+    name: String!
+    description: String!
+}
+
+input NewProductUnitOfMeasureInput {
+    name: String!
+    description: String!
+}
+
+input NewItemsVariations{
+    varitation_category_id: String!
+    name: String!
+}
+
+input NewProductInput {
+    name: String!
+    price: Float!
+    lowStockThreshold: Int
+    image: [NewImage]
+    tenantId: String
+    promotion: Float
+    safetyStockLevel: Int
+    reorderPoint: Int
+    minLot: Int
+    maxLot: Int
+    fsnClassification: String
+    width: Float
+    height: Float
+    length: Float
+    weight: Float
+    productUnitOfMeasureId: String
+    isVariation: Boolean
+    categoryId: [String!]
+    itemsVariations: [NewItemsVariations]
+}
+
+type Category {
+    id: ID!
+    name: String!
+    description: String!
+    products: [Product]
+}
+
+input NewCategoryInput {
+    name: String!
+    description: String!
+}
+
+
+extend type Mutation {
+    createCategory(input: NewCategoryInput!): Message!
+    createProduct(input: NewProductInput!): Message! @auth
+    createProductUnitOfMeasure(input: NewProductUnitOfMeasureInput!): Message!
+    createVariationsCategory(input: NewVariationsCategoryInput!): Message!
+}

@@ -42,7 +42,7 @@ func (a *AuthUser) UserLogin(ctx context.Context, email string, password string)
 		return nil, err
 	}
 
-	jwtToken, err := JwtGenerate(ctx, convert.UUIDToString(getUser.ID), model.Role(role.Name))
+	jwtToken, err := JwtGenerate(ctx, convert.UUIDToString(getUser.ID), model.Role(role.Name), convert.UUIDToString(getUser.TenantID))
 
 	if err != nil {
 		log.Printf("Erro em gerar o JWT")

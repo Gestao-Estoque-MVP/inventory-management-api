@@ -299,7 +299,8 @@ const getEmail = `-- name: GetEmail :one
 SELECT id,
     name,
     email,
-    password
+    password,
+    tenant_id
 FROM users
 WHERE email = $1
 `
@@ -309,6 +310,7 @@ type GetEmailRow struct {
 	Name     pgtype.Text
 	Email    string
 	Password pgtype.Text
+	TenantID pgtype.UUID
 }
 
 func (q *Queries) GetEmail(ctx context.Context, email string) (GetEmailRow, error) {
@@ -319,6 +321,7 @@ func (q *Queries) GetEmail(ctx context.Context, email string) (GetEmailRow, erro
 		&i.Name,
 		&i.Email,
 		&i.Password,
+		&i.TenantID,
 	)
 	return i, err
 }

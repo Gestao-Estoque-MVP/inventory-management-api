@@ -13,6 +13,7 @@ type User {
   role: [Roles]
   image: Image
 }
+
 type Tenant {
   id: String!
   name: String!

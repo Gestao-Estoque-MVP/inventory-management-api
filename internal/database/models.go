@@ -190,9 +190,9 @@ type Product struct {
 	Name                   string
 	LowStockThreshold      pgtype.Int4
 	ImageID                pgtype.UUID
-	Price                  pgtype.Numeric
+	Price                  float64
 	TenantID               pgtype.UUID
-	Promotion              pgtype.Numeric
+	Promotion              pgtype.Float8
 	SafetyStockLevel       pgtype.Int4
 	ReorderPoint           pgtype.Int4
 	MinLot                 pgtype.Int4
@@ -202,6 +202,10 @@ type Product struct {
 	Height                 pgtype.Int4
 	Length                 pgtype.Int4
 	Weight                 pgtype.Int4
+	IsVariation            pgtype.Bool
+	IsActive               pgtype.Bool
+	CreatedAt              pgtype.Timestamp
+	UpdatedAt              pgtype.Timestamp
 	ProductUnitOfMeasureID pgtype.UUID
 }
 

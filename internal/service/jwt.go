@@ -11,8 +11,9 @@ import (
 )
 
 type JwtCustomClaim struct {
-	ID   string `json:"id"`
-	Role model.Role
+	ID     string `json:"id"`
+	Role   model.Role
+	Tenant string `json:"tenant"`
 	jwt.RegisteredClaims
 }
 
@@ -26,10 +27,11 @@ func getJwtSecret() string {
 	return secret
 }
 
-func JwtGenerate(_ context.Context, userID string, role model.Role) (string, error) {
+func JwtGenerate(_ context.Context, userID string, role model.Role, tenantID string) (string, error) {
 	t := jwt.NewWithClaims(jwt.SigningMethodHS256, &JwtCustomClaim{
-		ID:   userID,
-		Role: role,
+		ID:     userID,
+		Role:   role,
+		Tenant: tenantID,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: &jwt.NumericDate{Time: time.Now().Add(time.Hour * 24)},
 			IssuedAt:  &jwt.NumericDate{Time: time.Now()},

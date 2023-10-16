@@ -55,9 +55,12 @@ INSERT INTO product
     height, 
     length, 
     weight, 
-    product_unit_of_measure_id
+    product_unit_of_measure_id,
+    is_variation,
+    is_active,
+    created_at
     )
-    VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
+    VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)
     RETURNING id
 `
 
@@ -66,9 +69,9 @@ type CreateProductParams struct {
 	Name                   string
 	LowStockThreshold      pgtype.Int4
 	ImageID                pgtype.UUID
-	Price                  pgtype.Numeric
+	Price                  float64
 	TenantID               pgtype.UUID
-	Promotion              pgtype.Numeric
+	Promotion              pgtype.Float8
 	SafetyStockLevel       pgtype.Int4
 	ReorderPoint           pgtype.Int4
 	MinLot                 pgtype.Int4
@@ -79,6 +82,9 @@ type CreateProductParams struct {
 	Length                 pgtype.Int4
 	Weight                 pgtype.Int4
 	ProductUnitOfMeasureID pgtype.UUID
+	IsVariation            pgtype.Bool
+	IsActive               pgtype.Bool
+	CreatedAt              pgtype.Timestamp
 }
 
 func (q *Queries) CreateProduct(ctx context.Context, arg CreateProductParams) (pgtype.UUID, error) {
@@ -100,6 +106,9 @@ func (q *Queries) CreateProduct(ctx context.Context, arg CreateProductParams) (p
 		arg.Length,
 		arg.Weight,
 		arg.ProductUnitOfMeasureID,
+		arg.IsVariation,
+		arg.IsActive,
+		arg.CreatedAt,
 	)
 	var id pgtype.UUID
 	err := row.Scan(&id)
@@ -132,6 +141,38 @@ func (q *Queries) CreateProductUnitsOfMeasure(ctx context.Context, arg CreatePro
 	return id, err
 }
 
+const createProductVariations = `-- name: CreateProductVariations :one
+INSERT INTO product_variations
+    (id, product_id, image_id, price, promotion, created_at, updated_at)
+    VALUES($1, $2, $3, $4, $5, $6, $7)
+    RETURNING id
+`
+
+type CreateProductVariationsParams struct {
+	ID        pgtype.UUID
+	ProductID pgtype.UUID
+	ImageID   pgtype.UUID
+	Price     pgtype.Numeric
+	Promotion pgtype.Numeric
+	CreatedAt pgtype.Timestamp
+	UpdatedAt pgtype.Timestamp
+}
+
+func (q *Queries) CreateProductVariations(ctx context.Context, arg CreateProductVariationsParams) (pgtype.UUID, error) {
+	row := q.db.QueryRow(ctx, createProductVariations,
+		arg.ID,
+		arg.ProductID,
+		arg.ImageID,
+		arg.Price,
+		arg.Promotion,
+		arg.CreatedAt,
+		arg.UpdatedAt,
+	)
+	var id pgtype.UUID
+	err := row.Scan(&id)
+	return id, err
+}
+
 const createProductsCategories = `-- name: CreateProductsCategories :one
 INSERT INTO products_categories
     (id, product_id, category_id)
@@ -147,6 +188,84 @@ type CreateProductsCategoriesParams struct {
 
 func (q *Queries) CreateProductsCategories(ctx context.Context, arg CreateProductsCategoriesParams) (pgtype.UUID, error) {
 	row := q.db.QueryRow(ctx, createProductsCategories, arg.ID, arg.ProductID, arg.CategoryID)
+	var id pgtype.UUID
+	err := row.Scan(&id)
+	return id, err
+}
+
+const createVariationMapping = `-- name: CreateVariationMapping :one
+INSERT INTO product_variation_mappings
+    (id, product_variation_id, variation_item_id, created_at)
+    VALUES($1, $2, $3, $4)
+    RETURNING id
+`
+
+type CreateVariationMappingParams struct {
+	ID                 pgtype.UUID
+	ProductVariationID pgtype.UUID
+	VariationItemID    pgtype.UUID
+	CreatedAt          pgtype.Timestamp
+}
+
+func (q *Queries) CreateVariationMapping(ctx context.Context, arg CreateVariationMappingParams) (pgtype.UUID, error) {
+	row := q.db.QueryRow(ctx, createVariationMapping,
+		arg.ID,
+		arg.ProductVariationID,
+		arg.VariationItemID,
+		arg.CreatedAt,
+	)
+	var id pgtype.UUID
+	err := row.Scan(&id)
+	return id, err
+}
+
+const createVariationsCategories = `-- name: CreateVariationsCategories :one
+INSERT INTO variation_categories
+    (id,name,  description, created_at)
+    VALUES($1, $2, $3, $4)
+    RETURNING id
+`
+
+type CreateVariationsCategoriesParams struct {
+	ID          pgtype.UUID
+	Name        string
+	Description pgtype.Text
+	CreatedAt   pgtype.Timestamp
+}
+
+func (q *Queries) CreateVariationsCategories(ctx context.Context, arg CreateVariationsCategoriesParams) (pgtype.UUID, error) {
+	row := q.db.QueryRow(ctx, createVariationsCategories,
+		arg.ID,
+		arg.Name,
+		arg.Description,
+		arg.CreatedAt,
+	)
+	var id pgtype.UUID
+	err := row.Scan(&id)
+	return id, err
+}
+
+const createVariationsItems = `-- name: CreateVariationsItems :one
+INSERT INTO variation_items
+    (id, name,variation_category_id,created_at)
+    VALUES($1, $2, $3, $4)
+    RETURNING id
+`
+
+type CreateVariationsItemsParams struct {
+	ID                  pgtype.UUID
+	Name                string
+	VariationCategoryID pgtype.UUID
+	CreatedAt           pgtype.Timestamp
+}
+
+func (q *Queries) CreateVariationsItems(ctx context.Context, arg CreateVariationsItemsParams) (pgtype.UUID, error) {
+	row := q.db.QueryRow(ctx, createVariationsItems,
+		arg.ID,
+		arg.Name,
+		arg.VariationCategoryID,
+		arg.CreatedAt,
+	)
 	var id pgtype.UUID
 	err := row.Scan(&id)
 	return id, err

@@ -96,7 +96,8 @@ WHERE users.id = $1;
 SELECT id,
     name,
     email,
-    password
+    password,
+    tenant_id
 FROM users
 WHERE email = $1;
 

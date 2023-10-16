@@ -22,6 +22,13 @@ type Address struct {
 	UserID     *string `json:"userId,omitempty"`
 }
 
+type Category struct {
+	ID          string     `json:"id"`
+	Name        string     `json:"name"`
+	Description string     `json:"description"`
+	Products    []*Product `json:"products,omitempty"`
+}
+
 type ContactInfo struct {
 	ID    string `json:"id"`
 	Name  string `json:"Name"`
@@ -54,6 +61,11 @@ type NewAddress struct {
 	UserID     string  `json:"userId"`
 }
 
+type NewCategoryInput struct {
+	Name        string `json:"name"`
+	Description string `json:"description"`
+}
+
 type NewContactInfo struct {
 	Name  string `json:"Name"`
 	Email string `json:"email"`
@@ -62,6 +74,11 @@ type NewContactInfo struct {
 
 type NewImage struct {
 	File graphql.Upload `json:"file"`
+}
+
+type NewItemsVariations struct {
+	VaritationCategoryID string `json:"varitation_category_id"`
+	Name                 string `json:"name"`
 }
 
 type NewLogin struct {
@@ -80,6 +97,33 @@ type NewPreUser struct {
 	TenantID  string        `json:"tenantId"`
 	UserPhone *NewUserPhone `json:"user_phone"`
 	RoleID    []string      `json:"roleId,omitempty"`
+}
+
+type NewProductInput struct {
+	Name                   string                `json:"name"`
+	Price                  float64               `json:"price"`
+	LowStockThreshold      *int                  `json:"lowStockThreshold,omitempty"`
+	Image                  []*NewImage           `json:"image,omitempty"`
+	TenantID               *string               `json:"tenantId,omitempty"`
+	Promotion              *float64              `json:"promotion,omitempty"`
+	SafetyStockLevel       *int                  `json:"safetyStockLevel,omitempty"`
+	ReorderPoint           *int                  `json:"reorderPoint,omitempty"`
+	MinLot                 *int                  `json:"minLot,omitempty"`
+	MaxLot                 *int                  `json:"maxLot,omitempty"`
+	FsnClassification      *string               `json:"fsnClassification,omitempty"`
+	Width                  *float64              `json:"width,omitempty"`
+	Height                 *float64              `json:"height,omitempty"`
+	Length                 *float64              `json:"length,omitempty"`
+	Weight                 *float64              `json:"weight,omitempty"`
+	ProductUnitOfMeasureID *string               `json:"productUnitOfMeasureId,omitempty"`
+	IsVariation            *bool                 `json:"isVariation,omitempty"`
+	CategoryID             []string              `json:"categoryId,omitempty"`
+	ItemsVariations        []*NewItemsVariations `json:"itemsVariations,omitempty"`
+}
+
+type NewProductUnitOfMeasureInput struct {
+	Name        string `json:"name"`
+	Description string `json:"description"`
 }
 
 type NewRole struct {
@@ -126,6 +170,11 @@ type NewUserPhone struct {
 	IsPrimary *bool  `json:"is_primary,omitempty"`
 }
 
+type NewVariationsCategoryInput struct {
+	Name        string `json:"name"`
+	Description string `json:"description"`
+}
+
 type Permissions struct {
 	ID          string `json:"id"`
 	Name        string `json:"name"`
@@ -136,6 +185,37 @@ type PreUser struct {
 	ID    string `json:"id"`
 	Name  string `json:"name"`
 	Email string `json:"email"`
+}
+
+type Product struct {
+	ID                     string      `json:"id"`
+	Name                   string      `json:"name"`
+	LowStockThreshold      int         `json:"lowStockThreshold"`
+	Image                  *string     `json:"image,omitempty"`
+	Price                  float64     `json:"price"`
+	Tenant                 *Tenant     `json:"tenant,omitempty"`
+	Promotion              string      `json:"promotion"`
+	SafetyStockLevel       int         `json:"safetyStockLevel"`
+	ReorderPoint           int         `json:"reorderPoint"`
+	MinLot                 int         `json:"minLot"`
+	MaxLot                 int         `json:"maxLot"`
+	FsnClassification      string      `json:"fsnClassification"`
+	Width                  float64     `json:"width"`
+	Height                 float64     `json:"height"`
+	Length                 float64     `json:"length"`
+	Weight                 float64     `json:"weight"`
+	ProductUnitOfMeasureID string      `json:"productUnitOfMeasureId"`
+	IsVariation            bool        `json:"isVariation"`
+	IsActive               bool        `json:"isActive"`
+	CreatedAt              string      `json:"createdAt"`
+	Description            string      `json:"description"`
+	Category               []*Category `json:"category,omitempty"`
+}
+
+type ProductUnitOfMeasure struct {
+	ID          string `json:"id"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
 }
 
 type RolePermissions struct {
@@ -185,6 +265,13 @@ type UserPhone struct {
 	Type      string `json:"type"`
 	IsPrimary *bool  `json:"is_primary,omitempty"`
 	User      *User  `json:"user"`
+}
+
+type VariationsCategory struct {
+	ID          string     `json:"id"`
+	Name        string     `json:"name"`
+	Description string     `json:"description"`
+	Products    []*Product `json:"products,omitempty"`
 }
 
 type VerifyToken struct {

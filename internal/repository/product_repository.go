@@ -11,6 +11,11 @@ type IProduct interface {
 	CreateProduct(product database.CreateProductParams) (*pgtype.UUID, error)
 	CreateCategory(category database.CreateCategoryParams) (*pgtype.UUID, error)
 	CreateProductCategory(prodCat database.CreateProductsCategoriesParams) (*pgtype.UUID, error)
+	CreateProductUnitsOfMeasur(product database.CreateProductUnitsOfMeasureParams) (*pgtype.UUID, error)
+	CreateVariationsCategories(variations database.CreateVariationsCategoriesParams) (*pgtype.UUID, error)
+	CreateVariationsItems(variations database.CreateVariationsItemsParams) (*pgtype.UUID, error)
+	CreateProductVariatons(product database.CreateProductVariationsParams) (*pgtype.UUID, error)
+	CreateVariationsMappings(variations database.CreateVariationMappingParams) (*pgtype.UUID, error)
 }
 
 type ProductRepository struct {
@@ -48,4 +53,54 @@ func (repo *ProductRepository) CreateProductsCategories(prodCat database.CreateP
 	}
 
 	return &create, nil
+}
+
+func (repo *ProductRepository) CreateProductUnitsOfMeasure(product database.CreateProductUnitsOfMeasureParams) (*pgtype.UUID, error) {
+	create, err := repo.db.CreateProductUnitsOfMeasure(context.Background(), product)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &create, nil
+}
+
+func (repo *ProductRepository) CreateVariationsCategories(variations database.CreateVariationsCategoriesParams) (*pgtype.UUID, error) {
+	create, err := repo.db.CreateVariationsCategories(context.Background(), variations)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &create, nil
+}
+
+func (repo *ProductRepository) CreateVariationsItems(variations database.CreateVariationsItemsParams) (*pgtype.UUID, error) {
+	create, err := repo.db.CreateVariationsItems(context.Background(), variations)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &create, nil
+}
+
+func (repo *ProductRepository) CreateProductVariatons(product database.CreateProductVariationsParams) (*pgtype.UUID, error) {
+	create, err := repo.db.CreateProductVariations(context.Background(), product)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &create, nil
+}
+
+func (repo *ProductRepository) CreateVariationsMappings(variations database.CreateVariationMappingParams) *pgtype.UUID {
+	create, err := repo.db.CreateVariationMapping(context.Background(), variations)
+
+	if err != nil {
+		return nil
+	}
+
+	return &create
 }
