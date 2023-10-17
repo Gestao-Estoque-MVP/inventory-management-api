@@ -109,7 +109,7 @@ func main() {
 	router.Handle("/graphql", srv)
 
 	router.HandleFunc("/sse/{user_id}", sse.Handler)
-	// router.HandleFunc("/sse-test/{user_id}", sse.Teste)
+	router.HandleFunc("/sse-test/{user_id}", sse.Test)
 
 	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", port), router))

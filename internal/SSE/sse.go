@@ -114,3 +114,10 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 		flusher.Flush()
 	}
 }
+
+func Test(w http.ResponseWriter, r *http.Request) {
+	broker.Notifier <- []byte("Hello, world!")
+
+	w.Write([]byte("OK"))
+
+}

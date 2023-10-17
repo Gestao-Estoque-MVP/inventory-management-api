@@ -1,7 +1,6 @@
 package service
 
 import (
-	"math/big"
 	"time"
 
 	"github.com/diogoX451/inventory-management-api/internal/database"
@@ -148,30 +147,28 @@ func variations(items []model.NewItemsVariations, repo repository.ProductReposit
 		possibleVariations = newCombinations
 	}
 
-	createVariations(possibleVariations, repo, productID)
-
 	return nil
 }
 
-func createVariations(variations [][]model.NewItemsVariations, repo repository.ProductRepository, productID pgtype.UUID) error {
+// func createVariations(variations [][]model.NewItemsVariations, repo repository.ProductRepository, productID pgtype.UUID) error {
 
-	for i := 0; i < len(variations); i++ {
-		params := database.CreateProductVariationsParams{
-			ID:        pgtype.UUID{Bytes: uuid.Must(uuid.NewV4()), Valid: true},
-			ProductID: productID,
-			Price:     pgtype.Numeric{Int: big.NewInt(0), Valid: true},
-			Promotion: pgtype.Numeric{Int: big.NewInt(0), Valid: true},
-			CreatedAt: pgtype.Timestamp{Time: time.Now().Local(), Valid: true},
-		}
+// 	for i := 0; i < len(variations); i++ {
+// 		params := database.CreateProductVariationsParams{
+// 			ID:        pgtype.UUID{Bytes: uuid.Must(uuid.NewV4()), Valid: true},
+// 			ProductID: productID,
+// 			Price:     pgtype.Numeric{Int: big.NewInt(0), Valid: true},
+// 			Promotion: pgtype.Numeric{Int: big.NewInt(0), Valid: true},
+// 			CreatedAt: pgtype.Timestamp{Time: time.Now().Local(), Valid: true},
+// 		}
 
-		_, err := repo.CreateProductVariatons(params)
+// 		_, err := repo.CreateProductVariatons(params)
 
-		if err != nil {
-			return err
-		}
+// 		if err != nil {
+// 			return err
+// 		}
 
-	}
+// 	}
 
-	return nil
+// 	return nil
 
-}
+// }
