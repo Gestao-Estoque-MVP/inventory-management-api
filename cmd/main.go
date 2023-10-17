@@ -49,11 +49,14 @@ func main() {
 	log.SetOutput(logFile)
 
 	router := mux.NewRouter()
-	router.Use(middleware.AuthMiddleware)
 	router.Use(cors.New(cors.Options{
 		AllowedOrigins:   []string{"*"},
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE"},
+		AllowedHeaders:   []string{"Authorization", "Content-Type"},
+		ExposedHeaders:   []string{"Authorization"},
 		AllowCredentials: true,
 	}).Handler)
+	router.Use(middleware.AuthMiddleware)
 
 	port := os.Getenv("PORT")
 
