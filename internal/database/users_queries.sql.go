@@ -366,11 +366,13 @@ func (q *Queries) GetTokenPreRegister(ctx context.Context, registerToken pgtype.
 }
 
 const getUser = `-- name: GetUser :one
-SELECT users.id, users.name, users.email, users.document_type, users.document_number, users.password, users.status, users.register_token, users.token_expires_at, users.created_at, users.updated_at, users.tenant_id, users.image_id, address.id, address.user_id, address.address, address.street, address.city, address.state, address.postal_code, address.country, address.number, address.created_at, address.updated_at, image.id, image.description, image.url, image.created_at, image.updated_at, user_phones.id, user_phones.user_id, user_phones.type, user_phones.number, user_phones.is_primary, user_phones.created_at, user_phones.updated_at
+SELECT users.id, users.name, users.email, users.document_type, users.document_number, users.password, users.status, users.register_token, users.token_expires_at, users.created_at, users.updated_at, users.tenant_id, users.image_id, address.id, address.user_id, address.address, address.street, address.city, address.state, address.postal_code, address.country, address.number, address.created_at, address.updated_at, image.id, image.description, image.url, image.created_at, image.updated_at, user_phones.id, user_phones.user_id, user_phones.type, user_phones.number, user_phones.is_primary, user_phones.created_at, user_phones.updated_at, roles.id, roles.name, roles.description
 FROM users
 LEFT JOIN address ON address.user_id = users.id
 LEFT JOIN image ON image.id = users.image_id
 LEFT JOIN user_phones ON user_phones.user_id = users.id
+LEFT JOIN users_roles ON users_roles.user_id = users.id
+LEFT JOIN roles ON roles.id = users_roles.role_id
 WHERE users.id = $1
 `
 
@@ -391,6 +393,7 @@ type GetUserRow struct {
 	Address        Address
 	Image          Image
 	UserPhone      UserPhone
+	Role           Role
 }
 
 func (q *Queries) GetUser(ctx context.Context, id pgtype.UUID) (GetUserRow, error) {
@@ -433,6 +436,9 @@ func (q *Queries) GetUser(ctx context.Context, id pgtype.UUID) (GetUserRow, erro
 		&i.UserPhone.IsPrimary,
 		&i.UserPhone.CreatedAt,
 		&i.UserPhone.UpdatedAt,
+		&i.Role.ID,
+		&i.Role.Name,
+		&i.Role.Description,
 	)
 	return i, err
 }

@@ -255,8 +255,10 @@ type User struct {
 	Phone          *string      `json:"phone,omitempty"`
 	DocumentNumber *string      `json:"document_number,omitempty"`
 	Address        *Address     `json:"address,omitempty"`
+	CreatedAt      *string      `json:"createdAt,omitempty"`
+	UpdatedAt      *string      `json:"updatedAt,omitempty"`
 	UserPhone      []*UserPhone `json:"user_phone,omitempty"`
-	Role           []*Roles     `json:"role,omitempty"`
+	Role           *Roles       `json:"role"`
 	Image          *Image       `json:"image,omitempty"`
 }
 

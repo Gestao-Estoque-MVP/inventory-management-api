@@ -8,6 +8,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"time"
 
 	"github.com/diogoX451/inventory-management-api/internal/database"
 	"github.com/diogoX451/inventory-management-api/internal/graph/middleware"
@@ -241,11 +242,16 @@ func (r *queryResolver) User(ctx context.Context) (*model.User, error) {
 		return nil, err
 	}
 
+	createdAt := find.CreatedAt.Time.Format(time.RFC3339)
+	updateAt := find.UpdatedAt.Time.Format(time.RFC3339)
+
 	return &model.User{
 		ID:             convert.UUIDToString(find.ID),
 		Name:           &find.Name.String,
 		Email:          &find.Email,
 		DocumentNumber: &find.DocumentNumber.String,
+		CreatedAt:      &createdAt,
+		UpdatedAt:      &updateAt,
 		Address: &model.Address{
 			ID:         convert.UUIDToString(find.Address.ID),
 			City:       &find.Address.City.String,
@@ -267,6 +273,11 @@ func (r *queryResolver) User(ctx context.Context) (*model.User, error) {
 			ID:          convert.UUIDToString(find.Image.ID),
 			URL:         find.Image.Url.String,
 			Description: find.Image.Description.String,
+		},
+		Role: &model.Roles{
+			ID:          convert.UUIDToString(find.Role.ID),
+			Name:        find.Role.Name,
+			Description: find.Role.Description,
 		},
 	}, nil
 }

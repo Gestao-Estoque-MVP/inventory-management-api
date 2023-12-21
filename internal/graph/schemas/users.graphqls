@@ -9,8 +9,10 @@ type User {
   phone: String
   document_number: String
   address: Address
+  createdAt: String
+  updatedAt: String
   user_phone: [UserPhone]
-  role: [Roles]
+  role:  Roles!
   image: Image
 }
 
