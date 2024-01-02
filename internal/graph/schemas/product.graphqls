@@ -80,6 +80,12 @@ type Category {
     products: [Product]
 }
 
+type ItemProduct {
+    id: ID!
+    name: String!
+    description: String!
+}
+
 input NewCategoryInput {
     name: String!
     description: String!
@@ -87,8 +93,8 @@ input NewCategoryInput {
 
 
 extend type Mutation {
-    createCategory(input: NewCategoryInput!): Message!
+    createCategory(input: NewCategoryInput!): Message! @auth
     createProduct(input: NewProductInput!): Message! @auth
-    createProductUnitOfMeasure(input: NewProductUnitOfMeasureInput!): Message!
-    createVariationsCategory(input: NewVariationsCategoryInput!): Message!
+    createProductUnitOfMeasure(input: NewProductUnitOfMeasureInput!): Message! @auth
+    createVariationsCategory(input: NewVariationsCategoryInput!): Message! @auth
 }

@@ -42,6 +42,12 @@ type Image struct {
 	Description string `json:"description"`
 }
 
+type ItemProduct struct {
+	ID          string `json:"id"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
+}
+
 type Login struct {
 	Token string `json:"token"`
 }

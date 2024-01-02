@@ -1,6 +1,7 @@
 package service
 
 import (
+	"math/big"
 	"time"
 
 	"github.com/diogoX451/inventory-management-api/internal/database"
@@ -128,26 +129,80 @@ func (s *ProductService) CreateProduct(product model.NewProductInput) (*pgtype.U
 }
 
 func variations(items []model.NewItemsVariations, repo repository.ProductRepository, productID pgtype.UUID) error {
-	groupedVariations := make(map[string][]model.NewItemsVariations)
-	for _, v := range items {
-		groupedVariations[v.VaritationCategoryID] = append(groupedVariations[v.VaritationCategoryID], v)
+	var mapItems []model.ItemProduct
+
+	for i := 0; i < len(items); i++ {
+		create, _ := repo.CreateVariationsItems(database.CreateVariationsItemsParams{
+			ID:                  pgtype.UUID{Bytes: uuid.Must(uuid.NewV4()), Valid: true},
+			VariationCategoryID: convert.StringToPgUUID(items[i].VaritationCategoryID),
+			Name:                items[i].Name,
+			CreatedAt:           pgtype.Timestamp{Time: time.Now().Local(), Valid: true},
+		})
+
+		mapItems = append(mapItems, model.ItemProduct{
+			ID:   convert.UUIDToString(*create),
+			Name: items[i].Name,
+		})
 	}
 
-	possibleVariations := [][]model.NewItemsVariations{{}}
+	possible := foreachVariations(items, productID)
 
-	for _, group := range groupedVariations {
-		newCombinations := [][]model.NewItemsVariations{}
-		for _, existingCombination := range possibleVariations {
-			for _, variation := range group {
-				newCombination := append([]model.NewItemsVariations(nil), existingCombination...)
-				newCombination = append(newCombination, variation)
-				newCombinations = append(newCombinations, newCombination)
+	for _, combo := range possible {
+		create, _ := repo.CreateProductVariatons(database.CreateProductVariationsParams{
+			ID:        pgtype.UUID{Bytes: uuid.Must(uuid.NewV4()), Valid: true},
+			ProductID: productID,
+			Price:     pgtype.Numeric{Int: big.NewInt(0), Valid: true},
+			Promotion: pgtype.Numeric{Int: big.NewInt(0), Valid: true},
+			CreatedAt: pgtype.Timestamp{Time: time.Now().Local(), Valid: true},
+		})
+		variationID := *create
+
+		for _, item := range combo {
+			var itemID string
+			for _, mapItem := range mapItems {
+				if item.Name == mapItem.Name {
+					itemID = mapItem.ID
+					break
+				}
 			}
+
+			repo.CreateVariationsMappings(database.CreateVariationMappingParams{
+				ID:                 pgtype.UUID{Bytes: uuid.Must(uuid.NewV4()), Valid: true},
+				VariationItemID:    convert.StringToPgUUID(itemID),
+				ProductVariationID: variationID,
+				CreatedAt:          pgtype.Timestamp{Time: time.Now().Local(), Valid: true},
+			})
 		}
-		possibleVariations = newCombinations
 	}
 
 	return nil
+}
+
+func foreachVariations(items []model.NewItemsVariations, productID pgtype.UUID) [][]model.NewItemsVariations {
+	categoryMap := make(map[string][]model.NewItemsVariations)
+
+	for _, v := range items {
+		categoryMap[v.VaritationCategoryID] = append(categoryMap[v.VaritationCategoryID], v)
+	}
+
+	var result [][]model.NewItemsVariations
+	result = append(result, []model.NewItemsVariations{})
+
+	for _, cm := range categoryMap {
+		var temp [][]model.NewItemsVariations
+		for _, combo := range result {
+			for _, v := range cm {
+				newCombo := make([]model.NewItemsVariations, len(combo))
+				copy(newCombo, combo)
+				newCombo = append(newCombo, v)
+				temp = append(temp, newCombo)
+			}
+		}
+		result = temp
+	}
+
+	return result
+
 }
 
 // func createVariations(variations [][]model.NewItemsVariations, repo repository.ProductRepository, productID pgtype.UUID) error {
