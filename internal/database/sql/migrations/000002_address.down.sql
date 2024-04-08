@@ -1,0 +1,2 @@
+DROP INDEX IF EXISTS idx_address_id;
+DROP TABLE IF EXISTS address;
