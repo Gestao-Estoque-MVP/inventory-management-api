@@ -1,5 +1,5 @@
 CREATE TABLE address (
-  id UUID PRIMARY KEY,
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   address VARCHAR(255),
   street VARCHAR(255),
   city VARCHAR(100),
@@ -7,8 +7,8 @@ CREATE TABLE address (
   postal_code VARCHAR(20),
   country VARCHAR(100),
   number VARCHAR(20),
-  created_at TIMESTAMP NOT NULL,
-  updated_at TIMESTAMP
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 ALTER TABLE users
 ADD COLUMN address_id UUID;

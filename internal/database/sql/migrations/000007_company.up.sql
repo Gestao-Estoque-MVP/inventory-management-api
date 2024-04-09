@@ -1,5 +1,5 @@
 CREATE TABLE companies (
-  id UUID PRIMARY KEY,
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name VARCHAR(255),
   document VARCHAR(20),
   address_id UUID NOT NULL REFERENCES address(id),
