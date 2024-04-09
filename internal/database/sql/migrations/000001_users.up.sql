@@ -8,5 +8,5 @@ CREATE TABLE users (
     register_token VARCHAR(255),
     token_expires_at TIMESTAMP,
     created_at TIMESTAMP NOT NULL,
-    updated_at TIMESTAMP,
+    updated_at TIMESTAMP
 );

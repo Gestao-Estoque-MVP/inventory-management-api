@@ -2,21 +2,14 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
-	"net/http"
 	"os"
 
-	"github.com/99designs/gqlgen/graphql/handler"
-	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/diogoX451/inventory-management-api/internal/database"
-	"github.com/diogoX451/inventory-management-api/internal/graph"
-	"github.com/diogoX451/inventory-management-api/internal/graph/directives"
 	"github.com/diogoX451/inventory-management-api/internal/graph/middleware"
-	"github.com/diogoX451/inventory-management-api/internal/graph/resolvers"
 	"github.com/diogoX451/inventory-management-api/internal/repository"
 	"github.com/diogoX451/inventory-management-api/internal/service"
-	"github.com/gorilla/mux"
+	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
 	"github.com/rs/cors"
@@ -47,7 +40,9 @@ func main() {
 	defer logFile.Close()
 	log.SetOutput(logFile)
 
-	router := mux.NewRouter()
+	router := gin.Default()
+	router.Group("/api/v1")
+
 	router.Use(middleware.AuthMiddleware)
 	router.Use(cors.New(cors.Options{
 		AllowedOrigins:   []string{"*"},
@@ -77,30 +72,4 @@ func main() {
 	addressRepository := repository.NewAddressRepository(queries)
 	addressRepositoryService := service.NewAddressService(addressRepository)
 
-	resolvers := &resolvers.Resolver{
-		UserService:        userService,
-		ContactInfoService: contactService,
-		RBCAService:        rcbaService,
-		AuthUserService:    loginService,
-		AddressService:     addressRepositoryService,
-		EmailService:       emailService,
-		S3Service:          s3Service,
-		ImageService:       imageService,
-	}
-
-	c := graph.Config{
-		Resolvers: resolvers,
-		Directives: graph.DirectiveRoot{
-			Auth:    directives.Auth,
-			HasRole: directives.HasRole,
-		},
-	}
-
-	srv := handler.NewDefaultServer(graph.NewExecutableSchema(c))
-
-	router.Handle("/", playground.Handler("GraphQL playground", "/graphql"))
-	router.Handle("/graphql", srv)
-
-	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", port), router))
 }

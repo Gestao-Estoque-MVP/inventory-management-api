@@ -2,12 +2,7 @@ version: '3.1'
 
 networks:
   invetory-management-api:
-    driver: 
-      bridge
-    ipam:
-      config:
-        - subnet: 172.168.0.0/16
-          gateway: 172.168.0.1
+    driver: bridge
 
 services:
   db:
@@ -25,8 +20,7 @@ services:
     networks:
       - invetory-management-api
 
-
-   
 volumes:
   postgres-data:
+
 
