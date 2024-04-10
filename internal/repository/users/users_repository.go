@@ -1,4 +1,4 @@
-package repository
+package users_repository
 
 import (
 	"context"
@@ -10,7 +10,7 @@ import (
 )
 
 type IUsersRepository interface {
-	CreateUser(user dto.UserCreateDTO) (dto.Mesage, error)
+	CreateUser(user dto.UserCreateDTO) (*pgtype.UUID, error)
 }
 
 type UsersRepository struct {
@@ -23,8 +23,8 @@ func NewRepositoryUsers(db *database.Queries) *UsersRepository {
 	}
 }
 
-func (r *UsersRepository) CreateUser(user dto.UserCreateDTO) (dto.Mesage, error) {
-	_, err := r.db.CreateUser(context.Background(), database.CreateUserParams{
+func (r *UsersRepository) CreateUser(user dto.UserCreateDTO) (*pgtype.UUID, error) {
+	id, err := r.db.CreateUser(context.Background(), database.CreateUserParams{
 		Name:           pgtype.Text{String: user.Name, Valid: true},
 		Email:          user.Email,
 		Password:       pgtype.Text{String: user.Password, Valid: true},
@@ -36,8 +36,8 @@ func (r *UsersRepository) CreateUser(user dto.UserCreateDTO) (dto.Mesage, error)
 	})
 
 	if err != nil {
-		return dto.Mesage{}, err
+		return &pgtype.UUID{}, err
 	}
 
-	return dto.Mesage{Mesage: "User created"}, nil
+	return &id, nil
 }

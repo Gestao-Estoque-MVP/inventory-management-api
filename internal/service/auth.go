@@ -4,7 +4,6 @@ import (
 	"context"
 	"log"
 
-	"github.com/diogoX451/inventory-management-api/internal/graph/model"
 	"github.com/diogoX451/inventory-management-api/internal/repository"
 	token "github.com/diogoX451/inventory-management-api/pkg/Token"
 	"github.com/diogoX451/inventory-management-api/pkg/convert"

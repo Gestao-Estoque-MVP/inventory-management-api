@@ -1,0 +1,72 @@
+package address_service
+
+import (
+	"github.com/diogoX451/inventory-management-api/internal/dto"
+	address_repository "github.com/diogoX451/inventory-management-api/internal/repository/address"
+	"github.com/diogoX451/inventory-management-api/pkg/helpers"
+	"github.com/jackc/pgx/v5/pgtype"
+)
+
+type IAddressService interface {
+	CreateAddress(address dto.AddressCreateDTO) (*pgtype.UUID, error)
+}
+
+type AddressService struct {
+	addressRepo address_repository.IAddressRepository
+}
+
+func NewAddressService(addressRepo address_repository.IAddressRepository) *AddressService {
+	return &AddressService{addressRepo: addressRepo}
+}
+
+func (s *AddressService) CreateAddress(address dto.AddressCreateDTO) (*pgtype.UUID, error) {
+	address.PostalCode = helpers.OnlyNumbers(address.PostalCode)
+	create, err := s.addressRepo.CreateAddress(address)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return create, nil
+}
+
+// func (s *AddressService) UpdateAddress(address *database.Address) (*database.Address, error) {
+// 	update, err := s.addressRepo.UpdateAddress(&database.Address{
+// 		UserID:     address.UserID,
+// 		Address:    address.Address,
+// 		Street:     address.Street,
+// 		City:       address.City,
+// 		Country:    address.Country,
+// 		PostalCode: address.PostalCode,
+// 		State:      address.State,
+// 		Number:     address.Number,
+// 		UpdatedAt:  pgtype.Timestamp{Time: time.Now(), Valid: true},
+// 	})
+
+// 	if err != nil {
+// 		return nil, err
+// 	}
+
+// 	return update, nil
+// }
+
+// func (s *AddressService) DeleteAddress(userID [16]byte) (bool, error) {
+// 	_, err := s.addressRepo.DeleteAddress(userID)
+
+// 	if err != nil {
+// 		return false, err
+// 	}
+
+// 	return true, nil
+// }
+
+// func (s *AddressService) GetAddressByID(userID [16]byte) (*database.Address, error) {
+// 	list, err := s.addressRepo.GetAddressByID(userID)
+
+// 	if err != nil {
+// 		return nil, err
+// 	}
+
+// 	return list, nil
+
+// }

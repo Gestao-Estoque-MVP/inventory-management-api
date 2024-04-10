@@ -12,8 +12,9 @@ import (
 )
 
 const createContactInfo = `-- name: CreateContactInfo :one
-INSERT INTO contact_info (id, name, email, phone, created_at) 
-    VALUES ($1, $2, $3, $4, $5) RETURNING id, name, email, phone, created_at
+INSERT INTO contact_info (id, name, email, phone, created_at)
+VALUES ($1, $2, $3, $4, $5)
+RETURNING id, name, email, phone, created_at
 `
 
 type CreateContactInfoParams struct {
@@ -44,8 +45,9 @@ func (q *Queries) CreateContactInfo(ctx context.Context, arg CreateContactInfoPa
 }
 
 const createPermissions = `-- name: CreatePermissions :one
-INSERT INTO permissions (id, name, description) 
-    VALUES ($1, $2, $3) RETURNING id, name, description
+INSERT INTO permissions (id, name, description)
+VALUES ($1, $2, $3)
+RETURNING id, name, description
 `
 
 type CreatePermissionsParams struct {
@@ -62,8 +64,9 @@ func (q *Queries) CreatePermissions(ctx context.Context, arg CreatePermissionsPa
 }
 
 const createRole = `-- name: CreateRole :one
-INSERT INTO roles (id, name, description) 
-    VALUES ($1, $2, $3) RETURNING id, name, description
+INSERT INTO roles (id, name, description)
+VALUES ($1, $2, $3)
+RETURNING id, name, description
 `
 
 type CreateRoleParams struct {
@@ -80,8 +83,9 @@ func (q *Queries) CreateRole(ctx context.Context, arg CreateRoleParams) (Role, e
 }
 
 const createRolePermissions = `-- name: CreateRolePermissions :one
-INSERT INTO roles_permissions (id, role_id, permission_id) 
-    VALUES ($1, $2, $3) RETURNING id, role_id, permission_id
+INSERT INTO roles_permissions (id, role_id, permission_id)
+VALUES ($1, $2, $3)
+RETURNING id, role_id, permission_id
 `
 
 type CreateRolePermissionsParams struct {
@@ -98,8 +102,9 @@ func (q *Queries) CreateRolePermissions(ctx context.Context, arg CreateRolePermi
 }
 
 const createUsersPermissions = `-- name: CreateUsersPermissions :one
-INSERT INTO users_permissions (user_id, permission_id) 
-    VALUES ($1, $2) RETURNING id, user_id, permission_id
+INSERT INTO users_permissions (user_id, permission_id)
+VALUES ($1, $2)
+RETURNING id, user_id, permission_id
 `
 
 type CreateUsersPermissionsParams struct {
@@ -115,26 +120,27 @@ func (q *Queries) CreateUsersPermissions(ctx context.Context, arg CreateUsersPer
 }
 
 const createUsersRoles = `-- name: CreateUsersRoles :one
-
-INSERT INTO users_roles (id, user_id, role_id) 
-    VALUES ($1, $2, $3) RETURNING id, user_id, role_id
+INSERT INTO users_roles (user_id, role_id)
+VALUES ($1, $2)
+RETURNING id, user_id, role_id
 `
 
 type CreateUsersRolesParams struct {
-	ID     pgtype.UUID
 	UserID pgtype.UUID
 	RoleID pgtype.UUID
 }
 
 func (q *Queries) CreateUsersRoles(ctx context.Context, arg CreateUsersRolesParams) (UsersRole, error) {
-	row := q.db.QueryRow(ctx, createUsersRoles, arg.ID, arg.UserID, arg.RoleID)
+	row := q.db.QueryRow(ctx, createUsersRoles, arg.UserID, arg.RoleID)
 	var i UsersRole
 	err := row.Scan(&i.ID, &i.UserID, &i.RoleID)
 	return i, err
 }
 
 const getRole = `-- name: GetRole :one
-SELECT id, name, description FROM roles WHERE name = $1
+SELECT id, name, description
+FROM roles
+WHERE name = $1
 `
 
 func (q *Queries) GetRole(ctx context.Context, name string) (Role, error) {
@@ -145,7 +151,9 @@ func (q *Queries) GetRole(ctx context.Context, name string) (Role, error) {
 }
 
 const getRoleByID = `-- name: GetRoleByID :one
-SELECT id, name, description from roles WHERE id = $1
+SELECT id, name, description
+from roles
+WHERE id = $1
 `
 
 func (q *Queries) GetRoleByID(ctx context.Context, id pgtype.UUID) (Role, error) {
@@ -156,10 +164,11 @@ func (q *Queries) GetRoleByID(ctx context.Context, id pgtype.UUID) (Role, error)
 }
 
 const getRoleUser = `-- name: GetRoleUser :one
-SELECT r.id, r.name
+SELECT r.id,
+    r.name
 FROM users u
-JOIN users_roles ur ON u.id = ur.user_id
-JOIN roles r ON ur.role_id = r.id
+    JOIN users_roles ur ON u.id = ur.user_id
+    JOIN roles r ON ur.role_id = r.id
 WHERE u.id = $1
 `
 
@@ -176,20 +185,14 @@ func (q *Queries) GetRoleUser(ctx context.Context, id pgtype.UUID) (GetRoleUserR
 }
 
 const getRolesPermissions = `-- name: GetRolesPermissions :many
-SELECT
-    u.id AS user_id,
+SELECT u.id AS user_id,
     r.name AS role_name,
     p.name AS permission_name
-FROM 
-    users AS u
-INNER JOIN 
-    roles AS r ON u.role_id = r.id
-INNER JOIN 
-    roles_permissions AS rp ON r.id = rp.role_id
-INNER JOIN
-    permissions AS p ON rp.permission_id = p.id
-WHERE 
-    u.id = $1
+FROM users AS u
+    INNER JOIN roles AS r ON u.role_id = r.id
+    INNER JOIN roles_permissions AS rp ON r.id = rp.role_id
+    INNER JOIN permissions AS p ON rp.permission_id = p.id
+WHERE u.id = $1
 `
 
 type GetRolesPermissionsRow struct {
@@ -219,17 +222,12 @@ func (q *Queries) GetRolesPermissions(ctx context.Context, id pgtype.UUID) ([]Ge
 }
 
 const getUsersPermissions = `-- name: GetUsersPermissions :many
-SELECT
-    u.id AS user_id,
+SELECT u.id AS user_id,
     p.name AS permission_name
-FROM
-    users AS u
-INNER JOIN
-    users_permissions AS up ON u.id = up.user_id
-INNER JOIN
-    permissions AS p ON up.permission_id = p.id
-WHERE
-    u.id = $1
+FROM users AS u
+    INNER JOIN users_permissions AS up ON u.id = up.user_id
+    INNER JOIN permissions AS p ON up.permission_id = p.id
+WHERE u.id = $1
 `
 
 type GetUsersPermissionsRow struct {

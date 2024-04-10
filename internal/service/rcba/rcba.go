@@ -1,26 +1,34 @@
-package service
+package rcba_service
 
 import (
 	"log"
 
 	"github.com/diogoX451/inventory-management-api/internal/database"
-	"github.com/diogoX451/inventory-management-api/internal/repository"
-	"github.com/gofrs/uuid"
-	"github.com/jackc/pgx/v5/pgtype"
+	rcba_repository "github.com/diogoX451/inventory-management-api/internal/repository/rcba"
 )
 
-type RCBAService struct {
-	rcba repository.IRBCA
+type IRCBAService interface {
+	CreateRoles(role *database.Role) (*database.Role, error)
+	GetRolesPermissions(role [16]byte) ([]*database.GetRolesPermissionsRow, error)
+	CreatePermissions(permission *database.Permission) (*database.Permission, error)
+	CreateRolesPermissions(assignment *database.RolesPermission) (*database.RolesPermission, error)
+	CreateUsersPermissions(assignment *database.UsersPermission) (*database.UsersPermission, error)
+	CreateUsersRoles(assignment *database.UsersRole) (*database.UsersRole, error)
+	GetUsersPermissions(user [16]byte) ([]*database.GetUsersPermissionsRow, error)
+	GetRole(name string) (*database.Role, error)
+	GetRoleByID(id [16]byte) (*database.Role, error)
 }
 
-func NewRCBAService(rcba repository.IRBCA) *RCBAService {
+type RCBAService struct {
+	rcba rcba_repository.IRBCA
+}
+
+func NewRCBAService(rcba rcba_repository.IRBCA) *RCBAService {
 	return &RCBAService{rcba: rcba}
 }
 
 func (r *RCBAService) CreateRoles(role *database.Role) (*database.Role, error) {
-	id, _ := uuid.NewV4()
 	create, err := r.rcba.CreateRoles(&database.Role{
-		ID:          pgtype.UUID{Bytes: id, Valid: true},
 		Name:        role.Name,
 		Description: role.Description,
 	})
@@ -45,9 +53,7 @@ func (r *RCBAService) GetRolesPermissions(role [16]byte) ([]*database.GetRolesPe
 }
 
 func (r *RCBAService) CreatePermissions(permission *database.Permission) (*database.Permission, error) {
-	id, _ := uuid.NewV4()
 	create, err := r.rcba.CreatePermissions(&database.Permission{
-		ID:          pgtype.UUID{Bytes: id, Valid: true},
 		Name:        permission.Name,
 		Description: permission.Description,
 	})
@@ -58,6 +64,36 @@ func (r *RCBAService) CreatePermissions(permission *database.Permission) (*datab
 	}
 
 	return create, nil
+}
+
+func (r *RCBAService) CreateUsersRoles(assignment *database.UsersRole) (*database.UsersRole, error) {
+	create, err := r.rcba.CreateUsersRoles(&database.UsersRole{
+		UserID: assignment.UserID,
+		RoleID: assignment.RoleID,
+	})
+
+	if err != nil {
+		log.Printf("Erro ao vincular os roles ao User: %v", err)
+		return nil, err
+	}
+
+	return create, nil
+
+}
+
+func (r *RCBAService) CreateUsersPermissions(assignment *database.UsersPermission) (*database.UsersPermission, error) {
+	create, err := r.rcba.CreateUsersPermissions(&database.UsersPermission{
+		UserID:       assignment.UserID,
+		PermissionID: assignment.PermissionID,
+	})
+
+	if err != nil {
+		log.Printf("Erro ao vincular as permissions ao User: %v", err)
+		return nil, err
+	}
+
+	return create, nil
+
 }
 
 func (r *RCBAService) CreateRolesPermissions(assignment *database.RolesPermission) (*database.RolesPermission, error) {
@@ -93,23 +129,6 @@ func (r *RCBAService) GetRole(name string) (*database.Role, error) {
 	}
 
 	return get, nil
-}
-
-func (r *RCBAService) CreateTenant(tenant database.Tenant) (*database.Tenant, error) {
-	id, _ := uuid.NewV4()
-	create, err := r.rcba.CreateTenant(&database.Tenant{
-		ID:        pgtype.UUID{Bytes: id, Valid: true},
-		Name:      tenant.Name,
-		TaxCode:   tenant.TaxCode,
-		Type:      tenant.Type,
-		CreatedAt: tenant.CreatedAt,
-	})
-
-	if err != nil {
-		return nil, err
-	}
-
-	return create, nil
 }
 
 func (r *RCBAService) GetRoleByID(id [16]byte) (*database.Role, error) {

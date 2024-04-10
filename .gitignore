@@ -2,3 +2,5 @@
 ./volumes/*
 error.log
 .env.production
+private_key.pem
+public_key.pem

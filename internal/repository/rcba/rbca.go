@@ -1,4 +1,4 @@
-package repository
+package rcba_repository
 
 import (
 	"context"
@@ -13,7 +13,7 @@ type IRBCA interface {
 	CreatePermissions(*database.Permission) (*database.Permission, error)
 	CreateRolesPermissions(*database.RolesPermission) (*database.RolesPermission, error)
 	CreateUsersPermissions(*database.UsersPermission) (*database.UsersPermission, error)
-	CreateTenant(*database.Tenant) (*database.Tenant, error)
+	CreateUsersRoles(*database.UsersRole) (*database.UsersRole, error)
 	GetRolesPermissions(role [16]byte) ([]*database.GetRolesPermissionsRow, error)
 	GetUsersPermissions(user [16]byte) ([]*database.GetUsersPermissionsRow, error)
 	GetRoleByID(id [16]byte) (*database.Role, error)
@@ -94,6 +94,20 @@ func (r *RBCARepository) CreateUsersPermissions(usersPermissions *database.Users
 	return &create, nil
 }
 
+func (r *RBCARepository) CreateUsersRoles(usersRoles *database.UsersRole) (*database.UsersRole, error) {
+	create, err := r.DB.CreateUsersRoles(context.Background(), database.CreateUsersRolesParams{
+		UserID: usersRoles.UserID,
+		RoleID: usersRoles.RoleID,
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &create, nil
+
+}
+
 func (r *RBCARepository) GetRolesPermissions(role [16]byte) ([]*database.GetRolesPermissionsRow, error) {
 	getRole, err := r.DB.GetRolesPermissions(context.Background(), pgtype.UUID{Bytes: role, Valid: true})
 
@@ -122,22 +136,6 @@ func (r *RBCARepository) GetUsersPermissions(user [16]byte) ([]*database.GetUser
 	}
 
 	return pointer, nil
-}
-
-func (r *RBCARepository) CreateTenant(tenant *database.Tenant) (*database.Tenant, error) {
-	create, err := r.DB.CreateTenant(context.Background(), database.CreateTenantParams{
-		ID:        tenant.ID,
-		Name:      tenant.Name,
-		TaxCode:   tenant.TaxCode,
-		Type:      tenant.Type,
-		CreatedAt: tenant.CreatedAt,
-	})
-
-	if err != nil {
-		return nil, err
-	}
-
-	return &create, nil
 }
 
 func (r *RBCARepository) GetRoleByID(id [16]byte) (*database.Role, error) {

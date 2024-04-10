@@ -1,46 +1,56 @@
-package middleware
+package middlewares
 
 import (
-	"context"
 	"net/http"
+	"strings"
 
-	"github.com/diogoX451/inventory-management-api/internal/service"
+	"github.com/diogoX451/inventory-management-api/internal/service/auth"
+	"github.com/gin-gonic/gin"
 )
 
-type authString string
-
-func AuthMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		auth := r.Header.Get("Authorization")
-
-		if auth == "" {
-			next.ServeHTTP(w, r)
-			return
-		}
-
-		bearer := "Bearer "
-		auth = auth[len(bearer):]
-
-		validate, err := service.JwtValidate(context.Background(), auth)
-		if err != nil || !validate.Valid {
-			http.Error(w, "Invalid token", http.StatusForbidden)
-			return
-		}
-
-		customClaim, ok := validate.Claims.(*service.JwtCustomClaim)
-		if !ok {
-			http.Error(w, "Invalid token claims", http.StatusForbidden)
-			return
-		}
-
-		ctx := context.WithValue(r.Context(), authString("auth"), customClaim)
-
-		r = r.WithContext(ctx)
-		next.ServeHTTP(w, r)
-	})
+type Unauthorized struct {
+	Status  string `json:"status"`
+	Code    int    `json:"code"`
+	Method  string `json:"method"`
+	Message string `json:"message"`
 }
 
-func CtxValue(ctx context.Context) *service.JwtCustomClaim {
-	raw, _ := ctx.Value(authString("auth")).(*service.JwtCustomClaim)
-	return raw
+func Auth() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		var unauthorized Unauthorized
+
+		unauthorized.Status = "error"
+		unauthorized.Code = http.StatusUnauthorized
+		unauthorized.Method = ctx.Request.Method
+		unauthorized.Message = "Unauthorized"
+
+		authHeader := ctx.Request.Header.Get("Authorization")
+		if authHeader == "" {
+			ctx.JSON(http.StatusUnauthorized, unauthorized)
+			ctx.Abort()
+			return
+		}
+
+		splitToken := strings.Split(authHeader, "Bearer ")
+		if len(splitToken) != 2 {
+			ctx.JSON(http.StatusUnauthorized, unauthorized)
+			ctx.Abort()
+			return
+		}
+		requestToken := splitToken[1]
+
+		tk := auth.NewJWT()
+		id, role, err := tk.ValidateToken(requestToken)
+		if err != nil {
+			unauthorized.Message = err.Error()
+			ctx.JSON(http.StatusUnauthorized, unauthorized)
+			ctx.Abort()
+			return
+		}
+
+		ctx.Set("userId", id)
+		ctx.Set("role", role)
+
+		ctx.Next()
+	}
 }

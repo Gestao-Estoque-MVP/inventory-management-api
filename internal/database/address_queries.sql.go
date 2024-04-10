@@ -13,22 +13,19 @@ import (
 
 const createAddress = `-- name: CreateAddress :one
 INSERT INTO address (
-        id,
         address,
         number,
         street,
         city,
         state,
         postal_code,
-        country,
-        created_at
+        country
     )
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-RETURNING id, address, street, city, state, postal_code, country, number, created_at, updated_at
+VALUES ($1, $2, $3, $4, $5, $6, $7)
+RETURNING id
 `
 
 type CreateAddressParams struct {
-	ID         pgtype.UUID
 	Address    pgtype.Text
 	Number     pgtype.Text
 	Street     pgtype.Text
@@ -36,12 +33,10 @@ type CreateAddressParams struct {
 	State      pgtype.Text
 	PostalCode pgtype.Text
 	Country    pgtype.Text
-	CreatedAt  pgtype.Timestamp
 }
 
-func (q *Queries) CreateAddress(ctx context.Context, arg CreateAddressParams) (Address, error) {
+func (q *Queries) CreateAddress(ctx context.Context, arg CreateAddressParams) (pgtype.UUID, error) {
 	row := q.db.QueryRow(ctx, createAddress,
-		arg.ID,
 		arg.Address,
 		arg.Number,
 		arg.Street,
@@ -49,20 +44,8 @@ func (q *Queries) CreateAddress(ctx context.Context, arg CreateAddressParams) (A
 		arg.State,
 		arg.PostalCode,
 		arg.Country,
-		arg.CreatedAt,
 	)
-	var i Address
-	err := row.Scan(
-		&i.ID,
-		&i.Address,
-		&i.Street,
-		&i.City,
-		&i.State,
-		&i.PostalCode,
-		&i.Country,
-		&i.Number,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-	)
-	return i, err
+	var id pgtype.UUID
+	err := row.Scan(&id)
+	return id, err
 }

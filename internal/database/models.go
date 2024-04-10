@@ -26,6 +26,7 @@ type Company struct {
 	Name      pgtype.Text
 	Document  pgtype.Text
 	AddressID pgtype.UUID
+	Active    pgtype.Bool
 	CreatedAt pgtype.Timestamptz
 	UpdatedAt pgtype.Timestamptz
 }

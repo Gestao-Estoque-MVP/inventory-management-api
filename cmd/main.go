@@ -5,14 +5,12 @@ import (
 	"log"
 	"os"
 
+	companies_router "github.com/diogoX451/inventory-management-api/cmd/router/companies"
+	users_router "github.com/diogoX451/inventory-management-api/cmd/router/users"
 	"github.com/diogoX451/inventory-management-api/internal/database"
-	"github.com/diogoX451/inventory-management-api/internal/graph/middleware"
-	"github.com/diogoX451/inventory-management-api/internal/repository"
-	"github.com/diogoX451/inventory-management-api/internal/service"
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
-	"github.com/rs/cors"
 )
 
 func init() {
@@ -41,13 +39,7 @@ func main() {
 	log.SetOutput(logFile)
 
 	router := gin.Default()
-	router.Group("/api/v1")
-
-	router.Use(middleware.AuthMiddleware)
-	router.Use(cors.New(cors.Options{
-		AllowedOrigins:   []string{"*"},
-		AllowCredentials: true,
-	}).Handler)
+	api := router.Group("/api/v1")
 
 	port := os.Getenv("PORT")
 
@@ -57,19 +49,24 @@ func main() {
 
 	queries := database.New(db)
 
-	s3Repository := repository.NewS3Repository(queries)
-	image := repository.NewImageRepository(queries)
-	s3Service := service.NewServiceS3(s3Repository, os.Getenv("S3_BUCKET_NAME"), os.Getenv("S3_ACESS_KEY_ID"), os.Getenv("S3_REGION"))
-	imageService := service.NewImageService(*image, s3Service)
-	rcba := repository.NewRBCARepository(queries)
-	rcbaService := service.NewRCBAService(rcba)
-	userRepository := repository.NewRepositoryUser(queries)
-	emailService := service.NewServiceEmail(s3Repository, *userRepository)
-	userService := service.NewServiceUser(userRepository, rcba, emailService, s3Service)
-	contactRepository := repository.NewRepositoryContactInfo(queries)
-	contactService := service.NewContactInfoService(contactRepository, emailService)
-	loginService := service.NewAuthUser(*userRepository, *rcba)
-	addressRepository := repository.NewAddressRepository(queries)
-	addressRepositoryService := service.NewAddressService(addressRepository)
+	companies_router.RouterCompanies(queries, api)
+	users_router.RouterUsers(queries, api)
+
+	router.Run()
+
+	// s3Repository := repository.NewS3Repository(queries)
+	// image := repository.NewImageRepository(queries)
+	// s3Service := service.NewServiceS3(s3Repository, os.Getenv("S3_BUCKET_NAME"), os.Getenv("S3_ACESS_KEY_ID"), os.Getenv("S3_REGION"))
+	// imageService := service.NewImageService(*image, s3Service)
+	// rcba := repository.NewRBCARepository(queries)
+	// rcbaService := service.NewRCBAService(rcba)
+	// userRepository := repository.NewRepositoryUser(queries)
+	// emailService := service.NewServiceEmail(s3Repository, *userRepository)
+	// userService := service.NewServiceUser(userRepository, rcba, emailService, s3Service)
+	// contactRepository := repository.NewRepositoryContactInfo(queries)
+	// contactService := service.NewContactInfoService(contactRepository, emailService)
+	// loginService := service.NewAuthUser(*userRepository, *rcba)
+	// addressRepository := repository.NewAddressRepository(queries)
+	// addressRepositoryService := service.NewAddressService(addressRepository)
 
 }
