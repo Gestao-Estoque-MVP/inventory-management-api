@@ -3,6 +3,8 @@ package helpers
 import (
 	"regexp"
 	"strings"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 func OnlyName(name string) string {
@@ -30,4 +32,10 @@ func OnlyPassword(password string) string {
 func OnlyNumbers(numbers string) string {
 	regexp := regexp.MustCompile("[^0-9]+")
 	return regexp.ReplaceAllString(numbers, "")
+}
+
+func VerifyPassword(password, verify string) bool {
+	hash := bcrypt.CompareHashAndPassword([]byte(verify), []byte(password))
+
+	return hash == nil
 }

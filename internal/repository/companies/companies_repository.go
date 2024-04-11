@@ -28,6 +28,7 @@ func (r *CompaniesRepository) CreateCompany(company dto.CreateCompanyDTO) (*pgty
 		Name:      pgtype.Text{String: company.Name, Valid: true},
 		Document:  pgtype.Text{String: company.Document, Valid: true},
 		AddressID: company.AddressId,
+		IsAdmin:   pgtype.Bool{Bool: company.IsAdmin, Valid: true},
 	})
 	if err != nil {
 		return &pgtype.UUID{}, err

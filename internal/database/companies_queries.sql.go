@@ -39,9 +39,10 @@ const createCompanies = `-- name: CreateCompanies :one
 INSERT INTO companies (
         name,
         document,
-        address_id
+        address_id,
+        is_admin
     )
-VALUES ($1, $2, $3)
+VALUES ($1, $2, $3, $4)
 RETURNING id
 `
 
@@ -49,10 +50,16 @@ type CreateCompaniesParams struct {
 	Name      pgtype.Text
 	Document  pgtype.Text
 	AddressID pgtype.UUID
+	IsAdmin   pgtype.Bool
 }
 
 func (q *Queries) CreateCompanies(ctx context.Context, arg CreateCompaniesParams) (pgtype.UUID, error) {
-	row := q.db.QueryRow(ctx, createCompanies, arg.Name, arg.Document, arg.AddressID)
+	row := q.db.QueryRow(ctx, createCompanies,
+		arg.Name,
+		arg.Document,
+		arg.AddressID,
+		arg.IsAdmin,
+	)
 	var id pgtype.UUID
 	err := row.Scan(&id)
 	return id, err

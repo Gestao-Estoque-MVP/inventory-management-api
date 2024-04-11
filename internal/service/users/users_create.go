@@ -12,19 +12,20 @@ import (
 
 type IUserService interface {
 	CreateUser(user dto.UserCreateDTO) (dto.Mesage, error)
+	LoginUser(user dto.Login) (dto.LoginOutput, error)
 }
 
-type UserCreateService struct {
+type UserService struct {
 	repo    users_repository.IUsersRepository
 	company companies_repository.ICompaniesRepository
 	rcba    rcba_repository.IRBCA
 }
 
-func NewUserCreateService(repo users_repository.IUsersRepository, company companies_repository.ICompaniesRepository, rcba rcba_repository.IRBCA) *UserCreateService {
-	return &UserCreateService{repo: repo, company: company, rcba: rcba}
+func NewUserCreateService(repo users_repository.IUsersRepository, company companies_repository.ICompaniesRepository, rcba rcba_repository.IRBCA) *UserService {
+	return &UserService{repo: repo, company: company, rcba: rcba}
 }
 
-func (s *UserCreateService) CreateUser(user dto.UserCreateDTO) (dto.Mesage, error) {
+func (s *UserService) CreateUser(user dto.UserCreateDTO) (dto.Mesage, error) {
 	user.Name = helpers.OnlyName(user.Name)
 	user.Document = helpers.OnlyDocument(user.Document)
 	user.MobilePhone = helpers.OnlyNumbers(user.MobilePhone)

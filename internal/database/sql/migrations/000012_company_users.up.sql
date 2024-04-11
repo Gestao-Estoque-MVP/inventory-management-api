@@ -5,3 +5,4 @@ CREATE TABLE IF NOT EXISTS company_users (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
+CREATE UNIQUE INDEX idx_company_users ON company_users (company_id, user_id);

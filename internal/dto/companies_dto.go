@@ -7,6 +7,7 @@ type CreateCompanyDTO struct {
 	AddressCreateDTO AddressCreateDTO `json:"address" binding:"required"`
 	Document         string           `json:"document" binding:"required"`
 	AddressId        pgtype.UUID      `json:"address_id"`
+	IsAdmin          bool             `json:"is_admin"`
 }
 
 type CompanyDTO struct {

@@ -11,6 +11,7 @@ import (
 
 type IUsersRepository interface {
 	CreateUser(user dto.UserCreateDTO) (*pgtype.UUID, error)
+	GetUserByEmail(email string) (dto.GetUserByEmailDTO, error)
 }
 
 type UsersRepository struct {
@@ -40,4 +41,18 @@ func (r *UsersRepository) CreateUser(user dto.UserCreateDTO) (*pgtype.UUID, erro
 	}
 
 	return &id, nil
+}
+
+func (r *UsersRepository) GetUserByEmail(email string) (dto.GetUserByEmailDTO, error) {
+	get, err := r.db.GetUserByEmail(context.Background(), email)
+	if err != nil {
+		return dto.GetUserByEmailDTO{}, err
+	}
+
+	return dto.GetUserByEmailDTO{
+		ID:       get.ID,
+		Email:    get.Email,
+		Password: get.Password.String,
+		Role:     get.RoleName,
+	}, nil
 }

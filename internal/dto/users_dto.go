@@ -12,3 +12,19 @@ type UserCreateDTO struct {
 	RoleId        pgtype.UUID   `json:"role_id"`
 	PermissionsId []pgtype.UUID `json:"permissions_id"`
 }
+
+type Login struct {
+	Email    string `json:"email" binding:"required"`
+	Password string `json:"password" binding:"required"`
+}
+
+type GetUserByEmailDTO struct {
+	Email    string      `json:"email"`
+	ID       pgtype.UUID `json:"id"`
+	Password string      `json:"password"`
+	Role     string      `json:"role"`
+}
+
+type LoginOutput struct {
+	Token string `json:"token"`
+}

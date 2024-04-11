@@ -2,9 +2,10 @@
 INSERT INTO companies (
         name,
         document,
-        address_id
+        address_id,
+        is_admin
     )
-VALUES ($1, $2, $3)
+VALUES ($1, $2, $3, $4)
 RETURNING id;
 -- name: AssociateUserCompany :one
 INSERT INTO company_users (company_id, user_id)

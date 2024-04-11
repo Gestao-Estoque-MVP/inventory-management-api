@@ -27,6 +27,7 @@ type Company struct {
 	Document  pgtype.Text
 	AddressID pgtype.UUID
 	Active    pgtype.Bool
+	IsAdmin   pgtype.Bool
 	CreatedAt pgtype.Timestamptz
 	UpdatedAt pgtype.Timestamptz
 }

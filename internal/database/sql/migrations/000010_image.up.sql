@@ -7,3 +7,4 @@ CREATE TABLE image (
 );
 ALTER TABLE users
 ADD COLUMN image_id UUID NULL REFERENCES image(id);
+CREATE INDEX idx_image_id ON users (image_id);

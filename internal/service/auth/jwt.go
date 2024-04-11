@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type JWT struct {
@@ -41,7 +42,7 @@ func NewJWT() *JWT {
 	}
 }
 
-func (j *JWT) GenerateToken(id int32, role string) (string, error) {
+func (j *JWT) GenerateToken(id pgtype.UUID, role string) (string, error) {
 	now := time.Now().UTC().Local()
 
 	claims := make(jwt.MapClaims)
@@ -49,7 +50,7 @@ func (j *JWT) GenerateToken(id int32, role string) (string, error) {
 	claims["role"] = role
 	claims["exp"] = now.Add(time.Hour * 24).Unix()
 	claims["iat"] = now.Unix()
-	claims["iss"] = "math_api"
+	claims["iss"] = "inventory-management-api"
 	claims["nbf"] = now.Unix()
 
 	token, err := jwt.NewWithClaims(jwt.SigningMethodRS256, claims).SignedString(j.privateKey)
