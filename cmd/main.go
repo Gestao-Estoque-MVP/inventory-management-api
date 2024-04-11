@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"os"
 
@@ -49,8 +50,9 @@ func main() {
 
 	queries := database.New(db)
 
-	companies_router.RouterCompanies(queries, api)
 	users_router.RouterUsers(queries, api)
+	fmt.Println(api.Handlers)
+	companies_router.RouterCompanies(queries, api)
 
 	router.Run()
 

@@ -62,7 +62,7 @@ func (j *JWT) GenerateToken(id pgtype.UUID, role string) (string, error) {
 	return token, nil
 }
 
-func (j *JWT) ValidateToken(token string) (int32, string, error) {
+func (j *JWT) ValidateToken(token string) (string, string, error) {
 
 	claims := jwt.MapClaims{}
 
@@ -71,17 +71,17 @@ func (j *JWT) ValidateToken(token string) (int32, string, error) {
 	})
 
 	if err != nil {
-		return 0, "", err
+		return "", "", err
 	}
 
-	id, ok := claims["id"].(int32)
+	id, ok := claims["id"].(string)
 	if !ok {
-		return 0, "", fmt.Errorf("id not found")
+		return "", "", fmt.Errorf("id not found")
 	}
 
 	role, ok := claims["role"].(string)
 	if !ok {
-		return 0, "", fmt.Errorf("role not found")
+		return "", "", fmt.Errorf("role not found")
 	}
 
 	return id, role, nil

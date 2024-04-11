@@ -54,3 +54,42 @@ func Auth() gin.HandlerFunc {
 		ctx.Next()
 	}
 }
+
+func AuthSuperAdmin() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		role := ctx.GetString("role")
+		if role != "superuser" {
+			ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+			ctx.Abort()
+			return
+		}
+
+		ctx.Next()
+	}
+}
+
+func AuthAdmin() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		role := ctx.GetString("role")
+		if role != "admin" {
+			ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+			ctx.Abort()
+			return
+		}
+
+		ctx.Next()
+	}
+}
+
+func AuthUser() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		role := ctx.GetString("role")
+		if role != "user" {
+			ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+			ctx.Abort()
+			return
+		}
+
+		ctx.Next()
+	}
+}
