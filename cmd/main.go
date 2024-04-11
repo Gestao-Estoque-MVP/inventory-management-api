@@ -2,13 +2,13 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"os"
 
 	companies_router "github.com/diogoX451/inventory-management-api/cmd/router/companies"
 	users_router "github.com/diogoX451/inventory-management-api/cmd/router/users"
 	"github.com/diogoX451/inventory-management-api/internal/database"
+	middlewares "github.com/diogoX451/inventory-management-api/internal/middleware"
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
@@ -40,7 +40,10 @@ func main() {
 	log.SetOutput(logFile)
 
 	router := gin.Default()
-	api := router.Group("/api/v1")
+	api := router.Group("/")
+
+	autorize := router.Group("/api/v1")
+	autorize.Use(middlewares.Auth())
 
 	port := os.Getenv("PORT")
 
@@ -50,9 +53,8 @@ func main() {
 
 	queries := database.New(db)
 
-	users_router.RouterUsers(queries, api)
-	fmt.Println(api.Handlers)
-	companies_router.RouterCompanies(queries, api)
+	users_router.RouterUsers(queries, autorize, api)
+	companies_router.RouterCompanies(queries, autorize)
 
 	router.Run()
 

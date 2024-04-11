@@ -11,11 +11,11 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func RouterUsers(db *database.Queries, route *gin.RouterGroup) {
+func RouterUsers(db *database.Queries, authorize *gin.RouterGroup, route *gin.RouterGroup) {
 	user := users_services.NewUserCreateService(users_repository.NewRepositoryUsers(db), companies_repository.NewRepositoryCompanies(db), rcba_repository.NewRBCARepository(db))
 	userHandler := users_handler.NewUsersHandler(user)
 
 	route.POST("/login", userHandler.LoginUser)
 
-	route.POST("/create-user", middlewares.Auth(), userHandler.CreateUser)
+	authorize.POST("/create-user", middlewares.Auth(), userHandler.CreateUser)
 }
